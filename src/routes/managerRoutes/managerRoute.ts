@@ -1,0 +1,42 @@
+import {Router}  from 'express';
+const ManagerRoute=Router();
+import {managerLogin} from '../../controllers/managerControllers/MLoginDetails';
+import { mLoginService } from '../../service/managerService/MloginService';
+import { mLoginRepo } from '../../repository/managerRepository/MloginRepo';
+
+
+const managerRepositoryInstance=new mLoginRepo();
+const managerServiceInstance=new mLoginService(managerRepositoryInstance);
+const managerLoginRouter=new managerLogin(managerServiceInstance);
+// const managerLoginRouter=new managerLogin();
+
+import { verifyToken } from '../../middlewares/userMiddle';
+
+
+import { checkIfManagerBlocked } from '../../middlewares/managerBlock';
+import multer from 'multer';
+const upload = multer({ storage: multer.memoryStorage() });
+
+ManagerRoute.post('/mSubmit',managerLoginRouter.managerRegister.bind(managerLoginRouter));
+ManagerRoute.post('/MverifyOtp',managerLoginRouter.managerVerifyOtp.bind(managerLoginRouter));
+ManagerRoute.post('/Mlogin',managerLoginRouter.managerLogin.bind(managerLoginRouter));
+ManagerRoute.post('/forgotM',managerLoginRouter.managerForgotPassword.bind(managerLoginRouter));
+ManagerRoute.post('/verifyForgotOtpM',managerLoginRouter.managerVerifyOtpForForgot.bind(managerLoginRouter));
+ManagerRoute.post('/resetPasswordM',managerLoginRouter.managerResetPassword.bind(managerLoginRouter));
+ManagerRoute.post('/createEvent',checkIfManagerBlocked,verifyToken(['manager']), upload.single('images'),managerLoginRouter.createEventPost.bind(managerLoginRouter));
+ManagerRoute.get('/manager/getEventType',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getEventTypeData.bind(managerLoginRouter));
+ManagerRoute.get('/getOffers',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getAllOffers.bind(managerLoginRouter));
+ManagerRoute.post('/addNewOffer',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.createNewOffer.bind(managerLoginRouter));
+ManagerRoute.get('/getSelectedOffer/:offerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getSelectedOfferDetails.bind(managerLoginRouter));
+ManagerRoute.post('/updateOffer',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateOfferDetails.bind(managerLoginRouter));
+ManagerRoute.get('/Manager/getAllEventData',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getAllEventDetails.bind(managerLoginRouter));
+ManagerRoute.post('/refresh-token',managerLoginRouter.reGenerateManagerAccessToken.bind(managerLoginRouter));
+ManagerRoute.get('/getPreviousEventDetails/:id',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getSelectedEventDetails.bind(managerLoginRouter));
+ManagerRoute.post('/updateEvent',checkIfManagerBlocked,verifyToken(['manager']),upload.array("images",10),managerLoginRouter.updateEventPost.bind(managerLoginRouter))
+ManagerRoute.get('/managerProfile/:companyName',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getManagerProfileDetails.bind(managerLoginRouter));
+ManagerRoute.post('/updateManagerData',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateManagerProfile.bind(managerLoginRouter));
+ManagerRoute.post('/changeManagerPassword',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateManagerPassword.bind(managerLoginRouter));
+ManagerRoute.get('/searchOfferInput/:inputSearch',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getSearchOfferUserInput.bind(managerLoginRouter));
+ManagerRoute.get('/fetchTodayBooking',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getTodaysBookingDetails.bind(managerLoginRouter));
+ManagerRoute.get('/fetchTotalBooking',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getTotalBookingDetails.bind(managerLoginRouter));
+export default ManagerRoute;    

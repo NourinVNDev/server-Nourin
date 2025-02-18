@@ -1,0 +1,114 @@
+import { Request,Response } from "express-serve-static-core";
+import { mLoginRepo } from "../../repository/managerRepository/MloginRepo";
+import { FormData1, OfferData } from "../../config/enum/dto";
+import { IMloginRepo } from "../../repository/managerRepository/IMloginRepo";
+export class managerOfferService{
+    private  managerOfferService:IMloginRepo;
+
+    constructor(managerRepositoryInstance:IMloginRepo){
+        this.managerOfferService=managerRepositoryInstance;
+    }
+    async getOfferService(req:Request,res:Response):Promise<{ success: boolean; message: string; data?: any }>{
+        try {
+            const savedEvent =await this.managerOfferService.getAllOfferDetails(req,res); 
+            console.log("Saved Data",savedEvent);
+            if(savedEvent){
+                return { success: savedEvent.success, message: savedEvent.message, data: savedEvent.data };
+            }else{
+                return { success: false, message: "Not Found Offer Details data " };
+            }
+        
+        } catch (error) {
+            console.error("Error in handleEventCreation:", error);
+            throw new Error("Failed to create event in another service layer."); 
+        }
+    }
+    async getSearchOfferService(searchData:string):Promise<{success: boolean; message: string; data?: any}>{
+        try {
+            const savedEvent =await this.managerOfferService.getSearchOfferInput(searchData); 
+            console.log("Saved Data",savedEvent);
+            if(savedEvent){
+                return { success: savedEvent.success, message: savedEvent.message, data: savedEvent.data };
+            }else{
+                return { success: false, message: "Not Found Offer Details data " };
+            }
+        
+        } catch (error) {
+            console.error("Error in handleEventCreation:", error);
+            throw new Error("Failed to create event in another service layer."); 
+        }
+
+
+    }
+
+ 
+
+    async postOfferService(formData:OfferData):Promise<{ success: boolean; message: string; data?: any }>{
+        try {
+            const savedEvent =await this.managerOfferService.postOfferDetails(formData); 
+            console.log("Saved Data",savedEvent);
+            if(savedEvent){
+                return { success: savedEvent.success, message: savedEvent.message, data: savedEvent.data };
+            }else{
+                return { success: false, message: "Not Found Offer Details data " };
+            }
+        
+        } catch (error) {
+            console.error("Error in handleEventCreation:", error);
+            throw new Error("Failed to create event in another service layer."); 
+        }
+    }
+    async updateOfferService(formData:OfferData):Promise<{ success: boolean; message: string; data?: any }>{
+        try {
+            const savedEvent =await this.managerOfferService.updateOfferDetailsRepo(formData); 
+            console.log("Saved Data",savedEvent);
+            if(savedEvent){
+                return { success: savedEvent.success, message: savedEvent.message, data: savedEvent.data };
+            }else{
+                return { success: false, message: "Not Found Offer Details data " };
+            }
+        
+        } catch (error) {
+            console.error("Error in handleEventCreation:", error);
+            throw new Error("Failed to create event in another service layer."); 
+        }
+    }
+
+
+
+    
+
+
+    async getSelectedOfferService2(offerId:string) {
+        try {
+            console.log("Processing event data in another service...");
+    
+    
+    
+            // Call repository to save the data
+            const savedEvent =await this.managerOfferService.getSelectedOfferRepo(offerId);
+    
+            return savedEvent;
+        } catch (error) {
+            console.error("Error in handleEventCreation:", error);
+            throw new Error("Failed to create event in another service layer.");
+        }
+    }
+
+
+
+
+
+
+    
+
+
+
+
+
+    
+
+
+
+ 
+}
