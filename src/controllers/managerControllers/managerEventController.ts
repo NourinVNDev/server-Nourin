@@ -28,7 +28,6 @@ import { EventData } from "../../config/enum/dto";
                         endDate,
                         amount,
                         destination,
-                        noOfDays,
                         noOfPerson,
                         Included,
                         notIncluded,
@@ -37,7 +36,7 @@ import { EventData } from "../../config/enum/dto";
 
                     const files = req.file;
 
-                    console.log("checking the data ",location,noOfDays,"bla",files);
+                    console.log("checking the data ",location,"bla",files);
 
                     const parsedLocation = JSON.parse(location);
                     const formData:EventData = {
@@ -53,7 +52,6 @@ import { EventData } from "../../config/enum/dto";
                         endDate,
                         amount,
                         destination,
-                        noOfDays,
                         noOfPerson,
                         Included,
                         notIncluded,
@@ -61,8 +59,8 @@ import { EventData } from "../../config/enum/dto";
 
                       };
         
-                    if (!formData.eventName || !formData.title || !formData.location.address || !formData.location.city || !formData.startDate ||!formData.endDate || !formData.amount ||!formData.destination || !formData.noOfDays ||!formData.noOfPerson || !formData.Included ||!formData.notIncluded ||!files) {
-                        throw new Error("Missing required fields: EventName, title, address, city,startDate, endDate,amount,destination,noOfDays,noOfPerson,Included,notIncluded,or Image.");
+                    if (!formData.eventName || !formData.title || !formData.location.address || !formData.location.city || !formData.startDate ||!formData.endDate || !formData.amount ||!formData.destination  ||!formData.noOfPerson || !formData.Included ||!formData.notIncluded ||!files) {
+                        throw new Error("Missing required fields: EventName, title, address, city,startDate, endDate,amount,destination,noOfPerson,Included,notIncluded,or Image.");
                     }
         
                     const result = await this.managerController.createEventPostService(formData, files);
@@ -98,7 +96,6 @@ import { EventData } from "../../config/enum/dto";
                     endDate,
                     amount,
                     destination,
-                    noOfDays,
                     noOfPerson,
                     Included,
                     notIncluded,
@@ -117,7 +114,7 @@ import { EventData } from "../../config/enum/dto";
                   const formData: EventData = {
                     id, companyName, content, time, tags, eventName, title,
                     location: parsedLocation, startDate, endDate, amount,
-                    destination, noOfDays, noOfPerson, Included, notIncluded,
+                    destination, noOfPerson, Included, notIncluded,
                     images: files,
                   };
                 console.log("checking the data ",formData,formData.images);
@@ -125,7 +122,7 @@ import { EventData } from "../../config/enum/dto";
 
 
     
-                if (!formData.eventName || !formData.title || !formData.location.address || !formData.location.city || !formData.startDate ||!formData.endDate || !formData.amount ||!formData.destination || !formData.noOfDays ||!formData.noOfPerson || !formData.Included ||!formData.notIncluded ||!files) {
+                if (!formData.eventName || !formData.title || !formData.location.address || !formData.location.city || !formData.startDate ||!formData.endDate || !formData.amount ||!formData.destination||!formData.noOfPerson || !formData.Included ||!formData.notIncluded ||!files) {
                     throw new Error("Missing required fields: EventName, title, address, city,startDate, endDate,amount,destination,noOfDays,noOfPerson,Included,notIncluded,or Image.");
                 }
     

@@ -1,6 +1,7 @@
 import { FormData, PaymentData } from "../../config/enum/dto";
 import { billingData } from "../../config/enum/dto";
 export interface ILoginService{
+    getAllEventService():Promise<{success:boolean,message:string,data:any[]}>;
     CheckingEmail(email:string):Promise<{success:number|boolean|string}> ;
     verifyService(formData:FormData,otp:string,globalOTP:string|number|null):Promise<{success:boolean,message:string,user:any}>;
     loginDetails(formData:FormData):Promise<{success:boolean,message:string,  user?: any | null,categoryName?: any|null}>;
@@ -28,6 +29,6 @@ export interface ILoginService{
     getEventBookedService():Promise<{success:boolean,message:string,data: string | null | undefined | any  |number}>;
     getBookedManagerService(userId:string):Promise<{success:boolean,message:string,data:any}>;
     createChatSchemaService(formData:FormData):Promise<{success:boolean,message:string,data:any}>;
-
+    checkOfferAvailableService(categoryName:string):Promise<{success:boolean,message:string,data:any}>
 
 }

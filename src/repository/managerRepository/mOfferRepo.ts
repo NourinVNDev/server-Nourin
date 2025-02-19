@@ -26,7 +26,9 @@ export class managerOfferRepository{
           } = formData;
   
           // Check if the offer exists
-          const existingOffer = await OFFERDB.findOne({ offerName });
+          const existingOffer = await OFFERDB.findOne({ discount_on });
+          console.log("checking from Repo",existingOffer);
+          
   
           if (!existingOffer) {
               return {
@@ -58,10 +60,10 @@ export class managerOfferRepository{
   
           // Update the existing offer
           const updatedOffer = await OFFERDB.findOneAndUpdate(
-              { offerName },
+              { discount_on },
               {
                   $set: {
-                      discount_on,
+                      offerName,
                       discount_value: discountValueAsNumber,
                       startDate: startDateParsed, // Ensure correct date format
                       endDate: endDateParsed,

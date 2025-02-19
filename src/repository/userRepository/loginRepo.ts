@@ -9,6 +9,7 @@ import { IloginRepo } from './IloginRepo';
 import { userDetailsRepository } from './userDetailRepository';
 import { userProfileRepository } from './userProfileRepository';
 import BOOKEDUSERDB from '../../models/userModels/bookingSchema';
+import OFFERDB from '../../models/managerModels/offerSchema';
 interface User {
   email: string;
   password: string;
@@ -44,6 +45,16 @@ export class loginRepo implements IloginRepo{
       console.error('Error checking email in database:', error);
       throw new Error('Database query failed');
     }
+  }
+
+  async getEventDataRepo(){
+    try {
+      const result=await SOCIALEVENT.find();
+      return{success:true,message:"Evennt Data Retrieved",data:result}
+    } catch (error) {
+      console.error("Error saving user data:", error);
+      throw new Error('Failed to save user data');
+  }
   }
   async postUserData(formData:FormData){
     try{
@@ -607,6 +618,37 @@ async getEventBookedRepo(){
     throw new Error("Failed to handle event data in main repository.");
 }
 }
+
+
+async checkOfferAvailableRepo(categoryName: string) {
+  try {
+    const savedEvent = await OFFERDB.findOne({ discount_on: categoryName });
+
+    if (!savedEvent) {
+      return {
+        success: false,
+        message: "No Offers Available",
+        data: [],
+      };
+    }
+
+    // Check if the offer is still valid (endDate is in the future)
+    const currentDate = new Date();
+    if (new Date(savedEvent.endDate) < currentDate) {
+      return {
+        success: false,
+        message: "Offer has expired",
+        data: [],
+      };
+    }
+
+    return { success: true, message: "Offers Found", data: savedEvent };
+  } catch (error) {
+    console.error("Error in checkOfferAvailableRepo:", error);
+    throw new Error("Failed to handle event data in main repository.");
+  }
+}
+
 
 
 

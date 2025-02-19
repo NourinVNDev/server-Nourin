@@ -483,7 +483,9 @@ export class managerLogin{
           
               // Check if the result indicates a failure
               if (!result?.success) {
-                res.status(HTTP_statusCode.InternalServerError).json({
+                console.log('hai');
+                
+                res.status(HTTP_statusCode.OK).json({
                   message: result?.message || "Failed to fetch offers",
                 });
                 return;

@@ -1,6 +1,7 @@
 import { billingData, FormData,PaymentData } from "../../config/enum/dto";
 export interface IloginRepo{
     isEmailPresent(email:string):Promise<{user:boolean}>;
+    getEventDataRepo():Promise<{success:boolean,message:string,data:any}>;
     postUserData(formData:FormData):Promise<{success:boolean,message:string,user:any}>;
     checkLogin(formData:FormData):Promise<{success:boolean,message:string,user:any}>;
     googleAuthData(payload:Object):Promise<{success:boolean,message:string,user:any}>;
@@ -23,7 +24,7 @@ export interface IloginRepo{
     getEventBookedRepo():Promise<{success:boolean,message:string,data:any}>
     getManagerDataRepo(userId:string):Promise<{success:boolean,message:string,data:any}>
     createChatSchemaRepo(userId:string,manager:string):Promise<{success:boolean,message:string,data:any}>
-
+    checkOfferAvailableRepo(categoryName:string):Promise<{success:boolean,message:string,data:any}>
 
 
 

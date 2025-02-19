@@ -47,7 +47,6 @@ export class managerEventRepository {
                 startDate: formattedStartDate,
                 endDate: formattedEndDate,
                 noOfPerson: formData.noOfPerson,
-                noOfDays: formData.noOfDays,
                 Amount: formData.amount,
                 Included: formData.Included,
                 notIncluded: formData.notIncluded,
@@ -181,7 +180,6 @@ export class managerEventRepository {
             existingEvent.startDate = new Date(formData.startDate);
             existingEvent.endDate = new Date(formData.endDate);
             existingEvent.noOfPerson = formData.noOfPerson;
-            existingEvent.noOfDays = formData.noOfDays;
             existingEvent.Amount = formData.amount;
             existingEvent.Included[0] = formData.Included; // Replace the entire array
             existingEvent.notIncluded[0] = formData.notIncluded; // Replace the entire array

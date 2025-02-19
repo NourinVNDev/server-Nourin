@@ -283,60 +283,52 @@ export class mLoginRepo implements IMloginRepo{
 
 
 
-async postOfferDetails(formData: OfferData): Promise<{ success: boolean; message: string; data?: any }> {
+async postOfferDetails(formData: OfferData) {
   try {
-    // Extract the required fields from formData
-    const {
-      offerName,
-      discount_on,
-      discount_value,
-      startDate,
-      endDate,
-      item_description,
-    } = formData as unknown as {
-      offerName: string;
-      discount_on: string;
-      discount_value: number;
-      startDate: Date;
-      endDate: Date;
-      item_description: string;
-    };
+    // Extract fields from formData
+    const { offerName, discount_on, discount_value, startDate, endDate, item_description } = formData;
 
-    // Check if an offer with the same name already exists
-    const existingOffer = await OFFERDB.findOne({ offerName });
-    if (existingOffer) {
+    // Check if an active offer already exists for this discount_on
+    const activeOffer = await OFFERDB.findOne({
+      discount_on,
+      endDate: { $gt: new Date() }, // Ensure existing offer's endDate is in the future
+    });
+
+    if (activeOffer) {
       return {
         success: false,
-        message: `Offer with the name '${offerName}' already exists.`,
+        message: `An active offer already exists for "${discount_on}".`,
+        data: [],
       };
     }
 
-    // Create a new offer in the database
+    // Create new offer
     const newOffer = await OFFERDB.create({
       offerName,
       discount_on,
       discount_value,
-      startDate,
-      endDate,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
       item_description,
     });
 
     console.log("New offer added:", newOffer);
 
-    // Fetch all offers from the database (including the newly added one)
-    const result = await OFFERDB.find();
-    console.log("All offers from DB:", result);
+    // Fetch all offers from DB
+    const allOffers = await OFFERDB.find();
+    console.log("All offers:", allOffers);
 
     return {
       success: true,
       message: "Offer added successfully and data retrieved.",
-      data: result,
+      data: allOffers,
     };
   } catch (error) {
     console.error("Error in postOfferDetails:", error);
     return { success: false, message: "Internal server error" };
   }
 }
+
 
 
 async updateOfferDetailsRepo(formData:OfferData): Promise<{ success: boolean; message: string; data?: any }> {

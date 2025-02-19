@@ -14,6 +14,7 @@ const userRepositoryInstance=new loginRepo();
 const userServiceInstance=new loginServices(userRepositoryInstance);
 const userLoginRouter=new userlogin(userServiceInstance);
 // const userLoginRouter=new userlogin();
+userRoute.get('/fetchEventData',userLoginRouter.getAllEventData.bind(userLoginRouter));
 userRoute.post('/login',userLoginRouter.loginDetails.bind(userLoginRouter));
 userRoute.post('/submit',userLoginRouter.postUserDetails.bind(userLoginRouter));
 userRoute.post('/verifyOtp',userLoginRouter.verifyOTP.bind(userLoginRouter));
@@ -43,4 +44,5 @@ userRoute.get('/getManagerName/:userId',checkIfUserBlocked,verifyToken(['user'])
 userRoute.get('/getBookedEvent',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getEventBookedDetails.bind(userLoginRouter));
 userRoute.post('/create-chatSchema',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.createChatSchema.bind(userLoginRouter));
 // userRoute.post(`/uploadUserProfile/:userId`,checkIfUserBlocked,verifyToken(['user']),upload.single('images'),userLoginRouter.uploadUserProfilePicture.bind(userLoginRouter));
+userRoute.get(`/post/checkOfferAvailable/:category`,checkIfUserBlocked,verifyToken(['user']),userLoginRouter.checkOfferAvailable.bind(userLoginRouter));
 export default userRoute;

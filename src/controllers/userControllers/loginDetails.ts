@@ -29,6 +29,26 @@ class userlogin  {
     this.userProfileController=new userProfileController(userServiceInstance);
   }
 
+
+  async getAllEventData(req: Request, res: Response): Promise<void> {
+    try {
+      const result = await this.userController.getAllEventService();
+      res.status(HTTP_statusCode.OK).json({
+        success: result.success,
+        message: result.message,
+        data: result.data
+      });
+    } catch (error) {
+      console.error("Error during event fetching:", error);
+      res.status(HTTP_statusCode.InternalServerError).json({
+        success: false,
+        message: "An error occurred while fetching events",
+        data: []
+      });
+    }
+  }
+  
+
   async loginDetails(req: Request, res: Response): Promise<void> {
     try {
         const formData = req.body;
@@ -560,7 +580,7 @@ class userlogin  {
 
         res.status(HTTP_statusCode.OK).json({
             message: "Event data fetched successfully",
-            data: result
+            data: result.user
         });
 
     } catch (error) {
@@ -772,6 +792,23 @@ async getBookedManagerDetails(req:Request,res:Response):Promise<void>{
   }
 }
 
+async checkOfferAvailable(req:Request,res:Response){
+  try {
+    const categoryName=req.params.category;
+
+    console.log("Chech the cat",categoryName);
+
+    const savedEvent = await this.userController.checkOfferAvailableService(categoryName);
+    if(savedEvent.success){
+      res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+      return;
+      }
+       res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+  } catch (error) {
+    
+  }
+}
+
 
 async createChatSchema(req: Request, res: Response) {
   try {
@@ -787,6 +824,8 @@ async createChatSchema(req: Request, res: Response) {
     res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
   }
 }
+
+
 
 
 // async uploadUserProfilePicture(req:Request,res:Response){

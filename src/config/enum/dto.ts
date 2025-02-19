@@ -20,7 +20,6 @@ export type EventData = {
   endDate: string;
   amount: number;
   destination: string;
-  noOfDays: number;
   noOfPerson: number;
   Included: string;
   notIncluded: string;

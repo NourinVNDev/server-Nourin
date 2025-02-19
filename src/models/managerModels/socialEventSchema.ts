@@ -41,10 +41,6 @@ const socialEventSchema = new mongoose.Schema(
         type:Number,
         required:true
       },
-      noOfDays:{
-        type:Number,
-        required:true
-      },
       Amount:{
         type:Number,
         required:true

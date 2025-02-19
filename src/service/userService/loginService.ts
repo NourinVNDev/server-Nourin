@@ -27,6 +27,17 @@ export class loginServices  implements ILoginService {
     this.userDetailService=new userDetailsService(userRepositoryInstence);
     this.userProfileService=new userProfileService(userRepositoryInstence);
   }
+
+  async getAllEventService(): Promise<{ success: boolean; message: string; data: any[] }> {
+    try {
+      const result = await this.userService.getEventDataRepo();
+      return { success: true, message: result.message, data: result.data };
+    } catch (error) {
+      // Handle the error and return an appropriate response
+      return { success: false, message: "Failed to fetch events", data: [] };
+    }
+  }
+  
   async CheckingEmail(email: string){
     try {
       if (!email) {
@@ -381,7 +392,7 @@ async getCategoryTypeServiice(categoryName:string){
       console.log("bhai");
       
       const result = await this.userService.getCategoryTypeRepo(categoryName);
-      return { success: true, message: 'Reset Password SuccessFully', user: result };
+      return { success: true, message: 'Reset Password SuccessFully', user: result.category };
     } else {
       throw new Error('Invalid login credentials.');
     }
@@ -523,6 +534,17 @@ async getEventBookedService(){
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
+}
+
+async checkOfferAvailableService(categoryName:string){
+  try {
+    const savedEvent = await this.userService.checkOfferAvailableRepo(categoryName);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    console.error("Error in getAllOfferServiceDetails:", error);
+    throw new Error("Failed to create event in another service layer."); 
+  }
+
 }
 
 

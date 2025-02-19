@@ -4,12 +4,10 @@ const offerSchema=new mongoose.Schema({
         offerName:{
             required:true,
             type:String,
-            unique:true
         },
         discount_on:{
             type:String,
             required:true,
-
         },
         discount_value:{
             type:String,
