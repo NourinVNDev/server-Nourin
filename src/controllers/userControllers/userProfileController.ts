@@ -102,6 +102,19 @@ export class userProfileController{
         } 
     }
 
+    async uploadUserProfileDetails2(userId:string,profilePicture:Express.Multer.File){
+        try {
+            const savedEvent = await this.loginService.uploadUserProfilePhoto(userId,profilePicture);
+            console.log("Get Booked Manager Details", savedEvent);
+            console.log("From Controller for Manager Details",savedEvent);
+            return {success:savedEvent.success,message:savedEvent.message,data:savedEvent};
+            
+        } catch (error) {
+            console.error("Error in managerEventControllers:", error);
+            throw new Error("Failed to process manager-specific event logic.");
+        } 
+    }
+
 
 
 

@@ -24,11 +24,13 @@ export interface ILoginService{
     makePaymentStripeService(products:PaymentData):Promise<{result:any}>;
     posthandleReviewRating(formData:FormData):Promise<{result:any}>;
     saveBillingDetailsService(formData:billingData):Promise<{success:boolean,message:string,data:any}>
+    updateBookedEventPaymentStatus(bookedId:string):Promise<{success:boolean,message:string}>
     getExistingReviewService(userId:string,eventId:string):Promise<{success:boolean,message:string,data: string | null | undefined | any}>
     getEventHistoryService():Promise<{success:boolean,message:string,data: string | null | undefined | any  |number}>;
     getEventBookedService():Promise<{success:boolean,message:string,data: string | null | undefined | any  |number}>;
     getBookedManagerService(userId:string):Promise<{success:boolean,message:string,data:any}>;
     createChatSchemaService(formData:FormData):Promise<{success:boolean,message:string,data:any}>;
+    uploadUserProfilePhoto(userId:string,profilePicture:Express.Multer.File):Promise<{success:boolean,message:string,data:any}>;
     checkOfferAvailableService(categoryName:string):Promise<{success:boolean,message:string,data:any}>
 
 }

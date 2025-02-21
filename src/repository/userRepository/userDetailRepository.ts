@@ -43,7 +43,7 @@ export class userDetailsRepository {
     try {
       // Find the social event by ID
       console.log('Post Id:',postId);
-      const singleEvent = await SOCIALEVENT.findOne({_id:postId});
+      const singleEvent = await SOCIALEVENT.findOne({_id:postId}).populate('offer');
       if (!singleEvent) {
         throw new Error(`Social Event not found for ID: ${postId}`);
       }
@@ -115,6 +115,25 @@ export class userDetailsRepository {
         throw new Error("Failed to save billing details.");
     }
 }
+async updateBookedPaymentStatusRepository(bookedId: string) {
+  const bookedEvent = await BOOKEDUSERDB.findById(bookedId);
+
+  if (!bookedEvent) {
+    return {
+      success: false,
+      message: "Event not found",
+    };
+  }
+
+  bookedEvent.paymentStatus = "Cancelled"; // No optional chaining needed
+  await bookedEvent.save();
+
+  return {
+    success: true,
+    message: "Event details updated successfully",
+  };
+}
+
 
 
 

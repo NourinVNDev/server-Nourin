@@ -129,6 +129,29 @@ export class  AdminLoginServices implements IadminloginService{
         }
         
     }
+
+    async fetchSelectedCategoryService(categoryId:string,req:Request,res:Response){
+        try {
+            const result=await this.adminCategory.fetchSelectedCategoryService(categoryId,req,res);
+            return {result};
+        }catch (error) {
+            console.error("Error in getCategoryDetails:", error);
+            res.status(500).json({ message: "Internal server error", error });
+            return { result: undefined }; 
+        }
+    }
+
+    async editSelectedCategoryService(category:string,categoryId:string,req:Request,res:Response){
+        try {
+            const result=await this.adminCategory.editSelectedCategoryService(category,categoryId,req,res);
+            return {result};
+        }catch (error) {
+            console.error("Error in getCategoryDetails:", error);
+            res.status(500).json({ message: "Internal server error", error });
+            return { result: undefined }; 
+        }
+    }
+    
     async postCategoryIsBlockService(categoryId: string, updatedStatus: boolean) {
         try {
             if (!categoryId || updatedStatus === null || updatedStatus === undefined) {

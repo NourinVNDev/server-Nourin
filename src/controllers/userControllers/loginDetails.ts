@@ -724,6 +724,23 @@ async saveBillingDetails(req: Request, res: Response) {
   }
 }
 
+async updateBookedEventPaymentStatus(req:Request,res:Response){
+  try {
+    console.log("Hello from controller");
+    
+    const bookedId=req.params.bookedId;
+    console.log("Updating payment status of booked Event:", bookedId);
+
+    const result = await this.userDetailsController.updatePaymentStatus(bookedId);
+    console.log("Nice",result.data)
+
+    res.status(HTTP_statusCode.OK).json(result); // Send response to client
+  } catch (error) {
+    console.error("Error in saveBillingDetails:", error);
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+  }
+}
+
 
 
 async getExistingReviews(req: Request, res: Response): Promise<void> {
@@ -828,12 +845,27 @@ async createChatSchema(req: Request, res: Response) {
 
 
 
-// async uploadUserProfilePicture(req:Request,res:Response){
-//   console.log("Received request for uploading profile");
-//   console.log(req.params,"Yeah",req.file);
-//   const result = await this.userProfileController.uploadUserProfileDetails2(req,res);
+async uploadUserProfilePicture(req: Request, res: Response) {
+  console.log("Received request for uploading profile");
+  console.log(req.params, "Yeah", req.file);
 
-// }
+  const userId = req.params.userId;
+  const profilePicture = req.file; 
+
+  if (!profilePicture) {
+    console.log('Mahn');
+    res.status(HTTP_statusCode.BadRequest).json({ error: "No file uploaded. Please upload an image." });
+    return;
+  }
+
+  try {
+    const result = await this.userProfileController.uploadUserProfileDetails2(userId, profilePicture);
+    res.status(HTTP_statusCode.OK).json(result);
+  } catch (error) {
+    res.status(HTTP_statusCode.InternalServerError).json({ error: "Failed to upload profile picture." });
+  }
+}
+
 
  }
   

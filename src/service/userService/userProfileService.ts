@@ -1,6 +1,7 @@
 import { loginRepo } from "../../repository/userRepository/loginRepo";
 import { FormData } from "../../config/enum/dto";
 import { IloginRepo } from "../../repository/userRepository/IloginRepo";
+import { uploadToCloudinary } from "../../config/cloudinaryConfig";
 export class userProfileService{
     private loginRepository:IloginRepo;
     constructor(userRepositoryInstance:IloginRepo){
@@ -126,6 +127,23 @@ export class userProfileService{
         }
 
 
+    }
+    async uploadUserProfileService2(userId:string,profilePicture:Express.Multer.File){
+        try {
+            console.log("Processing create chat Schema in another service...",);
+  
+            // Perform additional validations if needed
+
+            const fileName=await uploadToCloudinary(profilePicture);
+         
+            // Call repository to save the data
+            const savedEvent =await this.loginRepository.uploadUserProfilePictureRepo(userId,fileName as string);
+            return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+          
+        } catch (error) {
+            console.error("Error in handleEventCreation:", error);
+            throw new Error("Failed to create event in another service layer.");
+        }
     }
 
 

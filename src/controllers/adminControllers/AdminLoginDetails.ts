@@ -268,6 +268,50 @@ export  class AdminLogin {
         }
         
     }
+    async fetchSelectedCategory(req:Request,res:Response):Promise<void>{
+        try {
+            console.log("Hello from  fetching Category");
+            console.log("Checking",req.params);
+            
+            const {id}=req.params;
+            const categoryId=id;
+            console.log("Scaaam",categoryId);
+            
+            const result=await this.adminCategoryController.fetchSelectedCategoryController(categoryId,req,res);
+            console.log('Category',result?.result);
+            res.status(HTTP_statusCode.OK).json({
+                message: "Selected Category fetched successfully",
+                data: result?.result,
+            });
+            
+        } catch (error) {
+            console.error("Error in getCategoryDetails:", error);
+            res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+        }
+    }
+
+    async editSelectedCategory(req:Request,res:Response):Promise<void|any>{
+        try {
+            console.log("Hello from  editing selected Category");
+            console.log("Checking",req.params);
+            const category=req.body.category;
+            
+            const {categoryId}=req.params;
+         
+            console.log("chill",categoryId,category);
+            
+            const result=await this.adminCategoryController.editSelectedCategoryController(category,categoryId,req,res);
+            console.log('Category',result?.result);
+            res.status(HTTP_statusCode.OK).json({
+                message: "Category edited successfully",
+                data: result?.result,
+            });
+            
+        } catch (error) {
+            console.error("Error in getCategoryDetails:", error);
+            res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+        }
+    }
     async postCategoryIsBlock(req: Request, res: Response): Promise<void|any> {
       
         try {
@@ -319,6 +363,8 @@ export  class AdminLogin {
             res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
         }
     }
+
+  
     
 
 

@@ -7,6 +7,10 @@ const socialEventSchema = new mongoose.Schema(
         ref: 'Manager',
         required: true,
       },
+      offer:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"EventOffer",
+      },
       title: {
         type: String,
         required: true,
@@ -41,6 +45,11 @@ const socialEventSchema = new mongoose.Schema(
         type:Number,
         required:true
       },
+      noOfDays:{
+        type:Number,
+        required:true
+      },
+
       Amount:{
         type:Number,
         required:true
@@ -78,7 +87,15 @@ const socialEventSchema = new mongoose.Schema(
           createdAt: { type: Date, default: Date.now },
         },
       ],
+      offerDetails:{
+        offerPercentage:{type:Number},
+        deductionAmount:{type:Number},
+        offerAmount:{type:Number},
+        isOfferAdded:{type:String,enum:['Offer Added','Not Added'],default:'Not Added'}
+      },
+  
     },
+
     {
       timestamps: true,
     }

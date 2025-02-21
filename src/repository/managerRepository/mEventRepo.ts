@@ -32,6 +32,15 @@ export class managerEventRepository {
             if (isEventNamePresent) {
                 return { success: false, message: "Event Name is already Present" };
             }
+
+
+            const noOfDays = Math.ceil(
+                (new Date(formData.endDate).getTime() - new Date(formData.startDate).getTime()) / 
+                (1000 * 60 * 60 * 24)
+              );
+              
+
+
     
             // Structure the event data
             const event = new SOCIALEVENTDB({
@@ -47,6 +56,7 @@ export class managerEventRepository {
                 startDate: formattedStartDate,
                 endDate: formattedEndDate,
                 noOfPerson: formData.noOfPerson,
+                noOfDays:noOfDays,
                 Amount: formData.amount,
                 Included: formData.Included,
                 notIncluded: formData.notIncluded,
@@ -167,6 +177,10 @@ export class managerEventRepository {
             if (isEventNamePresent) {
                 return { success: false, message: "Event Name is already Present" };
             }
+            const noOfDays = Math.ceil(
+                (new Date(formData.endDate).getTime() - new Date(formData.startDate).getTime()) / 
+                (1000 * 60 * 60 * 24)
+              );
     
             // Update the event data
             existingEvent.title = formData.title;
@@ -180,6 +194,7 @@ export class managerEventRepository {
             existingEvent.startDate = new Date(formData.startDate);
             existingEvent.endDate = new Date(formData.endDate);
             existingEvent.noOfPerson = formData.noOfPerson;
+            existingEvent.noOfDays=noOfDays;
             existingEvent.Amount = formData.amount;
             existingEvent.Included[0] = formData.Included; // Replace the entire array
             existingEvent.notIncluded[0] = formData.notIncluded; // Replace the entire array

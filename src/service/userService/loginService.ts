@@ -495,6 +495,19 @@ async saveBillingDetailsService(formData:billingData){
   }
 
 }
+
+async updateBookedEventPaymentStatus(bookedId:string){
+  try {
+    // Fetch data from the repository
+    const result = await this.userDetailService.updatePayementStatusService2(bookedId);
+    console.log("from service", result);
+    return {success:result.success,message:result.message};
+  } catch (error) {
+    // Log and return a generic error response
+    console.error("Error in getAllOfferServiceDetails:", error);
+    throw new Error("Failed to create event in another service layer."); 
+  }
+}
 async getEventHistoryService(){
   try {
     // Fetch data from the repository
@@ -585,7 +598,26 @@ async createChatSchemaService(formData:FormData){
 
   
 
-}};
+}
+async uploadUserProfilePhoto(userId:string,profilePicture:Express.Multer.File){
+  try {
+   
+    if(!userId){
+      return {success:false,message:'User is not Found',data:null};
+    }
+    // Fetch data from the repository
+    const savedEvent = await this.userProfileService.uploadUserProfileService2(userId,profilePicture);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+    // return {success:result.success,message:result.message,data:result.data};
+  } catch (error) {
+    // Log and return a generic error response
+    console.error("Error in getAllOfferServiceDetails:", error);
+    throw new Error("Failed to create event in another service layer."); 
+  }
+}
+
+};
+
 
 
 

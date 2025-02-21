@@ -175,6 +175,29 @@ export class AdminLoginRepo  implements IAloginRepo{
             return { result: undefined }; // Ensure a valid return type
         }
     }
+
+    async fetchSelectedCategoryRepo(categoryId:string,req:Request,res:Response){
+        try {
+            const result = await this.adminCategoryRepo.fetchSelectedCategoryRepo(categoryId,req,res);
+            return { result };
+        } catch (error) {
+            console.error("Error in getCategoryDetails:", error);
+            res.status(500).json({ message: "Internal server error", error });
+            return { result: undefined }; // Ensure a valid return type
+        }
+    }
+
+
+    async editSelectedCategoryRepo(category:string,categoryId:string,req:Request,res:Response){
+        try {
+            const result = await this.adminCategoryRepo.editSelectedCategoryRepo(category,categoryId,req,res);
+            return { result };
+        } catch (error) {
+            console.error("Error in getCategoryDetails:", error);
+            res.status(500).json({ message: "Internal server error", error });
+            return { result: undefined }; // Ensure a valid return type
+        }
+    }
     
 
 

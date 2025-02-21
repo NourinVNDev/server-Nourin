@@ -18,6 +18,27 @@ export class adminCategory{
         
     }
 
+    async fetchSelectedCategoryController(categoryId:string,req:Request,res:Response){
+        try {
+            const result=await this.adminService.fetchSelectedCategoryService(categoryId,req,res);
+            return result;
+            
+        }catch (error) {
+            console.error("Error in getCategoryDetails:", error);
+            res.status(500).json({ message: "Internal server error", error });
+        }
+    }
+
+    async editSelectedCategoryController(category:string,categoryId:string,req:Request,res:Response){
+        try {
+            const result=await this.adminService.editSelectedCategoryService(category,categoryId,req,res);
+            return result;
+            
+        }catch (error) {
+            console.error("Error in getCategoryDetails:", error);
+            res.status(500).json({ message: "Internal server error", error });
+        }
+    }
     async addEventCategoryController(formData:{[key:string]:string},req:Request,res:Response){
 
         try {

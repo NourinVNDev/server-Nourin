@@ -4,6 +4,7 @@ import MANAGERDB from "../../models/managerModels/managerSchema";
 import CONVERSATIONDB from "../../models/userModels/conversationSchema";
 import mongoose from "mongoose";
 import REVIEWRATINGDB from "../../models/userModels/reveiwRatingSchema";
+import USERDB from "../../models/userModels/userSchema";
 export class userProfileRepository{
     async postReviewRatingRepository(formData: FormData) {
         const eventId = formData.eventId;
@@ -107,14 +108,14 @@ export class userProfileRepository{
             console.log("Populated Data:", JSON.stringify(result, null, 2));
         
             const filteredResult = result.filter(event => {
-                const eventData = event.eventId as { startDate?: string };
+                const eventData = event.eventId as { endDate?: string };
         
-                if (!eventData.startDate) {
+                if (!eventData.endDate) {
                     console.log("Skipping Event - Missing startDate:", event);
                     return false;
                 }
         
-                const eventDate = new Date(eventData.startDate);
+                const eventDate = new Date(eventData.endDate);
                 const currentDate = new Date();
         
                 // Reset time to 00:00:00 for accurate date-only comparison
@@ -123,7 +124,7 @@ export class userProfileRepository{
         
                 console.log("Checking Event Date:", eventDate, "Current Date:", currentDate);
         
-                return eventDate > currentDate; // Future events only
+                return eventDate >= currentDate; // Future events only
             });
         
             console.log('Filtered Events:', filteredResult);
@@ -213,6 +214,29 @@ export class userProfileRepository{
             return { success: false, message: "Internal server error", data: null };
         }
     }
+
+
+
+    async uploadUserProfilePictureRepository(userId: string, profilePicture: string) {
+        try {
+            // Find the user
+            const user = await USERDB.findById(userId);
+    
+            if (!user) {
+                return { success: false, message: "User not found", data: null };
+            }
+    
+            // Update profile picture
+            user.profilePhoto = profilePicture;
+            await user.save(); 
+    
+            return { success: true, message: "Profile Photo Uploaded",data:user.profilePhoto };
+        } catch (error) {
+            console.error("Error uploading profile photo:", error);
+            return { success: false, message: "Internal server error", data: null };
+        }
+    }
+    
     
 
 

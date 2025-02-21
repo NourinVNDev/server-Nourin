@@ -14,6 +14,13 @@ interface User {
   email: string;
   password: string;
 }
+import { Document } from "mongoose"; // Import for better type safety
+
+// Define an interface for Events (adjust fields as needed)
+interface EventDocument extends Document {
+    endDate: Date;
+    title: string;
+}
 const hashPassword = async (password:string) => {
   try {
       // Generate a salt
@@ -357,12 +364,12 @@ async resetUserProfile(email: string, formData:FormData){
 
 async getAllCategoryRepository(){
 
-  const categoryData=await CATEGORYDB.find();
+  const categoryData=await CATEGORYDB.find({isListed:true});
   try {
 
 
-
-    console.log('Category details retrieved successfully:', categoryData);
+    
+    console.log('Category details retrieved successfully123:', categoryData);
     return {
       success: true,
       message: 'Category details retrieved successfully.',
@@ -411,38 +418,50 @@ async getUserDetailsRepository(userId:string){
   }
 }
 
-async getCategoryBasedRepo(postId:string){
+async getCategoryBasedRepo(postId: string) {
   try {
-  console.log("Id of category",postId)
+    console.log("Id of category:", postId);
 
-  console.log(await  CATEGORYDB.findOne({_id:postId}).populate('Events'));
+    // Fetch category and populate Events as full objects
+    const category = await CATEGORYDB.findById(postId).populate<{ Events: EventDocument[] }>("Events");
 
-  const SOCIALEVENT=await  CATEGORYDB.findById({_id:postId}).populate('Events');
-  console.log("SocialEvent",SOCIALEVENT);
+    if (!category) {
+      return {
+        success: false,
+        message: "Category not found.",
+        category: null,
+      };
+    }
+
+    console.log("Category details:", category);
+
+    // Filter events that have a valid startDate
+    const filteredEvents = category.Events.filter(event => new Date(event.endDate) >= new Date());
+
     return {
       success: true,
-      message: 'Category details retrieved successfully.',
-      category:SOCIALEVENT, // Return the populated category details
+      message: "Category details retrieved successfully.",
+      category: {
+        ...category.toObject(),
+        Events: filteredEvents, 
+      },
     };
   } catch (error) {
-    console.error('Error retrieving category details:', error);
+    console.error("Error retrieving category details:", error);
     return {
       success: false,
-      message: 'An error occurred while retrieving category details.',
+      message: "An error occurred while retrieving category details.",
       category: null,
     };
   }
 }
+
+
+
 //again
 
 async getCategoryTypeRepo(categoryName1:string){
   console.log("name of category",categoryName1)
-
-  
-
-
-  
-
   try {
     // Find the category by name and populate the Events field
     const category = await CATEGORYDB.findOne({_id: categoryName1 }).populate('Events');
@@ -578,6 +597,20 @@ async saveBillingDetailsRepo(formData:billingData){
 }
 }
 
+
+async updatePaymentStatusRepo(bookedId:string){
+  try {
+
+    // Pass the data to the actual repository for database operations
+    const savedEvent = await this.userRepositoy.updateBookedPaymentStatusRepository(bookedId);
+  
+    return {success:savedEvent.success,message:savedEvent.message};
+} catch (error) {
+    console.error("Error in postEventRepository:", error);
+    throw new Error("Failed to handle event data in main repository.");
+}
+}
+
 async getEventHistoryRepo(){
   try {
 
@@ -672,6 +705,19 @@ async createChatSchemaRepo(userId:string,manager:string){
 
     // Pass the data to the actual repository for database operations
     const savedEvent = await this.userProfileRepository.createChatSchemaRepository(userId,manager);
+  
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+} catch (error) {
+    console.error("Error in postEventRepository:", error);
+    throw new Error("Failed to handle event data in main repository.");
+}
+}
+
+async uploadUserProfilePictureRepo(userId:string,profilePicture:string){
+  try {
+
+    // Pass the data to the actual repository for database operations
+    const savedEvent = await this.userProfileRepository.uploadUserProfilePictureRepository(userId,profilePicture);
   
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
 } catch (error) {

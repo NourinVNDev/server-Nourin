@@ -15,6 +15,35 @@ export class adminCategoryRepository{
 
     }
 
+    async fetchSelectedCategoryRepo(categoryId:string,req:Request,res:Response){
+        try {
+            const result = await CATEGORYDB.findById(categoryId);
+            return result;
+            
+
+        } catch (error) {
+            console.error("Error in getCategoryDetails:", error);
+            res.status(500).json({ message: "Internal server error", error });
+        }
+    }
+    async editSelectedCategoryRepo(category: string, categoryId: string,req:Request,res:Response): Promise<any> {
+        try {
+            const result = await CATEGORYDB.findById(categoryId);
+    
+            if (!result) {
+                throw new Error("Category not found");
+            }
+    
+            result.Description = category;
+            await result.save();
+            return result;
+        } catch (error) {
+            console.error("Error in editSelectedCategoryRepo:", error);
+            throw error; // Let the controller handle the response
+        }
+    }
+    
+
     async adminCategoryDetailsRepo(formData:{[key:string]:string},req:Request,res:Response){
         try {
             console.log("Category Repo",formData.categoryName)

@@ -39,6 +39,9 @@ const userSchema = new Schema({
   address:{
     type:String,
     
+  },
+  profilePhoto:{
+    type:String,
   }
 
 }, {

@@ -285,43 +285,11 @@ export class mLoginRepo implements IMloginRepo{
 
 async postOfferDetails(formData: OfferData) {
   try {
-    // Extract fields from formData
-    const { offerName, discount_on, discount_value, startDate, endDate, item_description } = formData;
-
-    // Check if an active offer already exists for this discount_on
-    const activeOffer = await OFFERDB.findOne({
-      discount_on,
-      endDate: { $gt: new Date() }, // Ensure existing offer's endDate is in the future
-    });
-
-    if (activeOffer) {
-      return {
-        success: false,
-        message: `An active offer already exists for "${discount_on}".`,
-        data: [],
-      };
-    }
-
-    // Create new offer
-    const newOffer = await OFFERDB.create({
-      offerName,
-      discount_on,
-      discount_value,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
-      item_description,
-    });
-
-    console.log("New offer added:", newOffer);
-
-    // Fetch all offers from DB
-    const allOffers = await OFFERDB.find();
-    console.log("All offers:", allOffers);
-
+    const result=await this.managerOfferRepository.addNewOfferRepository(formData);    // Extract fields from formData
     return {
-      success: true,
-      message: "Offer added successfully and data retrieved.",
-      data: allOffers,
+      success: result.success,
+      message: result.message,
+      data: result.data,
     };
   } catch (error) {
     console.error("Error in postOfferDetails:", error);

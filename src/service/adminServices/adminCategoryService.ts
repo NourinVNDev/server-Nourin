@@ -23,6 +23,32 @@ export class adminCategoryService{
       
 
     }
+
+    async  fetchSelectedCategoryService(categoryId:string,req:Request,res:Response){
+        try {
+            // Call the repository method
+            const result = await this.adminRepo.fetchSelectedCategoryRepo(categoryId,req, res);
+            return result;
+        } catch (error) {
+            console.error("Error in getCategoryDetails:", error);
+            return res
+                .status(500)
+                .json({ message: "Internal server error", error });
+        }
+    }
+    async  editSelectedCategoryService(category:string,categoryId:string,req:Request,res:Response){
+        try {
+            // Call the repository method
+            const result = await this.adminRepo.editSelectedCategoryRepo(category,categoryId,req, res);
+            return result;
+        } catch (error) {
+            console.error("Error in getCategoryDetails:", error);
+            return res
+                .status(500)
+                .json({ message: "Internal server error", error });
+        }
+    }
+
     async addCategoryDetailsService(formData:{[key:string]:string},req:Request,res:Response){
         
         if (!formData.categoryName.trim()) {

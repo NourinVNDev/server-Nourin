@@ -10,6 +10,8 @@ export interface IadminloginService{
     postManagerIsBlockService(managerId:string,updatedStatus:boolean):Promise<{result?:any}>
     postCategoryIsBlockService(categoryId:string,updatedStatus:boolean):Promise<{result?:any}>
     getCategoryService(req:Request,res:Response):Promise<{result?:any}>
+    fetchSelectedCategoryService(id:string,req:Request,res:Response):Promise<{result?:any}>
+    editSelectedCategoryService(category:string,categoryId:string,req:Request,res:Response):Promise<{result?:any}>
     addCategoryService(formData:FormData,req:Request,res:Response):Promise<{result?:any}>
 
 

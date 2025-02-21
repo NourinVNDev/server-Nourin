@@ -16,6 +16,8 @@ adminRoute.get('/admin/users',verifyToken(['admin']),adminLoginRouter.getUserDet
 adminRoute.get('/admin/managers',verifyToken(['admin']),adminLoginRouter.getManagerDetails.bind(adminLoginRouter));
 adminRoute.get('/admin/category',verifyToken(['admin']),adminLoginRouter.getCategoryDetails.bind(adminLoginRouter));
 adminRoute.post('/admin/addCategory',verifyToken(['admin']),adminLoginRouter.addEventCategoryDetails.bind(adminLoginRouter));
+adminRoute.get('/admin/fetchSelectedCategory/:id',verifyToken(['admin']),adminLoginRouter.fetchSelectedCategory.bind(adminLoginRouter));
+adminRoute.post('/admin/editSingleCategory/:categoryId',verifyToken(['admin']),adminLoginRouter.editSelectedCategory.bind(adminLoginRouter));
 adminRoute.post('/admin/toggleIsBlock',verifyToken(['admin']),adminLoginRouter.postToggleIsBlock.bind(adminLoginRouter));
 adminRoute.post('/admin/categoryIsBlock',verifyToken(['admin']),adminLoginRouter.postCategoryIsBlock.bind(adminLoginRouter));
 adminRoute.post('/admin/managerIsBlock',verifyToken(['admin']),adminLoginRouter.postManagerIsBlock.bind(adminLoginRouter))

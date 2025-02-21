@@ -18,6 +18,7 @@ export interface IloginRepo{
     getSelectedEventRepo(postId:string):Promise<{savedEvent:any}>
     savePaymentData(paymentData:PaymentData):Promise<{success:boolean,message:string,data:any}>
     saveBillingDetailsRepo(formData:billingData):Promise<{success:boolean,message:string,data:any}>
+    updatePaymentStatusRepo(bookedId:string):Promise<{success:boolean,message:string}>
     handleReviewRatingRepo(formData:FormData):Promise<{savedEvent:any}>
     getEventHistoryRepo():Promise<{success:boolean,message:string,data:any}>
     getExistingReviewRepo(userId:string,eventId:string):Promise<{success:boolean,message:string,data:any}>
@@ -25,7 +26,7 @@ export interface IloginRepo{
     getManagerDataRepo(userId:string):Promise<{success:boolean,message:string,data:any}>
     createChatSchemaRepo(userId:string,manager:string):Promise<{success:boolean,message:string,data:any}>
     checkOfferAvailableRepo(categoryName:string):Promise<{success:boolean,message:string,data:any}>
-
+    uploadUserProfilePictureRepo(userId:string,profilePicture:string):Promise<{success:boolean,message:string,data:any}>
 
 
 }

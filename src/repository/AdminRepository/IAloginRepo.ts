@@ -10,11 +10,7 @@ export interface IAloginRepo{
       postManagerIsBlockRepository(managerId:string,updatedStatus:boolean):Promise<{success:boolean,message:string,user:any}>
       postCategoryIsBlockRepository(categoryId:string,updatedStatus:boolean):Promise<{success:boolean,message:string,user:any}>
       getCategoryRepo(req:Request,res:Response):Promise<{result?:any}>
+      fetchSelectedCategoryRepo(categoryId:string,req:Request,res:Response):Promise<{result?:any}>
+      editSelectedCategoryRepo(category:string,categoryId:string,req:Request,res:Response):Promise<{result?:any}>
       addCategoryRepo(formData:FormData,req:Request,res:Response):Promise<{result:any}>
-
-
-
-
-
-
 }

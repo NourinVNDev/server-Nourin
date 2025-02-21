@@ -86,6 +86,7 @@ export class userDetailsService{
                 if (!product) {
                     throw new Error("Invalid product provided.");
                 }
+                const actualAmount=product.Amount/product.noOfPerson;
         
                 const lineItem = {
                     price_data: {
@@ -94,7 +95,7 @@ export class userDetailsService{
                             name: product.eventName, // Use eventName as the product name
                             images: product.images, // Ensure images is an array
                         },
-                        unit_amount: Math.round(product.Amount * 100),
+                        unit_amount: Math.round(actualAmount * 100),
                     },
                     quantity: product.noOfPerson,
                 };
@@ -105,10 +106,13 @@ export class userDetailsService{
                     line_items: [lineItem], // Wrap the single item in an array
                     mode: "payment",
                     success_url: "http://localhost:5173/payment-success", // Replace with actual URL
-                    cancel_url: "http://localhost:5173/payment-cancel",
+                    cancel_url: `http://localhost:5173/payment-cancel/${product.bookedId}`,
                 });
 
                 const paymentStatus = session ? "Success" : "Canceled";
+
+                console.log("Payment Details:",paymentStatus);
+                
 
                 // Store payment data in MongoDB
                 const paymentData = {
@@ -150,6 +154,22 @@ export class userDetailsService{
                 console.error("Error in handleEventCreation:", error);
                 throw new Error("Failed to create event in another service layer.");
             }
+        }
+        async updatePayementStatusService2(bookedId:string){
+            try {
+                console.log("We are going to update the Payment Status of the booked Events...",bookedId);
+      
+                // Perform additional validations if needed
+             
+      
+                // Call repository to save the data
+                const savedEvent =await this.loginRepository.updatePaymentStatusRepo(bookedId);
+      
+                return {success:savedEvent.success,message:savedEvent.message};
+            } catch (error) {
+                console.error("Error in handleEventCreation:", error);
+                throw new Error("Failed to create event in another service layer.");
+            } 
         }
         
         
