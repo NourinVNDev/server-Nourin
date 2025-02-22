@@ -1,6 +1,12 @@
 import socialEventSchema from "../../models/managerModels/socialEventSchema";
+import CONVERSATIONDB from "../../models/userModels/conversationSchema";
+import MESSAGEDB from "../../models/userModels/messageSchema";
 import USERDB from "../../models/userModels/userSchema";
-
+type NewMessage = {
+  userId: string;
+  managerId: string;
+  message: string;
+};
 export class WebSocketRepository {
   static async addComment(userId: string, postId: string, comment: string) {
     try {
@@ -33,6 +39,46 @@ export class WebSocketRepository {
     } catch (error) {
       console.error("Error adding comment:", error);
       throw error;
+    }
+  }
+
+
+
+  static async addNewMessage(newMessage: NewMessage) {
+    try {
+      const { userId, managerId, message } = newMessage;
+      console.log("from Repo", userId, managerId, message);
+  
+      // Find the conversation between the two participants
+      const conversation = await CONVERSATIONDB.findOne({
+        participants: { $all: [userId, managerId] } // Ensure both users are in the conversation
+      });
+  
+      if (!conversation) {
+        throw new Error("Conversation not found");
+      }
+  
+      // Create a new message
+      const savedMessage = await MESSAGEDB.create({
+        chatId: conversation._id,
+        senderId: userId, // Assuming the sender is the userId
+        receiverId: managerId, // Assuming the receiver is the managerId
+        message: message
+      });
+  
+      // Push the message ID into the conversation's messages array
+      conversation.messages.push(savedMessage._id);
+      await conversation.save(); // Save the updated conversation
+  
+      // Return the saved message or relevant information
+      return {
+        messageId: savedMessage._id,
+        content: savedMessage.message, // Use savedMessage.message instead of savedMessage.content
+        createdAt: savedMessage.createdAt,
+      };
+    } catch (error) {
+      console.error("Error adding new message:", error);
+      throw error; // Rethrow the error to be handled by the caller
     }
   }
 }

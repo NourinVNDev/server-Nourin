@@ -274,7 +274,7 @@ class userlogin  {
               path: '/',
           });
 
-            res.status(HTTP_statusCode.OK).json({ message: 'Login Successful' });
+            res.status(HTTP_statusCode.OK).json({ message: 'Login Successful',data:result.user });
           } else {
             res.status(HTTP_statusCode.Unauthorized).json({
                 success: false,

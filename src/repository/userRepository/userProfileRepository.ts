@@ -5,6 +5,7 @@ import CONVERSATIONDB from "../../models/userModels/conversationSchema";
 import mongoose from "mongoose";
 import REVIEWRATINGDB from "../../models/userModels/reveiwRatingSchema";
 import USERDB from "../../models/userModels/userSchema";
+import MESSAGEDB from "../../models/userModels/messageSchema";
 export class userProfileRepository{
     async postReviewRatingRepository(formData: FormData) {
         const eventId = formData.eventId;
@@ -207,8 +208,12 @@ export class userProfileRepository{
                 });
                 await conversation.save();
             }
+
+
+            const getAllMessages=await MESSAGEDB.find({chatId:conversation._id});
+
     
-            return { success: true, message: "Conversation Schema Created", data: {conversation:conversation,managerId:Manager._id} };   
+            return { success: true, message: "Conversation Schema Created", data: {conversation:conversation,managerId:Manager._id,allMessages:getAllMessages} };   
         } catch (error) {
             console.error("Error fetching company names:", error);
             return { success: false, message: "Internal server error", data: null };

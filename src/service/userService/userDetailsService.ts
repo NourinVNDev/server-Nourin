@@ -80,7 +80,7 @@ export class userDetailsService{
             console.log("Product from Service", product);
         
             try {
-                console.log("Processing event data in another service...",product.bookedId);
+                console.log("Processing event data in another services...",product.bookedId);
         
                 // Validate product object
                 if (!product) {

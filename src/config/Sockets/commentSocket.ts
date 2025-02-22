@@ -3,6 +3,7 @@
 import { Server } from "socket.io";
 import { Server as HttpServer } from "http";
 import { WebSocketRepository } from "../../repository/Sockets/commentLikeRepo";
+import { timeStamp } from "console";
 
 const initializeSocket = (server: HttpServer) => {
   const io = new Server(server, {
@@ -40,13 +41,17 @@ const initializeSocket = (server: HttpServer) => {
     
 
     // Handle sending messages  chat
-    socket.on("post-new-message", (newMessage, callback) => {
+    socket.on("post-new-message",async (newMessage, callback) => {
       console.log("Received message:", newMessage);
       const { userId, managerId, message } = newMessage; // Ensure correct names
+      const result=await WebSocketRepository.addNewMessage(newMessage)
       console.log(`Message from ${userId} to ${managerId}:`, message);
       const receiver = onlineUsers.get(managerId);
       if (receiver) {
-        io.to(receiver.socketId).emit("receive-message", { senderId: userId, message });
+        const formattedTime = new Date(result.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        console.log("Formatted Date for Message",formattedTime);
+        
+        io.to(receiver.socketId).emit("receive-message", { senderId: userId, message,timeStamp:formattedTime});
       }
       callback({ success: true, message: "Message delivered successfully!" });
     });

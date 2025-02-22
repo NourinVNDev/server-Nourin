@@ -534,8 +534,12 @@ async getCategoryTypeRepo(categoryName1:string){
 async savePaymentData(paymentData: PaymentData) {
   try {
     // Find the existing booking by ID
-    const existingBooking = await BOOKEDUSERDB.findById(paymentData.bookedId);
 
+    console.log("Checking the bookedId",paymentData);
+    
+    const existingBooking = await BOOKEDUSERDB.findById(paymentData.bookedId);
+    console.log("Again",existingBooking);
+    
     if (!existingBooking) {
       return { success: false, message: "Booking not found", data: null };
     }
