@@ -8,7 +8,7 @@ import { timeStamp } from "console";
 const initializeSocket = (server: HttpServer) => {
   const io = new Server(server, {
     cors: {
-      origin: "*", // Ensure no spaces
+      origin: "*",
       methods: ["GET", "POST"],
     },
   });
@@ -26,11 +26,11 @@ const initializeSocket = (server: HttpServer) => {
       io.emit("get-online-users", Array.from(onlineUsers.keys())); // Notify all users
     }
 
-        socket.on('post_comment', async (comment: string, userId: string, postId: string, callback: (response: { comment: string, userName: string } | null) => void) => {
+    socket.on('post_comment', async (comment: string, userId: string, postId: string, callback: (response: { comment: string, userName: string } | null) => void) => {
       try {
         const newComment = await WebSocketRepository.addComment(userId, postId, comment);
         // callback({ comment: newComment.comment, userName: newComment.userName });
-        
+
         // Optionally, broadcast the new comment to all connected clients (or to specific clients)
         io.emit('new_comment', { comment: newComment.comment, userName: newComment.userName, postId });
       } catch (error) {
@@ -38,24 +38,29 @@ const initializeSocket = (server: HttpServer) => {
         callback(null);
       }
     });
-    
+
 
     // Handle sending messages  chat
-    socket.on("post-new-message",async (newMessage, callback) => {
+    socket.on("post-new-message", async (newMessage, callback) => {
+      console.log('////////////////////////////////')
       console.log("Received message:", newMessage);
-      const { userId, managerId, message } = newMessage; // Ensure correct names
-      const result=await WebSocketRepository.addNewMessage(newMessage)
-      console.log(`Message from ${userId} to ${managerId}:`, message);
-      const receiver = onlineUsers.get(managerId);
-      if (receiver) {
+      const { sender, receiver, message } = newMessage; // Ensure correct names
+      const result = await WebSocketRepository.addNewMessage(newMessage)
+      console.log(`Message from ${sender} to ${receiver}:`, message);
+      const receiver1 = onlineUsers.get(receiver);
+      console.log('reciever 1 ?', onlineUsers)
+      if (receiver1) {
         const formattedTime = new Date(result.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        console.log("Formatted Date for Message",formattedTime);
-        
-        io.to(receiver.socketId).emit("receive-message", { senderId: userId, message,timeStamp:formattedTime});
+        console.log("Formatted Date for Message", formattedTime);
+        console.log('userid ///', userId);
+        console.log('reciever 1 ///', receiver1)
+
+        io.to(receiver1.socketId).emit("receive-message", { senderId: sender, message, timeStamp: formattedTime })
+
       }
       callback({ success: true, message: "Message delivered successfully!" });
     });
-    
+
 
     // Handle disconnection
     socket.on("disconnect", () => {

@@ -31,5 +31,32 @@ async getTotalBookingDetails2(){
         throw new Error("Failed to create event in another service layer.");
     }
 }
+async getBookedUserService2(managerName:string){
+    try {
+        console.log("Processing Booked User data in another service...",);
+
+
+        const savedEvent =await this.managerBookingService.getUserDataRepo(managerName);
+        return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+      
+    } catch (error) {
+        console.error("Error in handleEventCreation:", error);
+        throw new Error("Failed to create event in another service layer.");
+    } 
+
+}
+
+ async createChatSchemaService2(sender:string,receiver:string){
+    try {
+        const savedEvent =await this.managerBookingService.createChatSchemaRepo(sender,receiver);
+        return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+      
+    } catch (error) {
+        console.error("Error in handleEventCreation:", error);
+        throw new Error("Failed to create event in another service layer.");
+    }
+
+
+}
 
 }

@@ -678,6 +678,37 @@ export class managerLogin{
               });
             }
           }
+          async getBookedUserDetails(req:Request,res:Response){
+            try {
+              const managerName=req.params.managerName;
+              console.log("ManagerName",managerName);
+              const savedEvent = await this.bookingController.getBookedUserDetails2(managerName);
+              if (savedEvent.success) {
+                res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+              return;
+              }
+               res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+            } catch (error) {
+              console.error("Error in getEventHistoryDetails:", error);
+              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+            }
+
+          }
+
+           async createChatSchema(req: Request, res: Response) {
+            try {
+              const formData = req.body;
+              console.log("Received billing details:", formData);
+          
+              const result = await this.bookingController.createChatSchema2(formData);
+              console.log("Nice",result.data)
+          
+              res.status(HTTP_statusCode.OK).json(result); // Send response to client
+            } catch (error) {
+              console.error("Error in saveBillingDetails:", error);
+              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+            }
+          }
     }
 
        

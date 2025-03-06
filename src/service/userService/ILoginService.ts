@@ -17,6 +17,7 @@ export interface ILoginService{
     getWholeCategoryDetails():Promise<{success:boolean,message:string,user:any}>;
     getUserProfileDetailsService(userId:string):Promise<{success:boolean,message:string,user:any}>;
     getCategoryBasedServiice(postId:string):Promise<{success:boolean,message:string,user:any}>;
+    getAllEventServiice():Promise<{success:boolean,message:string,user:any}>;
     getCategoryTypeServiice(categoryName:string):Promise<{success:boolean,message:string,user:any}>;
     posthandleLikeForPost(index:string,userId:string,postId:string):Promise<{result:any}>
     handlePostDetailsService(postId:string):Promise<{result:any}>;

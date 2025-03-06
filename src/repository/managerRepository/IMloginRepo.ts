@@ -13,6 +13,7 @@ export interface IMloginRepo{
     getEventTypeData(req:Request):Promise<{success:boolean,message:string,data?:any}>;
     getTodaysBookingRepo():Promise<{success:boolean,message:string,data?:any}>;
     getTotalBookingRepo():Promise<{success:boolean,message:string,data?:any}>;
+    getUserDataRepo(managerName:string):Promise<{success:boolean,message:string,data:any}>;
     postEventRepository(formData:EventData,fileName:string):Promise<{ success: boolean; message: string; data?:any; }>
     postUpdateEventRepository(formData:EventData,fileName:string[],eventId:string):Promise<{ success: boolean; message: string; data?:any; }>
     getAllEventRepo(req:Request,res:Response):Promise<{ success: boolean; message: string; data?:any; }>
@@ -22,4 +23,5 @@ export interface IMloginRepo{
     postOfferDetails(formData:OfferData):Promise<{ success: boolean; message: string; data?: any }>
     updateOfferDetailsRepo(formData:OfferData):Promise<{ success: boolean; message: string; data?: any }>
     getSelectedOfferRepo(offerId:string):Promise<{ success: boolean; message: string; data?: any }>
+    createChatSchemaRepo(userId:string,manager:string):Promise<{success:boolean,message:string,data:any}>
 }

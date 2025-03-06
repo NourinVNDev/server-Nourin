@@ -1,6 +1,6 @@
 import session from "express-session";
 
-export type FormData={ [key: string]: string };
+export type FormData={ [key: string]: string|any };
 export type FormData1={[key:string]:number};
 
 // In enums.ts

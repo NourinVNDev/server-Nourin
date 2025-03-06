@@ -2,7 +2,7 @@ import {mLoginRepo} from '../../repository/managerRepository/MloginRepo';
 import { IMloginService } from './IMloginService';
 import { EventData, OfferData } from '../../config/enum/dto';
 import GenerateOTP from '../../config/nodemailer';
-import { FormData ,FormData1} from '../../config/enum/dto';
+import { FormData } from '../../config/enum/dto';
 
 import { managerEventService } from './managerEventService';
 import { uploadToCloudinary } from '../../config/cloudinaryConfig';
@@ -413,7 +413,43 @@ async getTotalBookingService():Promise<{ success: boolean; message: string; data
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
-}  
+} 
+
+ async getBookedUserService(managerName: string){
+  try {
+    // Fetch data from the repository
+    const savedEvent = await this.managerBookingService.getBookedUserService2(managerName);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+    // return {success:result.success,message:result.message,data:result.data};
+  } catch (error) {
+    // Log and return a generic error response
+    console.error("Error in getAllOfferServiceDetails:", error);
+    throw new Error("Failed to create event in another service layer."); 
+  }
+}
+
+async createChatSchemaService(formData:FormData){
+  try {
+    const {sender,receiver}=formData;
+    if(!sender){
+      return {success:false,message:'Manager is not Found',data:null};
+    }
+    if(!receiver){
+      return {success:false,message:'User is not Found',data:null};
+    }
+    // Fetch data from the repository
+    const savedEvent = await this.managerBookingService.createChatSchemaService2(sender,receiver);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+    // return {success:result.success,message:result.message,data:result.data};
+  } catch (error) {
+    // Log and return a generic error response
+    console.error("Error in getAllOfferServiceDetails:", error);
+    throw new Error("Failed to create event in another service layer."); 
+  }
+
+  
+
+}
 
 
 

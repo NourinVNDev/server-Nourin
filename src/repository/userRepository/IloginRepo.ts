@@ -12,6 +12,7 @@ export interface IloginRepo{
     getAllCategoryRepository():Promise<{success:boolean,message:string,category:any}>
     getUserDetailsRepository(userId:string):Promise<{success:boolean,message:string,user?:any,category?:any}>
     getCategoryBasedRepo(postId:string):Promise<{success:boolean,message:string,category:any}>
+    getAllEventBasedRepo():Promise<{success:boolean,message:string,category:any[]}>
     getCategoryTypeRepo(categoryName:string):Promise<{success:boolean,message:string,category:any}>
     posthandleLikeForPost(index:string,userId:string,postId:string):Promise<{savedEvent:any}>
     getPostDetailsRepo(postId:string):Promise<{savedEvent:any}>

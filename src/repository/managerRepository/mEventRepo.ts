@@ -199,6 +199,7 @@ export class managerEventRepository {
             existingEvent.Included[0] = formData.Included; // Replace the entire array
             existingEvent.notIncluded[0] = formData.notIncluded; // Replace the entire array
             existingEvent.time = formData.time || "";
+            existingEvent.destination=formData.destination;
     
             // Update images only if new images are provided
             if (Array.isArray(fileName) && fileName.length > 0) {

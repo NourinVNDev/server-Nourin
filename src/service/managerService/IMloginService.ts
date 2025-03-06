@@ -23,5 +23,7 @@ export interface IMloginService{
    getSelectedEventService(id:string):Promise<{success:boolean,message:string,data?:any}>
    getTodaysBookingService():Promise<{success:boolean,message:string,data?:any}>
    getTotalBookingService():Promise<{success:boolean,message:string,data?:any}>
-
+   getBookedUserService(managerName:string):Promise<{success:boolean,message:string,data:any}>;
+   createChatSchemaService(formData:FormData):Promise<{success:boolean,message:string,data:any}>;
+   
 }

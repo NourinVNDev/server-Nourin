@@ -439,5 +439,32 @@ async getTotalBookingRepo():Promise<{ success: boolean; message: string; data?: 
 
 }
 
+async getUserDataRepo(managerName:string){
+  try {
+
+    // Pass the data to the actual repository for database operations
+    const savedEvent = await this.managerBookingRepository.getBookedUserRepository(managerName);
+  
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+} catch (error) {
+    console.error("Error in postEventRepository:", error);
+    throw new Error("Failed to handle event data in main repository.");
+}
+
+}
+
+async createChatSchemaRepo(sender:string,receiver:string){
+  try {
+
+    // Pass the data to the actual repository for database operations
+    const savedEvent = await this.managerBookingRepository.createChatSchemaRepository(sender,receiver);
+  
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+} catch (error) {
+    console.error("Error in postEventRepository:", error);
+    throw new Error("Failed to handle event data in main repository.");
+}
+}
+
 
 }

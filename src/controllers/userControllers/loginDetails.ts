@@ -192,29 +192,45 @@ class userlogin  {
 
     
   
-    async verifyOTP(req: Request, res: Response): Promise<void>{
-      try{
-        const otp = req.body.otp;
-        const formData = req.body;
-        console.log(req.body);
-        console.log(formData);
+    async verifyOTP(req: Request, res: Response): Promise<void> {
+      try {
+          const otp = req.body.otp;
+          const formData = req.body;
+          console.log("Received OTP:", otp, "Global OTP:", globalOTP);
 
-        console.log("Received OTP:", otp, "Global OTP:", globalOTP);
-        this.userController.verifyService(formData,otp,globalOTP);
-        res.status(HTTP_statusCode.OK).json({ message: 'User Data Saved' });
+          const result = await this.userController.verifyService(formData, otp, globalOTP);
+
+          console.log("Result from backend", result);
+
+          if (result.success) {
+              res.status(HTTP_statusCode.OK).json({
+                  success: result.success,
+                  message: result.message,
+                  data: result.user
+              });
+          }else{
+            res.status(HTTP_statusCode.NotFound).json({
+              success: result.success,
+              message: result.message,
+              data: result.user
+          });
+          }
+
+        
+
       } catch (error) {
           console.error("Error saving user data:", error);
           res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
       }
+  }
 
-    }
     async resendOtp(req:Request,res:Response):Promise<void>{
 
       try {
         const email = req.body.email;
         console.log(email,'hhhhh');
         const otpNumber = await this.userController.CheckingEmailForResendOtp(email);
-        console.log(otpNumber);
+        console.log(otpNumber,"cat",typeof otpNumber);
         
         if (typeof otpNumber.success === 'boolean') {
           // Handle the case where otpNumber is a boolean
@@ -556,6 +572,32 @@ class userlogin  {
         console.error("Error in getCategoryDetails:", error);
         res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
     }
+}
+
+
+async getAllEventDetails(req: Request, res: Response): Promise<void|any> {
+  console.log("Blank");
+  
+  try {
+      const result = await this.userController.getAllEventServiice();
+      console.log("Result",result);
+
+      // Check if the result is successful or not
+      if (!result.success) {
+          return res.status(HTTP_statusCode.InternalServerError).json({
+              message: result.message
+          });
+      }
+
+      res.status(HTTP_statusCode.OK).json({
+          message: "Event data fetched successfully",
+          data: result  
+      });
+
+  } catch (error) {
+      console.error("Error in getCategoryDetails:", error);
+      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+  }
 }
 
 

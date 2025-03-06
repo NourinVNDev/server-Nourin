@@ -10,16 +10,29 @@ import { userDetailsRepository } from './userDetailRepository';
 import { userProfileRepository } from './userProfileRepository';
 import BOOKEDUSERDB from '../../models/userModels/bookingSchema';
 import OFFERDB from '../../models/managerModels/offerSchema';
+import Stripe from "stripe";
+const Stripe_Secret=process.env.STRIPE_SERVER_SECRET
+if(!Stripe_Secret){
+  throw new Error("Stripe Secret from .env file not found!")
+  }
+const stripe=new Stripe(Stripe_Secret);
+
 interface User {
   email: string;
   password: string;
 }
 import { Document } from "mongoose"; // Import for better type safety
+import MANAGERSCHEMA from '../../models/managerModels/managerSchema';
+import MANAGERWALLETDB from '../../models/managerModels/managerWalletSchema';
+import ADMINDB from '../../models/adminModels/adminSchema';
+import ADMINWALLETSCHEMA from '../../models/adminModels/adminWalletSchema';
 
 // Define an interface for Events (adjust fields as needed)
 interface EventDocument extends Document {
+    offer: any;
     endDate: Date;
     title: string;
+
 }
 const hashPassword = async (password:string) => {
   try {
@@ -65,7 +78,7 @@ export class loginRepo implements IloginRepo{
   }
   async postUserData(formData:FormData){
     try{
-        console.log("sneha",formData);
+        console.log("check form Data",formData);
        const hashPassword1= await hashPassword(formData.password);
         
     const newUser  = new USERDB({
@@ -79,6 +92,11 @@ export class loginRepo implements IloginRepo{
 
     // Save the user to the database
     const savedUser  = await newUser .save();
+
+
+    if(!newUser){
+      return { success: false, message: 'Duplicate User Credentials', user: null};
+    }
 
     // You can return the saved user or a success message
     console.log('User  saved successfully:', savedUser );
@@ -418,47 +436,104 @@ async getUserDetailsRepository(userId:string){
   }
 }
 
-async getCategoryBasedRepo(postId: string) {
-  try {
-    console.log("Id of category:", postId);
+  async getCategoryBasedRepo(postId: string) {
+    try {
+      console.log("Id of category:", postId);
 
-    // Fetch category and populate Events as full objects
-    const category = await CATEGORYDB.findById(postId).populate<{ Events: EventDocument[] }>("Events");
+      // Fetch category and populate Events as full objects
+      const category = await CATEGORYDB.findById(postId).populate<{ Events: EventDocument[] }>("Events");
 
-    if (!category) {
+      if (!category) {
+        return {
+          success: false,
+          message: "Category not found.",
+          category: null,
+        };
+      }
+
+      console.log("Category details:", category);
+
+      // Filter events that have a valid endDate
+      let filteredEvents = category.Events.filter(event => new Date(event.endDate) >= new Date());
+
+      // Populate `offer` for each event
+      await Promise.all(
+        filteredEvents.map(async (event) => {
+          await event.populate("offer");
+        })
+      );
+
+      console.log("First", filteredEvents);
+      filteredEvents = filteredEvents.map(event => {
+        if (event.offer && new Date(event.offer.endDate) < new Date()) {
+            console.log(`Offer expired for event: ${event.endDate}`);
+            event.offer = null; // Remove expired offer instead of filtering event out
+        }
+        return event;
+    });
+
+      console.log("Main Events", filteredEvents);
+
+      return {
+        success: true,
+        message: "Category details retrieved successfully.",
+        category: {
+          ...category.toObject(),
+          Events: filteredEvents, 
+        },
+      };
+    } catch (error) {
+      console.error("Error retrieving category details:", error);
       return {
         success: false,
-        message: "Category not found.",
+        message: "An error occurred while retrieving category details.",
         category: null,
       };
     }
+  }
 
-    console.log("Category details:", category);
 
-    // Filter events that have a valid startDate
-    const filteredEvents = category.Events.filter(event => new Date(event.endDate) >= new Date());
+
+async getAllEventBasedRepo(): Promise<any> { // Use 'any' or a more specific type if needed
+  try {
+    const categories = await CATEGORYDB.find().populate<{ Events: EventDocument[] }>("Events");
+
+    if (!categories || categories.length === 0) {
+      return {
+        success: false,
+        message: "No categories found.",
+        categories: [], // Return an empty array instead of null
+      } as const; // Use 'as const' to infer the literal type
+    }
+
+    console.log("Category details:", categories);
+
+    const updatedCategories = categories.map(category => {
+      const filteredEvents = category.Events.filter(event => new Date(event.endDate) >= new Date());
+      return {
+        ...category.toObject(),
+        Events: filteredEvents,
+      };
+    });
 
     return {
       success: true,
       message: "Category details retrieved successfully.",
-      category: {
-        ...category.toObject(),
-        Events: filteredEvents, 
-      },
-    };
+      categories: updatedCategories, // Return all categories with filtered events
+    } as const; // Use 'as const' to infer the literal type
   } catch (error) {
     console.error("Error retrieving category details:", error);
     return {
       success: false,
       message: "An error occurred while retrieving category details.",
-      category: null,
-    };
+      categories: [], // Return an empty array in case of an error
+    } as const; // Use 'as const' to infer the literal type
   }
 }
 
 
 
-//again
+
 
 async getCategoryTypeRepo(categoryName1:string){
   console.log("name of category",categoryName1)
@@ -533,27 +608,30 @@ async getCategoryTypeRepo(categoryName1:string){
 
 async savePaymentData(paymentData: PaymentData) {
   try {
-    // Find the existing booking by ID
+    console.log("Checking the bookedId", paymentData);
 
-    console.log("Checking the bookedId",paymentData);
-    
+    // Validate paymentData
+    if (!paymentData.bookedId || !paymentData.paymentStatus || !paymentData.Amount || !paymentData.companyName) {
+      throw new Error("Missing required payment data.");
+    }
+
+    // Find the existing booking by ID
     const existingBooking = await BOOKEDUSERDB.findById(paymentData.bookedId);
-    console.log("Again",existingBooking);
-    
+    console.log("Existing booking found:", existingBooking);
+
     if (!existingBooking) {
       return { success: false, message: "Booking not found", data: null };
     }
 
- 
-                            
+    // Validate payment status
     const validPaymentStatus = (status: string): "Confirmed" | "Cancelled" | "Completed" => {
       if (status === "Success") return "Confirmed";
       if (status === "Cancelled") return "Cancelled";
       if (status === "Completed") return "Completed";
       throw new Error("Invalid payment status received: " + status);
-  };
-  
-  existingBooking.paymentStatus = validPaymentStatus(paymentData.paymentStatus);
+    };
+
+    existingBooking.paymentStatus = validPaymentStatus(paymentData.paymentStatus);
     existingBooking.bookingDate = new Date();
     existingBooking.totalAmount = paymentData.Amount;
     existingBooking.NoOfPerson = paymentData.noOfPerson;
@@ -561,6 +639,40 @@ async savePaymentData(paymentData: PaymentData) {
     // Save the updated booking
     const updatedBooking = await existingBooking.save();
 
+    // Find manager details
+    const managerDetails = await MANAGERSCHEMA.findOne({ firmName: paymentData.companyName });
+    console.log("Manager details found:", managerDetails);
+
+    if (!managerDetails) {
+      return { success: false, message: "Manager not found", data: null };
+    }
+
+    // Check if the manager has a Stripe account
+
+
+    if (existingBooking.paymentStatus === "Confirmed") {
+      const totalAmount = paymentData.Amount;
+      const managerAmount = totalAmount * 0.9;
+      const adminAmount = totalAmount * 0.1;
+      console.log("Processing Stripe Transfer...");
+
+      let managerWallet = await MANAGERWALLETDB.findOne({ managerId: managerDetails._id });
+      if (!managerWallet) {
+        managerWallet = new MANAGERWALLETDB({ managerId: managerDetails._id, balance: 0, currency: 'USD', transactions: [] });
+      }
+      
+      managerWallet.balance += Math.round(managerAmount);
+      managerWallet.transactions.push({
+        userId: existingBooking.userId,
+        managerAmount,
+        type: "credit",
+        status: "completed",
+      });
+      await managerWallet.save();
+    }
+    let adminDetails = await ADMINDB.find();
+    const adminId=adminDetails.map((admin)=>admin._id);
+    let adminWallet = await ADMINWALLETSCHEMA.findOne({ adminId: adminId });
     return {
       success: true,
       message: "Payment data saved successfully",
@@ -568,10 +680,12 @@ async savePaymentData(paymentData: PaymentData) {
     };
 
   } catch (error) {
-    console.error("Error saving payment data:", error);
-    throw new Error("Database error while saving payment data.");
+    console.error("Error saving payment data:", error || error);
+    return { success: false, message: "Database error while saving payment data.", data: null };
   }
 }
+
+
 
 
 

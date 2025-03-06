@@ -33,6 +33,7 @@ userRoute.get('/post/handleDetails/:postId',checkIfUserBlocked,verifyToken(['use
 userRoute.get('/post/getSelectEvent/:id',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getSelectedEventDetails.bind(userLoginRouter));
 userRoute.post('/post/create-checkout-session',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.makePaymentStripe.bind(userLoginRouter));
 userRoute.get('/post/getSelectedEventData/:postId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getAnEventDetails.bind(userLoginRouter));
+userRoute.get('/post/getAllEventData',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getAllEventDetails.bind(userLoginRouter));
 userRoute.get('/generateOtpForResetPassword/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.generateOtpForPassword.bind(userLoginRouter));
 userRoute.post('/verifyOtpForPassword',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.verifyOtpForPassword.bind(userLoginRouter));
 userRoute.post('/handleResetPassword',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.handleResetPassword.bind(userLoginRouter));

@@ -46,12 +46,14 @@ export class WebSocketRepository {
 
   static async addNewMessage(newMessage: NewMessage) {
     try {
-      const { userId, managerId, message } = newMessage;
-      console.log("from Repo", userId, managerId, message);
+      console.log("New Message",newMessage);
+      
+      const { sender, receiver, message } = newMessage as any;
+      console.log("from Repo", sender, receiver, message);
   
       // Find the conversation between the two participants
       const conversation = await CONVERSATIONDB.findOne({
-        participants: { $all: [userId, managerId] } // Ensure both users are in the conversation
+        participants: { $all: [sender, receiver] } // Ensure both users are in the conversation
       });
   
       if (!conversation) {
@@ -61,8 +63,8 @@ export class WebSocketRepository {
       // Create a new message
       const savedMessage = await MESSAGEDB.create({
         chatId: conversation._id,
-        senderId: userId, // Assuming the sender is the userId
-        receiverId: managerId, // Assuming the receiver is the managerId
+        senderId: sender, // Assuming the sender is the userId
+        receiverId: receiver, // Assuming the receiver is the managerId
         message: message
       });
   

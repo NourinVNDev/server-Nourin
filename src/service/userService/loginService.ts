@@ -98,18 +98,18 @@ export class loginServices  implements ILoginService {
         throw new Error('Email not provided');
       }
 
-      const isPresent = await this.userService.isEmailPresent(email);
+      // const isPresent = await this.userService.isEmailPresent(email);
 
-      if (!isPresent) {
-        console.log('Email is Not registered');
-        return {success:false};
-      }
+      // if (!isPresent) {
+      //   console.log('Email is Not registered');
+      //   return {success:false};
+      // }
 
     
       const otp = generateOTP();
       console.log('Generated OTP:', otp);
       GenerateOTP(email, otp);
-      return { success: otp };
+      return { success: Number(otp)};
     } catch (error) {
       console.error(
         `Error in CheckingEmail service for email "${email}":`,
@@ -141,9 +141,9 @@ export class loginServices  implements ILoginService {
     try {
       if (globalOTP !== null && parseInt(otp, 10) === globalOTP) {
         const result = await this.userService.postUserData(formData);
-        return { success: true, message: 'User data saved successfully', user: result };
+        return { success:result.success, message: result.message, user: result.user };
       } else {
-        throw new Error('Invalid OTP. Please try again.');
+        return { success:false, message:'Invalid OTP. Please try again.', user:null};
       }
     } catch (error) {
       console.error(
@@ -231,20 +231,7 @@ async forgotEmailDetails(email: string) {
     // Generate OTP if email is valid
     const otp = generateOTP();
     console.log('Generated OTP:', otp);
-
-    // const recipient = { email: 'nourinvn@gmail.com' };
-    // const { email } = recipient;
-    // console.log(email);
-
-    try {
-      // Send OTP
       await GenerateOTP(email, otp);
-    } catch (err) {
-      console.error('Error sending OTP:', err);
-      throw new Error('Failed to send OTP.');
-    }
-
-    // Return success response with the generated OTP
     return { success: true, message: 'OTP sent successfully', otpValue: otp };
   } catch (error) {
     console.error(
@@ -378,6 +365,23 @@ async getCategoryBasedServiice(postId:string){
     );
     throw new Error('Error verifying login credentials');
   }
+}
+
+async getAllEventServiice(){
+  try {
+
+      
+      const result = await this.userService.getAllEventBasedRepo();
+      return { success: true, message: 'Retriving all event Data', user: result };
+ 
+  } catch (error) {
+    console.error(
+      `Error in loginDetails:`,
+      error instanceof Error ? error.message : error
+    );
+    throw new Error('Error verifying login credentials');
+  }
+
 }
 
 
