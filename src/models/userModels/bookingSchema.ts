@@ -1,6 +1,11 @@
 import mongoose, { Schema } from "mongoose";
 
 const bookingSchema = new Schema({
+    bookingId:{
+        type:String,
+        unique:true
+
+    },
     eventId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'SocialEvent',
@@ -28,6 +33,11 @@ const bookingSchema = new Schema({
     totalAmount: {
         type: Number,
    
+    },
+    ticketDetails:{
+        type: { type: String },
+        Included:[String],
+        notIncluded:[String],
     },
     billingDetails: {
         firstName: { type: String, required: true },

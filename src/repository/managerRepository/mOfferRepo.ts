@@ -54,8 +54,10 @@ export class managerOfferRepository{
                     console.log("Events",event);
                     
                     const offerPercentage = Number(discount_value);
-                    const deductionAmount = Number((event.Amount * offerPercentage) / 100);
-                    const offerAmount = event.Amount - deductionAmount;
+                    event.typesOfTickets.forEach((ticket) => {
+                        if (ticket.Amount != null) {
+                        const deductionAmount = (ticket.Amount * offerPercentage) / 100;
+                        const offerAmount = ticket.Amount - deductionAmount;
     
                     // Update the event with offer details
                     event.offerDetails = {
@@ -64,6 +66,9 @@ export class managerOfferRepository{
                         deductionAmount,
                         isOfferAdded: 'Offer Added', // enum
                     };
+                }
+                    });
+
                     event.offer=newOffer._id;
 
     
@@ -163,9 +168,13 @@ export class managerOfferRepository{
                 console.log("Events",event);
                 
                 const offerPercentage = Number(discount_value);
-                const deductionAmount = Number((event.Amount * offerPercentage) / 100);
-                const offerAmount = event.Amount - deductionAmount;
-                console.log("Maahn",event.Amount,offerPercentage,offerAmount,deductionAmount);
+                event.typesOfTickets.forEach((ticket)=>{
+                    if(ticket.Amount!=null){
+
+             
+                const deductionAmount = Number((ticket.Amount * offerPercentage) / 100);
+                const offerAmount = ticket.Amount - deductionAmount;
+
                 
                 // Update the event with offer details
                 event.offerDetails = {
@@ -174,8 +183,11 @@ export class managerOfferRepository{
                     offerAmount,
                     isOfferAdded: 'Offer Added', // enum
                 };
+            }
+        })
 
                 event.offer=updatedOffer._id;
+
                 // Save the updated event
                 await event.save();
             }

@@ -2,6 +2,7 @@
     import { mLoginService } from "../../service/managerService/MloginService";
     import { IMloginService } from "../../service/managerService/IMloginService";
 import { EventData } from "../../config/enum/dto";
+import { EventSeatDetails } from "../../config/enum/dto";
 
     export class managerEventControllers{
         private managerController:IMloginService;
@@ -26,11 +27,10 @@ import { EventData } from "../../config/enum/dto";
                         location,
                         startDate,
                         endDate,
-                        amount,
+                       
                         destination,
                         noOfPerson,
-                        Included,
-                        notIncluded,
+                 
                         companyName
                       } = body;
 
@@ -50,17 +50,16 @@ import { EventData } from "../../config/enum/dto";
                         location: parsedLocation,
                         startDate,
                         endDate,
-                        amount,
+                    
                         destination,
                         noOfPerson,
-                        Included,
-                        notIncluded,
+                   
                         images:files!
 
                       };
         
-                    if (!formData.eventName || !formData.title || !formData.location.address || !formData.location.city || !formData.startDate ||!formData.endDate || !formData.amount ||!formData.destination  ||!formData.noOfPerson || !formData.Included ||!formData.notIncluded ||!files) {
-                        throw new Error("Missing required fields: EventName, title, address, city,startDate, endDate,amount,destination,noOfPerson,Included,notIncluded,or Image.");
+                    if (!formData.eventName || !formData.title || !formData.location.address || !formData.location.city || !formData.startDate ||!formData.endDate  ||!formData.destination  ||!formData.noOfPerson||!files) {
+                        throw new Error("Missing required fields: EventName, title, address, city,startDate, endDate,destination,noOfPerson ,or Image.");
                     }
         
                     const result = await this.managerController.createEventPostService(formData, files);
@@ -72,6 +71,41 @@ import { EventData } from "../../config/enum/dto";
                     throw new Error("Failed to process manager-specific event logic."); 
                 }
             }
+
+            async createEventSeatTypeDetails(req: Request, res: Response): Promise<any> {
+                try {
+                    console.log("Processing manager-specific event seat Details logic");
+                    const body = req.body; 
+                    console.log("Normal Object", body);
+            
+                    const eventId = req.params.eventId;
+                    console.log("EventID:", eventId);
+            
+                 
+                    if (!Array.isArray(body)) {
+                        throw new Error("Invalid data format: Expected an array");
+                    }
+            
+                    const formData: EventSeatDetails = body.map((item: any) => ({
+                        amount: Number(item.Amount), 
+                        typesOfTickets: item.typesOfTickets,
+                        noOfSeats: Number(item.noOfSeats), 
+                        Included: Array.isArray(item.Included) ? item.Included : [],
+                        notIncluded: Array.isArray(item.notIncluded) ? item.notIncluded : [],
+                    }));
+            
+                    console.log("Processed formData:", formData);
+            
+                    const result = await this.managerController.createEventSeatService(formData, eventId);
+                    console.log("Event created successfully", result);
+            
+                    return result;
+                } catch (error) {
+                    console.error("Error in managerEventControllers:", error);
+                    throw new Error("Failed to process manager-specific event logic.");
+                }
+            }
+            
         async updateEventPost(req: Request, res: Response): Promise<any> {
             console.log('hello');
             
@@ -94,11 +128,10 @@ import { EventData } from "../../config/enum/dto";
                     location,
                     startDate,
                     endDate,
-                    amount,
+                   
                     destination,
                     noOfPerson,
-                    Included,
-                    notIncluded,
+                 
                     companyName
                     
                   } = body;
@@ -113,8 +146,8 @@ import { EventData } from "../../config/enum/dto";
                   const parsedLocation = JSON.parse(location);
                   const formData: EventData = {
                     id, companyName, content, time, tags, eventName, title,
-                    location: parsedLocation, startDate, endDate, amount,
-                    destination, noOfPerson, Included, notIncluded,
+                    location: parsedLocation, startDate, endDate, 
+                    destination, noOfPerson,
                     images: files,
                   };
                 console.log("checking the data ",formData,formData.images);
@@ -122,7 +155,7 @@ import { EventData } from "../../config/enum/dto";
 
 
     
-                if (!formData.eventName || !formData.title || !formData.location.address || !formData.location.city || !formData.startDate ||!formData.endDate || !formData.amount ||!formData.destination||!formData.noOfPerson || !formData.Included ||!formData.notIncluded ||!files) {
+                if (!formData.eventName || !formData.title || !formData.location.address || !formData.location.city || !formData.startDate ||!formData.endDate  ||!formData.destination||!formData.noOfPerson  ||!files) {
                     throw new Error("Missing required fields: EventName, title, address, city,startDate, endDate,amount,destination,noOfDays,noOfPerson,Included,notIncluded,or Image.");
                 }
     

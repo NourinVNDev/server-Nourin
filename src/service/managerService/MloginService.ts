@@ -1,6 +1,6 @@
 import {mLoginRepo} from '../../repository/managerRepository/MloginRepo';
 import { IMloginService } from './IMloginService';
-import { EventData, OfferData } from '../../config/enum/dto';
+import { EventData, EventSeatDetails, OfferData } from '../../config/enum/dto';
 import GenerateOTP from '../../config/nodemailer';
 import { FormData } from '../../config/enum/dto';
 
@@ -183,6 +183,34 @@ export class mLoginService implements IMloginService{
           return { success: false, message: "Failed to process event data in service layer." };
       }
   }
+
+  async createEventSeatService(formData:EventSeatDetails,eventId:string):Promise<{ success: boolean; message: string; data?: any }>{
+    try {
+    
+      console.log("EventID from Service:",eventId,formData);
+      
+      if (!eventId) {
+          return { success: false, message: "EventId is not Found." };
+      }
+
+  
+
+
+
+      // Use another service for extended logic
+      const isAllowed = await this.managerEventservice.createEventSeatService(formData,eventId);
+      
+      if (!isAllowed.success) {
+          return { success: false, message: "Event validation failed in another service." };
+      }
+
+      return { success: true, message: "Event created successfully", data: isAllowed.data };
+  } catch (error) {
+      console.error("Error in createEventPostService:", error);
+      return { success: false, message: "Failed to process event data in service layer." };
+  }
+  }
+  
 
   async updateEventPostService(formData: EventData,fileNames: Express.Multer.File[],eventId: string): Promise<{ success: boolean; message: string; data?: any }> {
     try {

@@ -1,6 +1,6 @@
 import MANAGERDB from '../../models/managerModels/managerSchema';
 import { IMloginRepo } from './IMloginRepo';
-import { EventData, FormData1, OfferData } from '../../config/enum/dto';
+import { EventData, EventSeatDetails, FormData1, OfferData } from '../../config/enum/dto';
 import { managerEventRepository } from './mEventRepo';
 import { Request,Response } from 'express';
 import CATEGORYDB from '../../models/adminModels/adminCategorySchema';
@@ -226,6 +226,28 @@ export class mLoginRepo implements IMloginRepo{
                 message: "Failed to handle event data in main repository."
             };
         }
+    }
+
+    async   postEventSeatRepository(formData:EventSeatDetails,eventId:string){
+      try {
+;
+        
+        // Pass the data to the actual repository for database operations
+        const savedEvent = await this.managerEventRepository.createEventSeatInfo(formData, eventId);
+        
+        return {
+            success: true,
+            data: savedEvent.data,
+            message: "Event successfully saved."
+        };
+    } catch (error) {
+        console.error("Error in postEventRepository:", error);
+        
+        return {
+            success: false,
+            message: "Failed to handle event data in main repository."
+        };
+    }
     }
     
 

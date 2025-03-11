@@ -41,6 +41,16 @@ const socialEventSchema = new mongoose.Schema(
         type:Date,
         required:true
       },
+      typesOfTickets:[
+        {
+        type: { type: String },
+        noOfSeats:Number,
+        Amount:Number,
+        Included:[String],
+        notIncluded:[String],
+
+        }
+      ],
       noOfPerson:{
         type:Number,
         required:true
@@ -50,24 +60,19 @@ const socialEventSchema = new mongoose.Schema(
         required:true
       },
 
-      Amount:{
-        type:Number,
-        required:true
-      },
+  
       destination:{
         type:String,
         required:true
       },
-      Included:[String],
-      notIncluded:[String],
-      time: {
+      time: { 
         type: String,
       },
       images: {
             type: Array,
             required:true     
     },
-      tags: [String],
+    
       likes: [
         {
           user:{

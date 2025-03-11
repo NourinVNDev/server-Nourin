@@ -18,16 +18,27 @@ export type EventData = {
   };
   startDate: string;
   endDate: string;
-  amount: number;
+
   destination: string;
   noOfPerson: number;
-  Included: string;
-  notIncluded: string;
+
   content: string;
   time: string;
   tags: string;
   images: any;  // Adjust the type for images as needed
 };
+
+export type EventSeatDetails={
+  Included: string[];
+  notIncluded: string[];
+  amount: number;
+  noOfSeats:number;
+  typesOfTickets:string
+
+}[];
+
+
+
 
   
 

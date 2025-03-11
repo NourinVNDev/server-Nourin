@@ -24,6 +24,7 @@ ManagerRoute.post('/forgotM',managerLoginRouter.managerForgotPassword.bind(manag
 ManagerRoute.post('/verifyForgotOtpM',managerLoginRouter.managerVerifyOtpForForgot.bind(managerLoginRouter));
 ManagerRoute.post('/resetPasswordM',managerLoginRouter.managerResetPassword.bind(managerLoginRouter));
 ManagerRoute.post('/createEvent',checkIfManagerBlocked,verifyToken(['manager']), upload.single('images'),managerLoginRouter.createEventPost.bind(managerLoginRouter));
+ManagerRoute.post('/createEventSeatDetails/:eventId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.createEventSeatDetails.bind(managerLoginRouter));
 ManagerRoute.get('/manager/getEventType',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getEventTypeData.bind(managerLoginRouter));
 ManagerRoute.get('/getOffers',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getAllOffers.bind(managerLoginRouter));
 ManagerRoute.post('/addNewOffer',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.createNewOffer.bind(managerLoginRouter));

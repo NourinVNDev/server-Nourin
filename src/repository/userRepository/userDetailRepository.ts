@@ -82,8 +82,11 @@ export class userDetailsRepository {
 
         const existingBooking=await BOOKEDUSERDB.findById(formData.bookedId)
         console.log("Raaper",existingBooking);
+
+        const bookingId = Math.floor(100000000000 + Math.random() * 900000000000);
         // Create a new booking document
         const newBooking = new BOOKEDUSERDB({
+          bookingId:bookingId,
             eventId: formData.eventId,
             userId: formData.userId,
             categoryId: category._id,

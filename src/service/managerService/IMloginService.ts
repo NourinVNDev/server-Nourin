@@ -1,5 +1,5 @@
 
-import { EventData, FormData, OfferData } from "../../config/enum/dto";
+import { EventData, EventSeatDetails, FormData, OfferData } from "../../config/enum/dto";
 import { Request,Response } from "express-serve-static-core";
 export interface IMloginService{
     CheckingEmail(email:string):Promise<boolean|string>;
@@ -18,6 +18,7 @@ export interface IMloginService{
    updateOfferServiceDetails(formData:OfferData):Promise<{success:boolean,message:string,data?:any}>
    getSelectedOfferService(offerId:string):Promise<{success:boolean,message:string,data?:any}>
    createEventPostService(formData:EventData,file:Express.Multer.File):Promise<{success:boolean,message:string,data?:any}>
+   createEventSeatService(formData:EventSeatDetails,eventId:string):Promise<{success:boolean,message:string,data?:any}>
    updateEventPostService(formData:EventData,fileNames:Express.Multer.File[],eventId:string):Promise<{success:boolean,message:string,data?:any}>
    getAllEventService(req:Request,res:Response):Promise<{success:boolean,message:string,data?:any}>
    getSelectedEventService(id:string):Promise<{success:boolean,message:string,data?:any}>

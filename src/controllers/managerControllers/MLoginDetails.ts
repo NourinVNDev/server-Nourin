@@ -280,6 +280,31 @@ export class managerLogin{
                 res.status(HTTP_statusCode.InternalServerError).json({ error: "Failed to create event. Please try again." });
             }
         }
+        async createEventSeatDetails(req:Request,res:Response):Promise<void>{
+        
+          console.log(req.body,"yes",req.params);
+  
+          try {
+            
+
+              const savedEvent = await this.eventController.createEventSeatTypeDetails(req, res);
+              if(savedEvent.success){
+                res.status(HTTP_statusCode.OK).json({
+                  message: "Event data saved successfully",
+                  data: savedEvent.data,
+              });
+              }else{
+                res.json({message:"Duplicate Event Name",data:null}
+                )
+              }
+  
+            
+          } catch (error) {
+              console.error("Error in createEventPost:", error);
+              res.status(HTTP_statusCode.InternalServerError).json({ error: "Failed to create event. Please try again." });
+          }
+
+        }
 
         async updateEventPost(req: Request, res: Response): Promise<void> {
           console.log("Received request for updating  an event");

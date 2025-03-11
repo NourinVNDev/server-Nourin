@@ -1,4 +1,4 @@
-import { EventData } from "../../config/enum/dto";
+import { EventData, EventSeatDetails } from "../../config/enum/dto";
 import MANAGERDB from "../../models/managerModels/managerSchema";
 import CATEGORYDB from '../../models/adminModels/adminCategorySchema';
 import SOCIALEVENTDB from "../../models/managerModels/socialEventSchema";
@@ -57,9 +57,6 @@ export class managerEventRepository {
                 endDate: formattedEndDate,
                 noOfPerson: formData.noOfPerson,
                 noOfDays:noOfDays,
-                Amount: formData.amount,
-                Included: formData.Included,
-                notIncluded: formData.notIncluded,
                 time: formData.time || "",
                 images: fileName ? [fileName] : [],
                 tags: formData.tags || [],
@@ -90,74 +87,36 @@ export class managerEventRepository {
         }
     }
 
+async createEventSeatInfo(formData:EventSeatDetails,eventId:string){
+    try{
+    const eventData=await SOCIALEVENTDB.findById(eventId);
+    if (!eventData) {
+        throw new Error("Event not found");
+    }
 
-    // async updateEventData(formData: EventData, fileName?: string,eventId?:string) {
-    //     try {
-       
-    //         console.log("Processing event data in actual repository...", formData);
-    
-          
-            
-    
-    //         // Format dates
-    //         const formattedStartDate = format(new Date(formData.startDate), "MM/dd/yyyy");
-    //         const formattedEndDate = format(new Date(formData.endDate), "MM/dd/yyyy");
-    
-    //         // Check if event name exists
-    //         const isEventNamePresent = await SOCIALEVENTDB.findOne({ eventName: formData.eventName });
-    //         if (isEventNamePresent) {
-    //             return { success: false, message: "Event Name is already Present" };
-    //         }
+        console.log("At Last Checking",eventData)
+        formData.forEach(ticket => {
+            eventData.typesOfTickets.push({
+                type: ticket.typesOfTickets, 
+                noOfSeats: ticket.noOfSeats, 
+                Amount: ticket.amount, 
+                Included: ticket.Included, 
+                notIncluded: ticket.notIncluded 
+            });
+        });
 
-    //         const presentedEvents=await SOCIALEVENTDB.findOne({_id:eventId});
-    
-    //         // Structure the event data
-    //         const event = new SOCIALEVENTDB({
-               
-    //             title: formData.title,
-    //             eventName: formData.eventName,
-    //             companyName: formData.companyName,
-    //             content: formData.content || "",
-    //             location: {
-    //                 address: formData.address,
-    //                 city: formData.city,
-    //             },
-    //             startDate: formattedStartDate,
-    //             endDate: formattedEndDate,
-    //             noOfPerson: formData.noOfPerson,
-    //             noOfDays: formData.noOfDays,
-    //             Amount: formData.amount,
-    //             Included: formData.Included,
-    //             notIncluded: formData.notIncluded,
-    //             time: formData.time || "",
-    //             images: fileName ? [fileName] : [],
-    //             tags: formData.tags || [],
-    //             destination: formData.destination,
-    //         });
-    
-    //         // Save to the database
-    //         const savedEvent = await event.save();
-    //         console.log("Event saved successfully:", savedEvent);
-    
-    //         // Update category with event ID
-    //         const category = await CATEGORYDB.findOneAndUpdate(
-    //             { categoryName: formData.title },
-    //             { $push: { Events: savedEvent._id } },
-    //             { new: true }
-    //         );
-    
-    //         if (!category) {
-    //             throw new Error(`Category not found for name: ${formData.title}`);
-    //         }
-    
-    //         console.log("Category updated successfully:", category);
-    
-    //         return { success: true, data: savedEvent };
-    //     } catch (error) {
-    //         console.error("Error in createEventData:", error);
-    //         throw new Error("Failed to save event data to MongoDB.");
-    //     }
-    // }
+        // Saving the updated document
+        await eventData.save();
+
+        console.log("Updated Event Data:", eventData);
+        return { success: true, data: eventData };
+        return { success: true, data: eventData };
+        } catch (error) {
+            console.error("Error in createEventData:", error);
+            throw new Error("Failed to save event data to MongoDB.");
+        }
+        }
+ 
 
 
     async updateEventData(formData: EventData, fileName?: string[], eventId?: string) {
@@ -195,9 +154,6 @@ export class managerEventRepository {
             existingEvent.endDate = new Date(formData.endDate);
             existingEvent.noOfPerson = formData.noOfPerson;
             existingEvent.noOfDays=noOfDays;
-            existingEvent.Amount = formData.amount;
-            existingEvent.Included[0] = formData.Included; // Replace the entire array
-            existingEvent.notIncluded[0] = formData.notIncluded; // Replace the entire array
             existingEvent.time = formData.time || "";
             existingEvent.destination=formData.destination;
     
