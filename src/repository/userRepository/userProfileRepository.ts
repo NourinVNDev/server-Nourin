@@ -98,50 +98,53 @@ export class userProfileRepository{
     }
     
     async getEventBookedRepository() {
-        try{
+        try {
             const rawResult = await BOOKEDUSERDB.find().lean();
             console.log("Raw Data (Before Populate):", JSON.stringify(rawResult, null, 2));
-        
-            const result = await BOOKEDUSERDB.find().populate({
-                path: 'eventId',
-             
-            }).lean();
+    
+            // Ensure `eventId` is properly populated
+            const result = await BOOKEDUSERDB.find()
+                .populate({ path: 'eventId', model: 'SocialEvent'})
+                .lean();
+    
             console.log("Populated Data:", JSON.stringify(result, null, 2));
-        
+    
             const filteredResult = result.filter(event => {
-                const eventData = event.eventId as { endDate?: string };
-        
-                if (!eventData.endDate) {
-                    console.log("Skipping Event - Missing startDate:", event);
+                console.log("Event ID Type:", typeof event.eventId, "Value:", event.eventId);
+    
+                // ✅ Use a type guard to check if eventId is an object and has endDate
+                const eventData = event.eventId && typeof event.eventId === 'object' && 'endDate' in event.eventId
+                    ? event.eventId as { endDate: string }
+                    : null;
+    
+                if (!eventData) {
+                    console.log("Skipping Event - Missing endDate:", event);
                     return false;
                 }
-        
+    
                 const eventDate = new Date(eventData.endDate);
                 const currentDate = new Date();
-        
-                // Reset time to 00:00:00 for accurate date-only comparison
-                eventDate.setHours(0, 0, 0, 0);
-                currentDate.setHours(0, 0, 0, 0);
-        
+    
                 console.log("Checking Event Date:", eventDate, "Current Date:", currentDate);
-        
-                return eventDate >= currentDate; // Future events only
+    
+                return eventDate.getTime() >= currentDate.getTime();
             });
-        
+    
             console.log('Filtered Events:', filteredResult);
-        
-            if (filteredResult.length === 0) {
-                return { success: false, message: 'Empty Event History', data: null };
-            }
-        
-            return { success: true, message: "Data retrieved", data: filteredResult };
-        }catch(error){
-            console.log("Error in getting booked details",error);
-            throw new Error("Failed to process manager-specific event logic."); 
-
+    
+            return filteredResult.length === 0
+                ? { success: false, message: 'Empty Event History', data: null }
+                : { success: true, message: "Data retrieved", data: filteredResult };
+    
+        } catch (error) {
+            console.error("Error in getting booked details:", error);
+            throw new Error("Failed to process manager-specific event logic.");
         }
-       
     }
+    
+    
+    
+    
     
     
     

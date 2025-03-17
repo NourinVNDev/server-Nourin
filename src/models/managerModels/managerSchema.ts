@@ -34,10 +34,11 @@ const ManagerSchema = new Schema({
     isBlock:{
       type:Boolean,
       default:false
-
-
-    
-  }
+  },
+  verifier: {
+    type: [String],
+    default: [],
+  },
 }, {
   timestamps: true, // Adds `createdAt` and `updatedAt` timestamps
 });

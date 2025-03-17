@@ -49,6 +49,9 @@ const bookingSchema = new Schema({
     NoOfPerson: {
         type: Number,
      
+    },
+    isParticipated:{
+        type:Boolean
     }
 });
 

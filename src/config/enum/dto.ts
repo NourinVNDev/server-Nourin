@@ -38,6 +38,14 @@ export type EventSeatDetails={
 }[];
 
 
+export type verifierFormData={
+  name:string,
+  email:string,
+  password:string,
+  companyName:string
+}
+
+
 
 
   

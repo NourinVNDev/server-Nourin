@@ -48,6 +48,16 @@ const socialEventSchema = new mongoose.Schema(
         Amount:Number,
         Included:[String],
         notIncluded:[String],
+        offerDetails: {
+          offerPercentage: { type: Number },
+          deductionAmount: { type: Number },
+          offerAmount: { type: Number },
+          isOfferAdded: {
+            type: String,
+            enum: ["Offer Added", "Not Added"],
+            default: "Not Added",
+          },
+        },
 
         }
       ],
@@ -92,12 +102,8 @@ const socialEventSchema = new mongoose.Schema(
           createdAt: { type: Date, default: Date.now },
         },
       ],
-      offerDetails:{
-        offerPercentage:{type:Number},
-        deductionAmount:{type:Number},
-        offerAmount:{type:Number},
-        isOfferAdded:{type:String,enum:['Offer Added','Not Added'],default:'Not Added'}
-      },
+   
+ 
   
     },
 
