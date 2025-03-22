@@ -24,7 +24,8 @@ import { EventSeatDetails } from "../../config/enum/dto";
                         content,
                         time='',
                         tags,
-                        location,
+
+                        address,
                         startDate,
                         endDate,
                        
@@ -36,9 +37,9 @@ import { EventSeatDetails } from "../../config/enum/dto";
 
                     const files = req.file;
 
-                    console.log("checking the data ",location,"bla",files);
+                    console.log("checking the data ",address,"bla",files);
 
-                    const parsedLocation = JSON.parse(location);
+                   
                     const formData:EventData = {
                         id,
                         companyName,
@@ -47,7 +48,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
                         tags,
                         eventName,
                         title,
-                        location: parsedLocation,
+                        address,
                         startDate,
                         endDate,
                     
@@ -58,7 +59,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
 
                       };
         
-                    if (!formData.eventName || !formData.title || !formData.location.address || !formData.location.city || !formData.startDate ||!formData.endDate  ||!formData.destination  ||!formData.noOfPerson||!files) {
+                    if (!formData.eventName || !formData.title || !formData.address  || !formData.startDate ||!formData.endDate  ||!formData.destination  ||!formData.noOfPerson||!files) {
                         throw new Error("Missing required fields: EventName, title, address, city,startDate, endDate,destination,noOfPerson ,or Image.");
                     }
         
@@ -125,7 +126,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
                     content,
                     time='',
                     tags,
-                    location,
+                    address,
                     startDate,
                     endDate,
                    
@@ -140,13 +141,13 @@ import { EventSeatDetails } from "../../config/enum/dto";
 
                   console.log("Checking CompanyName:",companyName)
 
-                  if (!eventName || !title || !location ) {
+                  if (!eventName || !title || !address ) {
                     throw new Error("Missing required fields or files.");
                   }
-                  const parsedLocation = JSON.parse(location);
+                 
                   const formData: EventData = {
                     id, companyName, content, time, tags, eventName, title,
-                    location: parsedLocation, startDate, endDate, 
+                    address, startDate, endDate, 
                     destination, noOfPerson,
                     images: files,
                   };
@@ -155,8 +156,8 @@ import { EventSeatDetails } from "../../config/enum/dto";
 
 
     
-                if (!formData.eventName || !formData.title || !formData.location.address || !formData.location.city || !formData.startDate ||!formData.endDate  ||!formData.destination||!formData.noOfPerson  ||!files) {
-                    throw new Error("Missing required fields: EventName, title, address, city,startDate, endDate,amount,destination,noOfDays,noOfPerson,Included,notIncluded,or Image.");
+                if (!formData.eventName || !formData.title || !formData.address || !formData.startDate ||!formData.endDate  ||!formData.destination||!formData.noOfPerson  ||!files) {
+                    throw new Error("Missing required fields: EventName, title, address,startDate, endDate,amount,destination,noOfDays,noOfPerson,Included,notIncluded,or Image.");
                 }
     
                 const result = await this.managerController.updateEventPostService(formData, formData.images,formData.id);

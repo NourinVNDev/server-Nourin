@@ -1,4 +1,4 @@
-import { EventData, EventSeatDetails } from "../../config/enum/dto";
+import { EventData, eventLocation, EventSeatDetails } from "../../config/enum/dto";
 import MANAGERDB from "../../models/managerModels/managerSchema";
 import CATEGORYDB from '../../models/adminModels/adminCategorySchema';
 import SOCIALEVENTDB from "../../models/managerModels/socialEventSchema";
@@ -6,10 +6,10 @@ import { Request,Response } from "express";
 import { format } from "date-fns";
 export class managerEventRepository {
 
-    async createEventData(formData: EventData, fileName?: string) {
+    async createEventData(formData: EventData,location:eventLocation, fileName?: string) {
         try {
-            if (!formData.location || !formData.location.address || !formData.location.city) {
-                throw new Error("Invalid location data: Missing address or city.");
+            if (!formData.address) {
+                throw new Error("Invalid location data: Missing address.");
             }
             
 
@@ -49,10 +49,8 @@ export class managerEventRepository {
                 eventName: formData.eventName,
                 companyName: formData.companyName,
                 content: formData.content || "",
-                location: {
-                    address: formData.location.address,
-                    city: formData.location.city,
-                },
+                address:formData.address,
+                location:{type:'Point',coordinates:[location.coordinates]},
                 startDate: formattedStartDate,
                 endDate: formattedEndDate,
                 noOfPerson: formData.noOfPerson,
@@ -119,7 +117,7 @@ async createEventSeatInfo(formData:EventSeatDetails,eventId:string){
  
 
 
-    async updateEventData(formData: EventData, fileName?: string[], eventId?: string) {
+    async updateEventData(formData: EventData,location:eventLocation, fileName?: string[], eventId?: string) {
         try {
             console.log("Processing event data in actual repository...", formData);
     
@@ -146,10 +144,8 @@ async createEventSeatInfo(formData:EventSeatDetails,eventId:string){
             existingEvent.eventName = formData.eventName;
             existingEvent.companyName = formData.companyName;
             existingEvent.content = formData.content || "";
-            existingEvent.location = {
-                address: formData.location.address,
-                city: formData.location.city,
-            };
+           existingEvent.address=formData.address||"",
+           existingEvent.location = { type: "Point", coordinates: location.coordinates };
             existingEvent.startDate = new Date(formData.startDate);
             existingEvent.endDate = new Date(formData.endDate);
             existingEvent.noOfPerson = formData.noOfPerson;

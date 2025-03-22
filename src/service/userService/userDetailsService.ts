@@ -105,11 +105,11 @@ export class userDetailsService{
                     payment_method_types: ["card"],
                     line_items: [lineItem], // Wrap the single item in an array
                     mode: "payment",
-                    success_url: "http://localhost:5173/payment-success", // Replace with actual URL
+                    success_url: `http://localhost:5173/payment-success/${product.managerId}`, // Replace with actual URL
                     cancel_url: `http://localhost:5173/payment-cancel/${product.bookedId}`,
                 });
 
-                const paymentStatus = session ? "Success" : "Canceled";
+                const paymentStatus = session ? "Success" : "Cancelled";
 
                 console.log("Payment Details:",paymentStatus);
                 

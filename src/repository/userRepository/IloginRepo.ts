@@ -28,6 +28,8 @@ export interface IloginRepo{
     createChatSchemaRepo(userId:string,manager:string):Promise<{success:boolean,message:string,data:any}>
     checkOfferAvailableRepo(categoryName:string):Promise<{success:boolean,message:string,data:any}>
     uploadUserProfilePictureRepo(userId:string,profilePicture:string):Promise<{success:boolean,message:string,data:any}>
+    cancelBookedEventRepo(bookingId:string,userId:string):Promise<{success:boolean,message:string,data:any}>
+    fetchUserWalletRepo(userId:string):Promise<{success:boolean,message:string,data:any}>
 
 
 }

@@ -7,7 +7,7 @@ import { billingData, FormData, PaymentData } from '../../config/enum/dto';
 import { userDetailsService } from './userDetailsService';
 import { userProfileService } from './userProfileService';
 import { IloginRepo } from '../../repository/userRepository/IloginRepo';
-
+import { cancelEventService } from './cancelEventService';
 function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -22,10 +22,12 @@ export class loginServices  implements ILoginService {
   private userService:IloginRepo;
   private userDetailService:userDetailsService;
   private userProfileService:userProfileService;
+  private cancelEventService:cancelEventService;
   constructor(userRepositoryInstence:IloginRepo){
     this.userService=userRepositoryInstence;
     this.userDetailService=new userDetailsService(userRepositoryInstence);
     this.userProfileService=new userProfileService(userRepositoryInstence);
+    this.cancelEventService=new cancelEventService(userRepositoryInstence);
   }
 
   async getAllEventService(): Promise<{ success: boolean; message: string; data: any[] }> {
@@ -560,6 +562,26 @@ async checkOfferAvailableService(categoryName:string){
   } catch (error) {
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
+  }
+
+}
+async cancelBookingEventService(bookingId:string,userId:string){
+  try {
+    const savedEvent = await this.cancelEventService.cancelEventService2(bookingId,userId);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    console.error("Error in cancelling the booked Event:", error);
+    throw new Error("Failed to cancell the booked Event"); 
+  }
+
+}
+async fetchUserWalletService(userId:string){
+  try {
+    const savedEvent = await this.cancelEventService.fetchUserWalletService2(userId);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    console.error("Error in cancelling the booked Event:", error);
+    throw new Error("Failed to cancell the booked Event"); 
   }
 
 }

@@ -29,10 +29,14 @@ const socialEventSchema = new mongoose.Schema(
         type: String,
         trim: true,
       },
-      location: {
-        address: { type: String, required: true },
-        city: { type: String, required: true },
+      address:{
+        type:String,
+        required:true
       },
+      location: {
+          type:{type: String, required: true ,enum:["Point"]},
+          coordinates:{type:[Number],required:true}//ivide latitude,longitude kittum
+        },
       startDate: {
         type: Date,
         required: true,
@@ -111,4 +115,5 @@ const socialEventSchema = new mongoose.Schema(
       timestamps: true,
     }
   );
+  socialEventSchema.index({location:"2dsphere"});//Geospatial index create cheythu
 export default mongoose.model('SocialEvent', socialEventSchema);

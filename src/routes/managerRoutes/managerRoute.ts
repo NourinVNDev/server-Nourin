@@ -42,4 +42,6 @@ ManagerRoute.get('/fetchTodayBooking',checkIfManagerBlocked,verifyToken(['manage
 ManagerRoute.get('/fetchTotalBooking',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getTotalBookingDetails.bind(managerLoginRouter));
 ManagerRoute.get('/getUserNames/:managerName',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getBookedUserDetails.bind(managerLoginRouter));
 ManagerRoute.post('/create-chatSchema2',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.createChatSchema.bind(managerLoginRouter));
+ManagerRoute.get('/fetchAllVerifier',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getAllVerifiers.bind(managerLoginRouter));
+ManagerRoute.get('/updateVerifierStatus/:verifierId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateVerifierStatus.bind(managerLoginRouter));
 export default ManagerRoute;    

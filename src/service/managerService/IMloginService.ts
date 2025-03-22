@@ -26,5 +26,8 @@ export interface IMloginService{
    getTotalBookingService():Promise<{success:boolean,message:string,data?:any}>
    getBookedUserService(managerName:string):Promise<{success:boolean,message:string,data:any}>;
    createChatSchemaService(formData:FormData):Promise<{success:boolean,message:string,data:any}>;
+   getAllVerifierService():Promise<{success:boolean,message:string,data:any}>;
+   updateVerifierStatusService(verifierId:string):Promise<{success:boolean,message:string,data:any}>;
+   
    
 }

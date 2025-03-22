@@ -20,6 +20,8 @@ import mongoose,{Schema} from "mongoose";
         type: { type: String, enum: ["credit", "debit", "transfer"], required: true },
         status: { type: String, enum: ["pending", "completed", "failed"], default: "completed" },
         createdAt: { type: Date, default: Date.now },
+        eventName:{type:String},
+        bookedId:{type:String}
       },
     ],
   });

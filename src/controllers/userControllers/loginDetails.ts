@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import axios  from 'axios';
+import { Request, response, Response } from 'express';
+import axios, { request }  from 'axios';
 import { generateAccessToken, generateRefreshToken } from '../../../src/config/authUtils';
 import {loginServices} from '../../service/userService/loginService';
 import { userDetailsController } from './userDetailsController';
@@ -7,6 +7,7 @@ import { ILoginService } from '../../service/userService/ILoginService';
 import jwt from 'jsonwebtoken';
 import { userProfileController } from './userProfileController';
 import HTTP_statusCode from '../../config/enum/enum';
+import { CancelBookedEventController } from './cancelBookedEventController';
 
 interface UserPayload {
   email: string;
@@ -23,10 +24,12 @@ class userlogin  {
   private userController:ILoginService;
   private userDetailsController:userDetailsController;
   private userProfileController:userProfileController;
+  private cancelEventController:CancelBookedEventController
   constructor(userServiceInstance:loginServices){
     this.userController=userServiceInstance;
     this.userDetailsController=new userDetailsController(userServiceInstance);
     this.userProfileController=new userProfileController(userServiceInstance);
+    this.cancelEventController=new CancelBookedEventController(userServiceInstance)
   }
 
 
@@ -137,7 +140,7 @@ class userlogin  {
             res.status(HTTP_statusCode.OK).json({ message: 'OTP sent', otpData: otpNumber });
         } catch (error) {
             console.error("Error saving user data:", error);
-            res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
+            res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session'});
         }
     }
     async generateOtpForPassword(req: Request, res: Response): Promise<void>{
@@ -267,7 +270,7 @@ class userlogin  {
             }
           );
       
-          const data = response.data;
+          const data = response.data as string;
           console.log("Received Google Data:", data);
       
           const result=await this.userController.GoogleAuth(data);
@@ -740,8 +743,8 @@ async postReviewAndRating(req:Request,res:Response){
   
     const formData=req.body;
     console.log('FormData',formData);
-    const result=this.userProfileController.addReviewRatingController(formData)
-    res.status(HTTP_statusCode.OK).json({result});
+    const result=await  this.userProfileController.addReviewRatingController(formData)
+    res.status(HTTP_statusCode.OK).json({result:result.result.savedEvent});
   } catch (error) {
     console.error("Error in post review and Rating", error);
     res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
@@ -864,9 +867,52 @@ async checkOfferAvailable(req:Request,res:Response){
       }
        res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
   } catch (error) {
+    console.error("Error in check Offer Available:", error);
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
     
   }
 }
+async cancelBookingEvent(req:Request,res:Response){
+  try {
+    const bookedId=req.params.bookingId;
+    const userId=req.params.userId;
+
+    console.log("Chech the bookedId",bookedId);
+
+    const savedEvent = await this.cancelEventController.cancelEventBooking(bookedId,userId);
+    if(savedEvent.result.success){
+      res.status(HTTP_statusCode.OK).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
+      return;
+      }
+       res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
+  } catch (error) {
+    console.error("Error in check cancel booking:", error);
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+    
+  }
+}
+  async fetchUserWallet(req:Request,res:Response){
+    try {
+  
+      const userId=req.params.userId;
+  
+      console.log("Chech the userId",userId);
+  
+      const savedEvent = await this.cancelEventController.fetchWalletOfUser(userId);
+      if(savedEvent.result.success){
+        res.status(HTTP_statusCode.OK).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
+        return;
+        }
+         res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
+    } catch (error) {
+      console.error("Error in check User Wallet:", error);
+      res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+      
+    }
+
+  }
+
+
 
 
 async createChatSchema(req: Request, res: Response) {

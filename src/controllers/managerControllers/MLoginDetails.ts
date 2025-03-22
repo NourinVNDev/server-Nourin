@@ -10,6 +10,7 @@ import FormData from "form-data";
 import { IMloginService } from "../../service/managerService/IMloginService";
 import { loginServices } from "../../service/userService/loginService";
 import HTTP_statusCode from "../../config/enum/enum";
+import { managerVerifierDetailsControllers } from "./verifierDetailsController";
 interface ManagerPayload {
   email: string;
   role:string
@@ -20,12 +21,14 @@ export class managerLogin{
     private managerController:IMloginService;
     private eventController:managerEventControllers;
     private offerController:managerOfferControllers;
-    private bookingController:managerBookingDetailsControllers
+    private bookingController:managerBookingDetailsControllers;
+    private verifierController:managerVerifierDetailsControllers;
     constructor(managerServiceInstance:mLoginService){
         this.managerController=managerServiceInstance;
         this.eventController=new managerEventControllers(managerServiceInstance);
         this.offerController=new managerOfferControllers(managerServiceInstance);
         this.bookingController=new managerBookingDetailsControllers(managerServiceInstance);
+        this.verifierController=new managerVerifierDetailsControllers(managerServiceInstance);
     }
    async  managerRegister(req:Request,res:Response):Promise<void>{
         console.log('Hai');
@@ -726,6 +729,36 @@ export class managerLogin{
               console.log("Received billing details:", formData);
           
               const result = await this.bookingController.createChatSchema2(formData);
+              console.log("Nice",result.data)
+          
+              res.status(HTTP_statusCode.OK).json(result); // Send response to client
+            } catch (error) {
+              console.error("Error in saveBillingDetails:", error);
+              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+            }
+          }
+
+          async getAllVerifiers(req:Request,res:Response){
+            try {
+              const formData = req.body;
+              console.log("Received billing details:", formData);
+          
+              const result = await this.verifierController.getAllVerifierDetails();
+              console.log("Nice",result.data)
+          
+              res.status(HTTP_statusCode.OK).json(result); // Send response to client
+            } catch (error) {
+              console.error("Error in saveBillingDetails:", error);
+              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+            }
+
+          }
+          async updateVerifierStatus(req:Request,res:Response){
+            try {
+              const {verifierId}=req.params;
+              console.log("Received VerifierID:", verifierId);
+          
+              const result = await this.verifierController.updateVerifierStatusController(verifierId);
               console.log("Nice",result.data)
           
               res.status(HTTP_statusCode.OK).json(result); // Send response to client

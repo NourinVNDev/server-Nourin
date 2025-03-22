@@ -33,5 +33,7 @@ export interface ILoginService{
     createChatSchemaService(formData:FormData):Promise<{success:boolean,message:string,data:any}>;
     uploadUserProfilePhoto(userId:string,profilePicture:Express.Multer.File):Promise<{success:boolean,message:string,data:any}>;
     checkOfferAvailableService(categoryName:string):Promise<{success:boolean,message:string,data:any}>
+    cancelBookingEventService(bookingId:string,userId:string):Promise<{success:boolean,message:string,data:any}>
+    fetchUserWalletService(userId:string):Promise<{success:boolean,message:string,data:any}>
 
 }

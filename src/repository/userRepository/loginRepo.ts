@@ -3,7 +3,6 @@ import USERDB from '../../models/userModels/userSchema';
 import CATEGORYDB from '../../models/adminModels/adminCategorySchema';
 import SOCIALEVENT from '../../models/managerModels/socialEventSchema';
 import bcrypt  from 'bcrypt';
-import { hash } from 'crypto';
 import { billingData, FormData, PaymentData } from '../../config/enum/dto';
 import { IloginRepo } from './IloginRepo';
 import { userDetailsRepository } from './userDetailRepository';
@@ -11,6 +10,7 @@ import { userProfileRepository } from './userProfileRepository';
 import BOOKEDUSERDB from '../../models/userModels/bookingSchema';
 import OFFERDB from '../../models/managerModels/offerSchema';
 import Stripe from "stripe";
+import { CancelEventRepository } from './cancelEventRepository';
 const Stripe_Secret=process.env.STRIPE_SERVER_SECRET
 if(!Stripe_Secret){
   throw new Error("Stripe Secret from .env file not found!")
@@ -26,6 +26,7 @@ import MANAGERSCHEMA from '../../models/managerModels/managerSchema';
 import MANAGERWALLETDB from '../../models/managerModels/managerWalletSchema';
 import ADMINDB from '../../models/adminModels/adminSchema';
 import ADMINWALLETSCHEMA from '../../models/adminModels/adminWalletSchema';
+
 
 // Define an interface for Events (adjust fields as needed)
 interface EventDocument extends Document {
@@ -53,9 +54,11 @@ const hashPassword = async (password:string) => {
 export class loginRepo implements IloginRepo{
   private userRepositoy:userDetailsRepository;
   private userProfileRepository:userProfileRepository;
+  private cancelEventRepository:CancelEventRepository;
   constructor(){
     this.userRepositoy=new userDetailsRepository();
     this.userProfileRepository=new userProfileRepository();
+    this.cancelEventRepository=new CancelEventRepository();
   }
   async isEmailPresent(email: string){
     try {
@@ -635,6 +638,15 @@ async savePaymentData(paymentData: PaymentData) {
     existingBooking.bookingDate = new Date();
     existingBooking.totalAmount = paymentData.Amount;
     existingBooking.NoOfPerson = paymentData.noOfPerson;
+    if (!existingBooking.ticketDetails) {
+      existingBooking.ticketDetails = { Included: [], notIncluded: [], type: undefined };
+    }
+    
+    existingBooking.ticketDetails.type = paymentData.type || undefined;
+    existingBooking.ticketDetails.Included = paymentData.Included || [];
+    existingBooking.ticketDetails.notIncluded = paymentData.notIncluded || [];
+    
+    
 
     // Save the updated booking
     const updatedBooking = await existingBooking.save();
@@ -649,11 +661,12 @@ async savePaymentData(paymentData: PaymentData) {
 
     // Check if the manager has a Stripe account
 
-
+    let adminAmount=0;
+    let managerAmount=0;
     if (existingBooking.paymentStatus === "Confirmed") {
       const totalAmount = paymentData.Amount;
-      const managerAmount = totalAmount * 0.9;
-      const adminAmount = totalAmount * 0.1;
+      managerAmount = Math.floor(totalAmount * 0.9);
+      adminAmount = Math.floor(totalAmount * 0.1);
       console.log("Processing Stripe Transfer...");
 
       let managerWallet = await MANAGERWALLETDB.findOne({ managerId: managerDetails._id });
@@ -667,12 +680,69 @@ async savePaymentData(paymentData: PaymentData) {
         managerAmount,
         type: "credit",
         status: "completed",
+        eventName:paymentData.eventName,
+        bookedId:paymentData.bookingId
       });
       await managerWallet.save();
     }
-    let adminDetails = await ADMINDB.find();
-    const adminId=adminDetails.map((admin)=>admin._id);
-    let adminWallet = await ADMINWALLETSCHEMA.findOne({ adminId: adminId });
+    let adminDetails = await ADMINDB.findOne(); // Fetch the single admin
+    if (!adminDetails) {
+        throw new Error("Admin not found");
+    }
+    
+    let adminWallet = await ADMINWALLETSCHEMA.findOne({ adminId: adminDetails._id });
+    if(!adminWallet){
+     adminWallet = await ADMINWALLETSCHEMA.create({
+        adminId: adminDetails._id,
+        balance: adminAmount, // Assign balance directly
+        currency: 'USD',
+        transactions: [
+          {
+            totalAmount: paymentData.Amount,
+            userId: paymentData.userId,
+            managerAmount: managerAmount,
+            type: 'credit',
+            status: 'completed',
+            createdAt: new Date(),
+            eventName:paymentData.eventName,
+            bookedId:paymentData.bookingId
+      
+          }
+        ]
+      });
+      
+    }else{
+      adminWallet.balance += adminAmount;
+  adminWallet.transactions.push({
+    totalAmount: paymentData.Amount,
+    userId: paymentData.userId,
+    managerAmount: managerAmount,
+    type: 'credit',
+    status: 'completed',
+    createdAt: new Date(),
+    eventName:paymentData.eventName,
+    bookedId:paymentData.bookingId
+  });
+  await adminWallet.save();
+    }
+    
+    console.log(adminWallet);
+
+    const socialEvent = await SOCIALEVENT.findOne({ eventName: paymentData.eventName });
+
+    if (socialEvent) {
+      console.log("No of Person:",paymentData.noOfPerson);
+      socialEvent.typesOfTickets.forEach((ticket: any) => {
+        if (ticket.type === paymentData.type) {
+          console.log("Hellom");
+          
+          ticket.noOfSeats -= paymentData.noOfPerson;
+        }
+      });
+     
+    
+      await socialEvent.save();
+    }
     return {
       success: true,
       message: "Payment data saved successfully",
@@ -692,7 +762,7 @@ async savePaymentData(paymentData: PaymentData) {
 async handleReviewRatingRepo(formData:FormData) {
   try {
       console.log("posting review and rating to the actual repository...");
-      // Pass the data to the actual repository for database operations
+
       const savedEvent = await this.userProfileRepository.postReviewRatingRepository(formData);
       return {savedEvent};
   } catch (error) {
@@ -798,6 +868,33 @@ async checkOfferAvailableRepo(categoryName: string) {
     console.error("Error in checkOfferAvailableRepo:", error);
     throw new Error("Failed to handle event data in main repository.");
   }
+}
+
+async cancelBookedEventRepo(bookingId:string,userId:string):Promise<{success:boolean,message:string,data:any}>{
+  try {
+
+    // Pass the data to the actual repository for database operations
+    const savedEvent = await this.cancelEventRepository.cancelBookedEventRepository(bookingId,userId);
+  
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+} catch (error) {
+    console.error("Error in postEventRepository:", error);
+    throw new Error("Failed to handle event data in main repository.");
+}
+
+}
+async fetchUserWalletRepo(userId:string){
+  try {
+
+    // Pass the data to the actual repository for database operations
+    const savedEvent = await this.cancelEventRepository.fetchUserWalletRepository(userId);
+  
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+} catch (error) {
+    console.error("Error in postEventRepository:", error);
+    throw new Error("Failed to handle event data in main repository.");
+}
+
 }
 
 

@@ -17,16 +17,16 @@ export class userProfileService{
                 throw new Error("Review and Rating are required for liking the post.");
             }
     
-            // Check if eventId and userId are present
+           
             if (!formData.eventId || !formData.userId) {
                 console.error("Missing eventId or userId:", formData);
                 throw new Error("EventId and userId are required for liking the post.");
             }
     
-            // Log formData to verify its structure before processing
+
             console.log("Valid form data:", formData);
     
-            // Call repository to save the data
+        
             const savedEvent = await this.loginRepository.handleReviewRatingRepo(formData);
             console.log("Saved event:", savedEvent);
     
@@ -61,9 +61,6 @@ export class userProfileService{
         try {
             console.log("Processing of getting review and rating in another service...");
   
-            // Perform additional validations if needed
-         
-            // Call repository to save the data
             const savedEvent =await this.loginRepository.getExistingReviewRepo(userId,eventId);
             return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
           

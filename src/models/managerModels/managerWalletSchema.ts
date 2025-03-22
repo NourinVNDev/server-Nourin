@@ -1,4 +1,5 @@
     import mongoose ,{Schema} from "mongoose";
+import { eventNames } from "process";
     const ManagerWalletSchema = new mongoose.Schema({
         managerId: {
             type: Schema.Types.ObjectId,
@@ -8,6 +9,7 @@
         balance: {
             type: Number, 
             default: 0 },
+    
         currency: { 
             type: String,
             default: "USD" },
@@ -18,6 +20,8 @@
             type: { type: String, enum: ["credit", "debit", "transfer"], required: true },
             status: { type: String, enum: ["pending", "completed", "failed"], default: "completed" },
             createdAt: { type: Date, default: Date.now },
+            eventName:{type:String},
+            bookedId:{type:String}
         },
         ],
     });

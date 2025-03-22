@@ -1,4 +1,4 @@
-import { EventData, EventSeatDetails, FormData, OfferData } from "../../config/enum/dto";
+import { EventData, eventLocation, EventSeatDetails, FormData, OfferData } from "../../config/enum/dto";
 import { Request,Response } from "express-serve-static-core";
 export interface IMloginRepo{
     isEmailPresent(email:string):Promise<boolean>;
@@ -14,9 +14,9 @@ export interface IMloginRepo{
     getTodaysBookingRepo():Promise<{success:boolean,message:string,data?:any}>;
     getTotalBookingRepo():Promise<{success:boolean,message:string,data?:any}>;
     getUserDataRepo(managerName:string):Promise<{success:boolean,message:string,data:any}>;
-    postEventRepository(formData:EventData,fileName:string):Promise<{ success: boolean; message: string; data?:any; }>
+    postEventRepository(formData:EventData,location:eventLocation,fileName:string):Promise<{ success: boolean; message: string; data?:any; }>
     postEventSeatRepository(formData:EventSeatDetails,eventId:string):Promise<{ success: boolean; message: string; data?:any; }>
-    postUpdateEventRepository(formData:EventData,fileName:string[],eventId:string):Promise<{ success: boolean; message: string; data?:any; }>
+    postUpdateEventRepository(formData:EventData,fileName:string[],eventId:string,location:eventLocation):Promise<{ success: boolean; message: string; data?:any; }>
     getAllEventRepo(req:Request,res:Response):Promise<{ success: boolean; message: string; data?:any; }>
     getSelectedEventRepo(id:string):Promise<{ success: boolean; message: string; data?: any }>
     getAllOfferDetails(req:Request,res:Response):Promise<{ success: boolean; message: string; data?: any }>
@@ -24,5 +24,7 @@ export interface IMloginRepo{
     postOfferDetails(formData:OfferData):Promise<{ success: boolean; message: string; data?: any }>
     updateOfferDetailsRepo(formData:OfferData):Promise<{ success: boolean; message: string; data?: any }>
     getSelectedOfferRepo(offerId:string):Promise<{ success: boolean; message: string; data?: any }>
+    getAllVerifierRepo():Promise<{ success: boolean; message: string; data?: any }>
+    updateVerifierStatusRepo(verifierId:string):Promise<{ success: boolean; message: string; data?: any }>
     createChatSchemaRepo(userId:string,manager:string):Promise<{success:boolean,message:string,data:any}>
 }

@@ -10,6 +10,8 @@ import { Request,Response}from'express';
 import { managerOfferService } from './managerOfferService';
 import { managerBookingService } from './managerBookingService';
 import { IMloginRepo } from '../../repository/managerRepository/IMloginRepo';
+import { managerVerifierService } from './managerVerifierService';
+import { getCoordinates } from '../../config/getCoordinates';
 import fs from 'fs';
 function generateOTP(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -20,11 +22,13 @@ export class mLoginService implements IMloginService{
   private managerEventservice:managerEventService;
   private managerOfferService:managerOfferService
   private managerBookingService:managerBookingService;
-  constructor(managerRepositoryIntance:IMloginRepo){
-    this.managerService=managerRepositoryIntance;
-    this.managerEventservice=new managerEventService(managerRepositoryIntance);
-    this.managerOfferService=new managerOfferService(managerRepositoryIntance);
-    this.managerBookingService=new managerBookingService(managerRepositoryIntance);
+  private managerVerifierService:managerVerifierService
+  constructor(managerRepositoryInstance:IMloginRepo){
+    this.managerService=managerRepositoryInstance;
+    this.managerEventservice=new managerEventService(managerRepositoryInstance);
+    this.managerOfferService=new managerOfferService(managerRepositoryInstance);
+    this.managerBookingService=new managerBookingService(managerRepositoryInstance);
+    this.managerVerifierService=new managerVerifierService(managerRepositoryInstance);
   }
     async CheckingEmail(email: string){
         try {
@@ -169,9 +173,15 @@ export class mLoginService implements IMloginService{
           // Upload file to Cloudinary
           const fileName = await uploadToCloudinary(file);
           console.log("Uploaded file name", fileName);
-  
-          // Use another service for extended logic
-          const isAllowed = await this.managerEventservice.createEventPostService(formData, fileName as string);
+
+          // calling function for getting latitude and longitude
+          const location=await getCoordinates(formData.address);
+          console.log("Location",location);
+
+          if (!location) {
+          throw new Error("Invalid Location!");
+        }
+          const isAllowed = await this.managerEventservice.createEventPostService(formData,location, fileName as string);
           
           if (!isAllowed.success) {
               return { success: false, message: "Event validation failed in another service." };
@@ -226,11 +236,17 @@ export class mLoginService implements IMloginService{
 
         console.log("Uploaded file URLs:", uploadedFileUrls);
 
+
+        const location=await getCoordinates(formData.address);
+        if(!location){
+          throw new Error("Invalid location");
+        }
+
         // Use another service for extended logic
         const isAllowed = await this.managerEventservice.updateEventPostService(
             formData,
             uploadedFileUrls as string[], // Assuming Cloudinary returns string URLs
-            eventId
+            eventId,location
         );
 
         if (!isAllowed.success) {
@@ -445,15 +461,39 @@ async getTotalBookingService():Promise<{ success: boolean; message: string; data
 
  async getBookedUserService(managerName: string){
   try {
-    // Fetch data from the repository
+ 
     const savedEvent = await this.managerBookingService.getBookedUserService2(managerName);
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
-    // return {success:result.success,message:result.message,data:result.data};
   } catch (error) {
-    // Log and return a generic error response
+    
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
+}
+async getAllVerifierService(){
+  try {
+ 
+    const savedEvent = await this.managerVerifierService.getAllVerifierService2();
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    
+    console.error("Error in getAllVerifierServiceDetails:", error);
+    throw new Error("Failed to get All Verifier Details."); 
+  }
+
+}
+
+async updateVerifierStatusService(verifierId:string){
+  try {
+ 
+    const savedEvent = await this.managerVerifierService.updateVerifierStatusService2(verifierId);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    
+    console.error("Error in getAllVerifierServiceDetails:", error);
+    throw new Error("Failed to get All Verifier Details."); 
+  }
+
 }
 
 async createChatSchemaService(formData:FormData){

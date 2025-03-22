@@ -12,10 +12,7 @@ export type EventData = {
   companyName: string;
   eventName: string;
   title: string;
-  location: {
-      address: string;
-      city: string;
-  };
+ address:string;
   startDate: string;
   endDate: string;
 
@@ -28,6 +25,16 @@ export type EventData = {
   images: any;  // Adjust the type for images as needed
 };
 
+
+export type eventLocation={
+
+    type:'Point',
+coordinates:[number,number]
+
+  
+
+
+}
 export type EventSeatDetails={
   Included: string[];
   notIncluded: string[];
@@ -52,7 +59,9 @@ export type verifierFormData={
 
   export type PaymentData = {
     bookedId:string,
+    bookingId:string,
     paymentStatus:string,
+    userId:string,
     sessionId:string,
     firstName: string;
     lastName: string;
@@ -69,6 +78,11 @@ export type verifierFormData={
     noOfPerson: number;
     noOfDays: number;
     Amount: number;
+    type:string;
+    managerId:string;
+    Included:[string];
+    notIncluded:[string]
+
   };
 
 

@@ -78,7 +78,7 @@ export class userProfileRepository{
             const result = await REVIEWRATINGDB.find({ userId: userObjectId, eventId: eventObjectId });
             console.log('Result',result)
             if (!result.length) {
-                return { success: false, message: "No matching data found", data: [] };
+                return { success: true, message: "No review is  added", data: [] };
             }
     
             const reviewData = result[0];
@@ -112,7 +112,7 @@ export class userProfileRepository{
             const filteredResult = result.filter(event => {
                 console.log("Event ID Type:", typeof event.eventId, "Value:", event.eventId);
     
-                // ✅ Use a type guard to check if eventId is an object and has endDate
+   
                 const eventData = event.eventId && typeof event.eventId === 'object' && 'endDate' in event.eventId
                     ? event.eventId as { endDate: string }
                     : null;

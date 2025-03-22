@@ -1,12 +1,13 @@
 import MANAGERDB from '../../models/managerModels/managerSchema';
 import { IMloginRepo } from './IMloginRepo';
-import { EventData, EventSeatDetails, FormData1, OfferData } from '../../config/enum/dto';
+import { EventData, eventLocation, EventSeatDetails, FormData1, OfferData } from '../../config/enum/dto';
 import { managerEventRepository } from './mEventRepo';
 import { Request,Response } from 'express';
 import CATEGORYDB from '../../models/adminModels/adminCategorySchema';
 import OFFERDB from '../../models/managerModels/offerSchema';
 import { managerOfferRepository } from './mOfferRepo';
 import { managerBookingRepository } from './mBookingUserRepo';
+import { managerVerifierRepository } from './mVerifierRepo';
 
 interface User {
     email: string;
@@ -33,10 +34,12 @@ export class mLoginRepo implements IMloginRepo{
   private managerEventRepository:managerEventRepository;
   private managerOfferRepository:managerOfferRepository;
   private managerBookingRepository:managerBookingRepository;
+  private managerVerifierRepository:managerVerifierRepository
   constructor(){
     this.managerEventRepository=new managerEventRepository();
     this.managerOfferRepository=new managerOfferRepository();
     this.managerBookingRepository=new managerBookingRepository();
+    this.managerVerifierRepository=new managerVerifierRepository();
   }
     async isEmailPresent(email: string){
         try {
@@ -206,12 +209,12 @@ export class mLoginRepo implements IMloginRepo{
           };
         }
       }
-      async postEventRepository(formData: EventData, fileName: string) {
+      async postEventRepository(formData: EventData,location:eventLocation, fileName: string) {
         try {
             console.log("Delegating event data to the actual repository...");
             
             // Pass the data to the actual repository for database operations
-            const savedEvent = await this.managerEventRepository.createEventData(formData, fileName);
+            const savedEvent = await this.managerEventRepository.createEventData(formData,location,fileName);
             
             return {
                 success: true,
@@ -251,11 +254,11 @@ export class mLoginRepo implements IMloginRepo{
     }
     
 
-    async postUpdateEventRepository(formData: EventData, fileName: string[],eventId:string) {
+    async postUpdateEventRepository(formData: EventData, fileName: string[],eventId:string,location:eventLocation) {
       try {
           console.log("Delegating event data to the actual repository...");
           // Pass the data to the actual repository for database operations
-          const savedEvent = await this.managerEventRepository.updateEventData(formData,fileName,eventId);
+          const savedEvent = await this.managerEventRepository.updateEventData(formData,location,fileName,eventId);
           return {
             success: true,
             data: savedEvent.data,
@@ -432,6 +435,30 @@ async getSelectedOfferRepo(offerId:string): Promise<{ success: boolean; message:
       return { success: true, message: "Event data retrieved successfully", data: savedEvent };
   } catch (error) {
       console.error("Error in getEventTypeDataService:", error);
+      return { success: false, message: "Internal server error" };
+  }
+}
+
+async getAllVerifierRepo(){
+  try {
+
+    const savedEvent =await this.managerVerifierRepository.getAllVerifierRepository();
+
+      return { success: true, message: "Verifier data retrieved successfully", data: savedEvent };
+  } catch (error) {
+      console.error("Error in get  verifier details service:", error);
+      return { success: false, message: "Internal server error" };
+  }
+
+}
+async updateVerifierStatusRepo(verifierId:string){
+  try {
+
+    const savedEvent =await this.managerVerifierRepository.updateVerifierStatusRepository(verifierId);
+
+      return { success: true, message: "update verifier status successfully", data: savedEvent };
+  } catch (error) {
+      console.error("Error in updating status of verifier Service:", error);
       return { success: false, message: "Internal server error" };
   }
 }

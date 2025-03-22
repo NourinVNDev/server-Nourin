@@ -1,4 +1,4 @@
-import { EventData, EventSeatDetails } from "../../config/enum/dto";
+import { EventData, eventLocation, EventSeatDetails } from "../../config/enum/dto";
 import { mLoginRepo } from "../../repository/managerRepository/MloginRepo";
 import { IMloginRepo } from "../../repository/managerRepository/IMloginRepo";
 import { Request,Response } from "express";
@@ -7,7 +7,7 @@ export class managerEventService{
     constructor(managerRepositoryInstance:IMloginRepo){
         this.managerEventService=managerRepositoryInstance;
     }
-    async createEventPostService(formData: EventData, fileName: string) {
+    async createEventPostService(formData: EventData,location:eventLocation, fileName: string) {
       try {
           console.log("Processing event data in another service...");
 
@@ -17,7 +17,7 @@ export class managerEventService{
           }
 
           // Call repository to save the data
-          const savedEvent =await this.managerEventService.postEventRepository(formData,fileName);
+          const savedEvent =await this.managerEventService.postEventRepository(formData,location,fileName);
 
           return savedEvent;
       } catch (error) {
@@ -40,7 +40,7 @@ export class managerEventService{
         throw new Error("Failed to create event in another service layer.");
     }
   }
-  async updateEventPostService(formData: EventData, fileName: string[],eventId:string) {
+  async updateEventPostService(formData: EventData, fileName: string[],eventId:string,location:eventLocation) {
     try {
         console.log("Processing event data in another service...",fileName);
 
@@ -50,7 +50,7 @@ export class managerEventService{
         }
 
         // Call repository to save the data
-        const savedEvent =await this.managerEventService.postUpdateEventRepository(formData,fileName,eventId);
+        const savedEvent =await this.managerEventService.postUpdateEventRepository(formData,fileName,eventId,location);
 
         return savedEvent;
     } catch (error) {

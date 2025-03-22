@@ -47,4 +47,6 @@ userRoute.get('/getBookedEvent',checkIfUserBlocked,verifyToken(['user']),userLog
 userRoute.post('/create-chatSchema',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.createChatSchema.bind(userLoginRouter));
 userRoute.post(`/uploadUserProfile/:userId`,checkIfUserBlocked,verifyToken(['user']),upload.single('profilePicture'),userLoginRouter.uploadUserProfilePicture.bind(userLoginRouter));
 userRoute.get(`/post/checkOfferAvailable/:category`,checkIfUserBlocked,verifyToken(['user']),userLoginRouter.checkOfferAvailable.bind(userLoginRouter));
+userRoute.get('/cancelEventBooking/:bookingId/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.cancelBookingEvent.bind(userLoginRouter));
+userRoute.get('/fetchUserWallet/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.fetchUserWallet.bind(userLoginRouter));
 export default userRoute;

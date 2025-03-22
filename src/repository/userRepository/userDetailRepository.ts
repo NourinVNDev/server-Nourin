@@ -80,8 +80,7 @@ export class userDetailsRepository {
         }
 
 
-        const existingBooking=await BOOKEDUSERDB.findById(formData.bookedId)
-        console.log("Raaper",existingBooking);
+
 
         const bookingId = Math.floor(100000000000 + Math.random() * 900000000000);
         // Create a new booking document
@@ -110,7 +109,7 @@ export class userDetailsRepository {
         return { 
             success: true, 
             message: "Event Details saved", 
-            data: { billingDetails: savedBooking.billingDetails, id: savedBooking._id }
+            data: { billingDetails: savedBooking.billingDetails, id: savedBooking._id,bookingId:savedBooking.bookingId}
         };
 
     } catch (error) {
