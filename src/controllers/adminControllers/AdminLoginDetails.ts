@@ -252,6 +252,21 @@ export  class AdminLogin {
             });
         }
     }
+    async getAdminWalletDetails(req:Request,res:Response){
+        try {
+        
+    
+            const result = await this.adminController.fetchAdminWalletService();
+    
+            res.status(HTTP_statusCode.OK).json({ result: result.result.user });
+        } catch (error) {
+            console.error('Error toggling block status:', error instanceof Error ? error.message : error);
+            res.status(HTTP_statusCode.InternalServerError).json({
+                success: false,
+                message: 'Failed to toggle block status',
+            });
+        } 
+    }
     async getCategoryDetails(req:Request,res:Response):Promise<void>{
         try {
             console.log("Hello from Category");

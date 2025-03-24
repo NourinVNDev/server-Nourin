@@ -594,6 +594,27 @@ export class managerLogin{
               });
             }
           }
+          async fetchManagerWallet(req:Request,res:Response){
+            try {
+  
+              const managerId=req.params.managerId;
+          
+              console.log("Chech the managerId",managerId);
+          
+              const savedEvent = await this.offerController.fetchWalletOfManager(managerId);
+              if(savedEvent.result.success){
+                res.status(HTTP_statusCode.OK).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
+                return;
+                }
+                 res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
+            } catch (error) {
+              console.error("Error in check  Manager Wallet:", error);
+              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+              
+            }
+
+
+          }
           
 
           
@@ -767,6 +788,7 @@ export class managerLogin{
               res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
             }
           }
+       
     }
 
        

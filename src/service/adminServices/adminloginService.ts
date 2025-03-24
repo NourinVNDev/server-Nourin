@@ -118,6 +118,23 @@ export class  AdminLoginServices implements IadminloginService{
             throw new Error('Failed to toggle block status');
         }
     }
+    async fetchAdminWalletService(){
+        try {
+
+    
+            const result = await this.adminRepo.fetchAdminWalletRepository();
+    
+            if (!result.success) {
+                throw new Error(result.message);
+            }
+    
+            return {result};
+        } catch (error) {
+            console.error('Error in postToggleIsBlockService:', error instanceof Error ? error.message : error);
+            throw new Error('Failed to toggle block status');
+        }
+
+    }
     async getCategoryService(req:Request,res:Response){
         try {
             const result=await this.adminCategory.getCategoryDetailsService(req,res);

@@ -49,8 +49,8 @@ export class managerEventRepository {
                 eventName: formData.eventName,
                 companyName: formData.companyName,
                 content: formData.content || "",
-                address:formData.address,
-                location:{type:'Point',coordinates:[location.coordinates]},
+                address: formData.address.split(' ').slice(0, 4).join(' '),
+                location: { type: 'Point', coordinates: location.coordinates },
                 startDate: formattedStartDate,
                 endDate: formattedEndDate,
                 noOfPerson: formData.noOfPerson,
@@ -108,7 +108,7 @@ async createEventSeatInfo(formData:EventSeatDetails,eventId:string){
 
         console.log("Updated Event Data:", eventData);
         return { success: true, data: eventData };
-        return { success: true, data: eventData };
+      
         } catch (error) {
             console.error("Error in createEventData:", error);
             throw new Error("Failed to save event data to MongoDB.");
@@ -144,7 +144,7 @@ async createEventSeatInfo(formData:EventSeatDetails,eventId:string){
             existingEvent.eventName = formData.eventName;
             existingEvent.companyName = formData.companyName;
             existingEvent.content = formData.content || "";
-           existingEvent.address=formData.address||"",
+            address: formData.address.split(' ').slice(0, 4).join(' ')||"",
            existingEvent.location = { type: "Point", coordinates: location.coordinates };
             existingEvent.startDate = new Date(formData.startDate);
             existingEvent.endDate = new Date(formData.endDate);

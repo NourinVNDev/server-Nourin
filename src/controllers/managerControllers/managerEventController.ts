@@ -22,7 +22,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
                         eventName,
                         title,
                         content,
-                        time='',
+                        time,
                         tags,
 
                         address,

@@ -74,6 +74,26 @@ export class managerOfferService{
         }
     }
 
+    async fetchManagerWalletService2(managerId:string){
+        try {
+            console.log("For getting manager Wallet,managerId",managerId);
+  
+            // Perform additional validations if needed
+            if (!managerId) {
+                throw new Error("There is no ManagerId.");
+            }
+  
+            // Call repository to save the data
+            const savedEvent =await this.managerOfferService.fetchManagerWalletRepo(managerId);
+  
+            return savedEvent;
+        } catch (error) {
+            console.error("Error in handleEventCreation:", error);
+            throw new Error("Failed to create event in another service layer.");
+        }
+
+    }
+
 
 
     

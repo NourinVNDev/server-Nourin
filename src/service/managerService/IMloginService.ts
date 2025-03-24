@@ -16,6 +16,7 @@ export interface IMloginService{
    getSearchOfferInput(searchData:string):Promise<{success:boolean,message:string,data?:any}>
    postNewOfferServiceDetails(formData:OfferData):Promise<{success:boolean,message:string,data?:any}>
    updateOfferServiceDetails(formData:OfferData):Promise<{success:boolean,message:string,data?:any}>
+   fetchManagerWalletService(managerId:string):Promise<{success:boolean,message:string,data:any}>
    getSelectedOfferService(offerId:string):Promise<{success:boolean,message:string,data?:any}>
    createEventPostService(formData:EventData,file:Express.Multer.File):Promise<{success:boolean,message:string,data?:any}>
    createEventSeatService(formData:EventSeatDetails,eventId:string):Promise<{success:boolean,message:string,data?:any}>

@@ -335,6 +335,18 @@ async updateOfferDetailsRepo(formData:OfferData): Promise<{ success: boolean; me
       return { success: false, message: "Internal server error" };
   }
 }
+async fetchManagerWalletRepo(managerId:string){
+  try {
+
+   
+    const savedEvent = await this.managerOfferRepository.fetchManagerWalletRepository(managerId);
+  
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+} catch (error) {
+    console.error("Error in User Wallet Repository:", error);
+    throw new Error("Failed to handle user wallet in main repository.");
+}
+}
 
 
 

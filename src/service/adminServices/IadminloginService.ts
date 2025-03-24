@@ -8,6 +8,7 @@ export interface IadminloginService{
     getManagerDetailsService: () => Promise<| { success: boolean; message: string; user: any; } | undefined>;
     postToggleIsBlockService(userId:string,updatedStatus:boolean):Promise<{result?:any}>
     postManagerIsBlockService(managerId:string,updatedStatus:boolean):Promise<{result?:any}>
+    fetchAdminWalletService():Promise<{result?:any}>
     postCategoryIsBlockService(categoryId:string,updatedStatus:boolean):Promise<{result?:any}>
     getCategoryService(req:Request,res:Response):Promise<{result?:any}>
     fetchSelectedCategoryService(id:string,req:Request,res:Response):Promise<{result?:any}>

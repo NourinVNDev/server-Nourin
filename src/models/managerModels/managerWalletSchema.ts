@@ -12,7 +12,7 @@ import { eventNames } from "process";
     
         currency: { 
             type: String,
-            default: "USD" },
+            default: "INR" },
         transactions: [
         {
             userId: { type: Schema.Types.ObjectId, ref: "User", required: true },

@@ -11,7 +11,7 @@ import mongoose,{Schema} from "mongoose";
   
     currency: { 
         type: String,
-        default: "USD" },
+        default: "INR" },
     transactions: [
       {
         totalAmount:{type:Number,required:true},

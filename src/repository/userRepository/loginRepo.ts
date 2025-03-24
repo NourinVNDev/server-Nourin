@@ -891,8 +891,8 @@ async fetchUserWalletRepo(userId:string){
   
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
 } catch (error) {
-    console.error("Error in postEventRepository:", error);
-    throw new Error("Failed to handle event data in main repository.");
+    console.error("Error in User Wallet Repository:", error);
+    throw new Error("Failed to handle user wallet in main repository.");
 }
 
 }

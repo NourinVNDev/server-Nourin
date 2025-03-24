@@ -20,7 +20,8 @@ adminRoute.get('/admin/fetchSelectedCategory/:id',verifyToken(['admin']),adminLo
 adminRoute.post('/admin/editSingleCategory/:categoryId',verifyToken(['admin']),adminLoginRouter.editSelectedCategory.bind(adminLoginRouter));
 adminRoute.post('/admin/toggleIsBlock',verifyToken(['admin']),adminLoginRouter.postToggleIsBlock.bind(adminLoginRouter));
 adminRoute.post('/admin/categoryIsBlock',verifyToken(['admin']),adminLoginRouter.postCategoryIsBlock.bind(adminLoginRouter));
-adminRoute.post('/admin/managerIsBlock',verifyToken(['admin']),adminLoginRouter.postManagerIsBlock.bind(adminLoginRouter))
+adminRoute.post('/admin/managerIsBlock',verifyToken(['admin']),adminLoginRouter.postManagerIsBlock.bind(adminLoginRouter));
+adminRoute.get('/admin/fetchAdminWallet',verifyToken(['admin']),adminLoginRouter.getAdminWalletDetails.bind(adminLoginRouter));
 adminRoute.post('/refresh-token',adminLoginRouter.reGenerateAdminAccessToken.bind(adminLoginRouter));
 
 

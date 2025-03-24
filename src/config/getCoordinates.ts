@@ -1,29 +1,24 @@
 import axios from "axios";
-import dotenv from "dotenv";
 import { eventLocation } from "./enum/dto";
 
-dotenv.config();
-
-interface GeocodeResponse {
-    status: string;
-    results: {
-        geometry: {
-            location: { lat: number; lng: number };
-        };
-    }[];
+interface MapboxResponse {
+    features: { center: [number, number] }[];
 }
 
 export async function getCoordinates(address: string): Promise<eventLocation | null> {
-    console.log("Get Address",address)
-    const API_KEY = process.env.LOCATION_API_KEY;
-    console.log("API_KEY",API_KEY);
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${API_KEY}`;
+    console.log("Get Address:", address);
+    
+    const MAPBOX_ACCESS_TOKEN = process.env.MAPBOX_ACCESS_TOKEN;
+    console.log("MAPBOX_ACCESS_TOKEN:", MAPBOX_ACCESS_TOKEN);
+
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${MAPBOX_ACCESS_TOKEN}`;
 
     try {
-        const response = await axios.get<GeocodeResponse>(url);
-        if (response.data.status === "OK") {
-           
-            return { type: 'Point', coordinates: [response.data.results[0].geometry.location.lng, response.data.results[0].geometry.location.lat] };
+        const response = await axios.get<MapboxResponse>(url);
+        
+        if (response.data.features.length > 0) {
+            const [lng, lat] = response.data.features[0].center;
+            return { type: "Point", coordinates: [lng, lat] };
         } else {
             throw new Error("Invalid address");
         }

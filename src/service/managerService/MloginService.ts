@@ -375,6 +375,17 @@ async updateOfferServiceDetails(formData:OfferData): Promise<{ success: boolean;
   }
 }
 
+async fetchManagerWalletService(managerId:string){
+    try {
+      const savedEvent = await this.managerOfferService.fetchManagerWalletService2(managerId);
+      return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+    } catch (error) {
+      console.error("Error in cancelling the booked Event:", error);
+      throw new Error("Failed to cancell the booked Event"); 
+    }
+
+}
+
 
 
 

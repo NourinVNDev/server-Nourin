@@ -81,6 +81,19 @@ async getSelectedOfferDataService(offerId:string): Promise<any> {
         throw new Error("Failed to process manager-specific event logic.");
     }
 }  
+async fetchWalletOfManager(managerId:string){
+    try {
+
+        const result = await this.managerController.fetchManagerWalletService(managerId)
+        console.log("Event created successfully", result);
+        return {result};
+        
+    } catch (error) {
+        console.error("Error in managerEventControllers:", error);
+        throw new Error("Failed to process manager-specific event logic.");
+    } 
+
+}
 
 
 

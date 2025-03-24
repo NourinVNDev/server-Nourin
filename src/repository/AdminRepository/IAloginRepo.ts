@@ -8,6 +8,7 @@ export interface IAloginRepo{
       getManagerDetailsRepository():Promise<{success:boolean,message:string,user:any}>
       postToggleIsBlockRepository(userId:string,updatedStatus:boolean):Promise<{success:boolean,message:string,user:any}>
       postManagerIsBlockRepository(managerId:string,updatedStatus:boolean):Promise<{success:boolean,message:string,user:any}>
+      fetchAdminWalletRepository():Promise<{success:boolean,message:string,user:any}>
       postCategoryIsBlockRepository(categoryId:string,updatedStatus:boolean):Promise<{success:boolean,message:string,user:any}>
       getCategoryRepo(req:Request,res:Response):Promise<{result?:any}>
       fetchSelectedCategoryRepo(categoryId:string,req:Request,res:Response):Promise<{result?:any}>

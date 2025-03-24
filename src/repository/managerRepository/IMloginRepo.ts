@@ -23,6 +23,7 @@ export interface IMloginRepo{
     getSearchOfferInput(searchData:string):Promise<{ success: boolean; message: string; data?: any }>
     postOfferDetails(formData:OfferData):Promise<{ success: boolean; message: string; data?: any }>
     updateOfferDetailsRepo(formData:OfferData):Promise<{ success: boolean; message: string; data?: any }>
+    fetchManagerWalletRepo(managerId:string):Promise<{success:boolean,message:string,data:any}>
     getSelectedOfferRepo(offerId:string):Promise<{ success: boolean; message: string; data?: any }>
     getAllVerifierRepo():Promise<{ success: boolean; message: string; data?: any }>
     updateVerifierStatusRepo(verifierId:string):Promise<{ success: boolean; message: string; data?: any }>

@@ -2,6 +2,8 @@ import OFFERDB from "../../models/managerModels/offerSchema";
 import CATEGORYDB from "../../models/adminModels/adminCategorySchema";
 import { OfferData } from "../../config/enum/dto";
 import SOCIALEVENTDB from "../../models/managerModels/socialEventSchema";
+import MANAGERWALLETDB from "../../models/managerModels/managerWalletSchema";
+
 export class managerOfferRepository{
     async getSelectedOfferRepository(offerId:string){
           try {
@@ -216,6 +218,26 @@ export class managerOfferRepository{
                console.error("Error in getEventTypeDataService:", error);
                return { success: false, message: "Internal server error" };
            }
+
+  }
+
+  async fetchManagerWalletRepository(managerId:string){
+        try{
+        const managerWallet=await MANAGERWALLETDB.findOne({managerId:managerId});
+        console.log(managerWallet)
+        return {
+          success: true,
+          message: "Retrive Manager Wallet successfully",
+          data: managerWallet,
+        };
+      } catch (error) {
+        console.error("Error canceling event:", error);
+        return {
+          success: false,
+          message: "Error occurred during canceling event",
+          data: null,
+        };
+      }
 
   }
 }

@@ -6,6 +6,8 @@ const Stripe_Secret=process.env.STRIPE_SERVER_SECRET
 if(!Stripe_Secret){
 throw new Error("Stripe Secret from .env file not found!")
 }
+require("dotenv").config();
+
 const stripe = new Stripe(Stripe_Secret);
 
 export class userDetailsService{

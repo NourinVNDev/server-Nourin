@@ -44,4 +44,5 @@ ManagerRoute.get('/getUserNames/:managerName',checkIfManagerBlocked,verifyToken(
 ManagerRoute.post('/create-chatSchema2',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.createChatSchema.bind(managerLoginRouter));
 ManagerRoute.get('/fetchAllVerifier',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getAllVerifiers.bind(managerLoginRouter));
 ManagerRoute.get('/updateVerifierStatus/:verifierId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateVerifierStatus.bind(managerLoginRouter));
+ManagerRoute.get('/fetchManagerWallet/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchManagerWallet.bind(managerLoginRouter));
 export default ManagerRoute;    

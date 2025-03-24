@@ -7,6 +7,7 @@ import MANAGERDB from '../../models/managerModels/managerSchema';
 import CATEGORYDB from '../../models/adminModels/adminCategorySchema';
 import { adminCategoryRepository } from './adminCategoryRepo';
 import { Request,Response } from 'express-serve-static-core';
+import ADMINWALLETDB from '../../models/adminModels/adminWalletSchema';
 export class AdminLoginRepo  implements IAloginRepo{
     private adminCategoryRepo:adminCategoryRepository;
     constructor(){
@@ -164,6 +165,33 @@ export class AdminLoginRepo  implements IAloginRepo{
                 user: null,
             };
         }
+    }
+    async fetchAdminWalletRepository(){
+        try{
+        const adminWallet=await ADMINWALLETDB.find();
+        if(!adminWallet[0]){
+            return {
+                success: false,
+                message: `No Admin Data Found`,
+                user: null,
+            };
+
+        }
+        return {
+            success: true,
+            message: 'Admin Wallet  Data retrived successfully',
+            user: adminWallet[0],
+        };
+
+    }catch(error){
+        console.error('Error updating Admin Wallet in database:', error);
+        return {
+            success: false,
+            message: 'An error occurred while updating block status',
+            user: null,
+        };
+
+    }
     }
     async getCategoryRepo(req: Request, res: Response): Promise<{ result?: any }> {
         try {

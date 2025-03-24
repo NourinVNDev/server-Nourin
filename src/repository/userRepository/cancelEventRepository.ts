@@ -133,7 +133,7 @@ export class CancelEventRepository {
     console.log(userWallet)
     return {
       success: true,
-      message: "Booking canceled successfully",
+      message: "Retrive User Wallet successfully",
       data: userWallet,
     };
   } catch (error) {
