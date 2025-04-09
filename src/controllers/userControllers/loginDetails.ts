@@ -60,25 +60,19 @@ class userlogin  {
         const result = await this.userController.loginDetails(formData);
 
         if (result?.success && result.user) {
-            // Destructure the result.user object and exclude the password field
-            // const { password, ...userWithoutPassword } = result.user;
-            // console.log('User without password:', userWithoutPassword);
-
-            // Add the role to the user data
+         
             console.log("User",result.user.email)
             
             let user = { email: result.user.email, role: 'user' };
 
-            // Generate access and refresh tokens
             const accessToken = generateAccessToken(user);
             const refreshToken = generateRefreshToken(user);
 
             console.log("Generated Tokens:", { accessToken, refreshToken });
 
-            // Consider storing refresh tokens securely (e.g., database)
             refreshTokens.push(refreshToken);
 
-            // Set cookies securely
+            
             res.cookie('accessToken', accessToken, {
                 httpOnly: false,
                 secure: process.env.NODE_ENV === 'production',
@@ -95,10 +89,10 @@ class userlogin  {
                 maxAge: 7 * 24 * 60 * 60 * 1000
             });
 
-            // Send success response, returning user data without password
+
             res.status(HTTP_statusCode.OK).json({
                 message: 'Login Successful',
-                data: result.user, // Return the user object without the password
+                data: result.user, 
                 categoryNames:result.categoryName
             });
         } else {
@@ -288,7 +282,7 @@ class userlogin  {
 
           res.cookie('refreshToken', refreshToken, {
               httpOnly: false,
-              secure: process.env.NODE_ENV === 'production',
+              secure: process. env.NODE_ENV === 'production',
               sameSite: 'strict',
               path: '/',
           });
@@ -710,31 +704,47 @@ async getSelectedEventDetails(req:Request,res:Response){
 
 
 }
-async makePaymentStripe(req:Request,res:Response){
+async makePaymentStripe(req: Request, res: Response): Promise<void> {
   try {
-    const {products}=req.body;
-      const result = await this.userDetailsController.makePaymentStripeController(products); // No res here, just the result
+    const { products } = req.body;
+    const result = await this.userDetailsController.makePaymentStripeController(products);
 
-    
-      if (!result) {
-           res.status(HTTP_statusCode.InternalServerError).json({
-              message:'Something went wrong'
-          });
-      }
-      console.log("Checking server-side",result);
-
-      res.status(HTTP_statusCode.OK).json({
-          message: "Retrive Post Data successfully",
-          sessionId: result.result
+    if (!result) {
+      res.status(HTTP_statusCode.InternalServerError).json({
+        message: 'Something went wrong'
       });
+      return; // Prevents further execution
+    }
+
+    console.log("Checking server-side 1st", result);
+    if (!result.result.success) {
+      res.status(HTTP_statusCode.OK).json({
+        message: result.result.message,
+        success:true
+      });
+      return;
+    }
+
+    console.log("Checking server-side", result);
+
+    res.status(HTTP_statusCode.OK).json({
+      message: "Retrieve Post Data successfully",
+      sessionId: result.result.data,
+      success:true
+    });
+    return;
 
   } catch (error) {
-      console.error("Error in getCategoryDetails:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+    console.error("Error in getCategoryDetails:", error);
+    res.status(HTTP_statusCode.InternalServerError).json({ 
+      message: "Internal server error", 
+      error 
+    });
+    return;
   }
-
-
 }
+
+
 
 
 async postReviewAndRating(req:Request,res:Response){
@@ -777,9 +787,12 @@ async updateBookedEventPaymentStatus(req:Request,res:Response){
     console.log("Updating payment status of booked Event:", bookedId);
 
     const result = await this.userDetailsController.updatePaymentStatus(bookedId);
-    console.log("Nice",result.data)
+    if(result){
+      console.log("Nice",result.data)
 
-    res.status(HTTP_statusCode.OK).json(result); // Send response to client
+      res.status(HTTP_statusCode.OK).json(result); 
+    }
+
   } catch (error) {
     console.error("Error in saveBillingDetails:", error);
     res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
@@ -807,7 +820,9 @@ async getExistingReviews(req: Request, res: Response): Promise<void> {
 
 async getEventHistoryDetails(req: Request, res: Response): Promise<void> {
   try {
-    const savedEvent = await this.userProfileController.getEventHistoryDetails2();
+
+    const userId=req.params.userId;
+    const savedEvent = await this.userProfileController.getEventHistoryDetails2(userId);
     if (savedEvent.success) {
       res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
     return;
@@ -821,7 +836,8 @@ async getEventHistoryDetails(req: Request, res: Response): Promise<void> {
 
 async getEventBookedDetails(req: Request, res: Response): Promise<void> {
   try {
-    const savedEvent = await this.userProfileController.getEventBookedDetails2();
+    const userId=req.params.userId;
+    const savedEvent = await this.userProfileController.getEventBookedDetails2(userId);
     if (savedEvent.success) {
       res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
     return;
@@ -877,7 +893,7 @@ async cancelBookingEvent(req:Request,res:Response){
     const bookedId=req.params.bookingId;
     const userId=req.params.userId;
 
-    console.log("Chech the bookedId",bookedId);
+    console.log("Check the bookedId",bookedId);
 
     const savedEvent = await this.cancelEventController.cancelEventBooking(bookedId,userId);
     if(savedEvent.result.success){

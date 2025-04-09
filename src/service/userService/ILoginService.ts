@@ -11,7 +11,7 @@ export interface ILoginService{
     GoogleAuth(AuthData:string):Promise<{success:boolean,message:string,user:any}>;
     forgotEmailDetails(email: string): Promise<{ success: boolean; message: string; otpValue: string | null }>;
     verifyForgotOtpService(otp:string,globalOTP:string|number|null):Promise<{success:boolean,message:string}>;
-    resetPasswordDetails(formData:FormData,email:string):Promise<{success:boolean,message:string,user:any}>;
+    resetPasswordDetails(formData:FormData,userId:string):Promise<{success:boolean,message:string,user:any}>;
     GoogleAuth(AuthData:string):Promise<{success:boolean,message:string,user:any}>;
     changeUserProfileService(formData:FormData,email:string):Promise<{success:boolean,message:string,user:any}>;
     getWholeCategoryDetails():Promise<{success:boolean,message:string,user:any}>;
@@ -25,10 +25,10 @@ export interface ILoginService{
     makePaymentStripeService(products:PaymentData):Promise<{result:any}>;
     posthandleReviewRating(formData:FormData):Promise<{result:any}>;
     saveBillingDetailsService(formData:billingData):Promise<{success:boolean,message:string,data:any}>
-    updateBookedEventPaymentStatus(bookedId:string):Promise<{success:boolean,message:string}>
+    updateBookedEventPaymentStatus(bookedId:string):Promise<{success:boolean,message:string}|undefined>
     getExistingReviewService(userId:string,eventId:string):Promise<{success:boolean,message:string,data: string | null | undefined | any}>
-    getEventHistoryService():Promise<{success:boolean,message:string,data: string | null | undefined | any  |number}>;
-    getEventBookedService():Promise<{success:boolean,message:string,data: string | null | undefined | any  |number}>;
+    getEventHistoryService(userId:string):Promise<{success:boolean,message:string,data: string | null | undefined | any  |number}>;
+    getEventBookedService(userId:string):Promise<{success:boolean,message:string,data: string | null | undefined | any  |number}>;
     getBookedManagerService(userId:string):Promise<{success:boolean,message:string,data:any}>;
     createChatSchemaService(formData:FormData):Promise<{success:boolean,message:string,data:any}>;
     uploadUserProfilePhoto(userId:string,profilePicture:Express.Multer.File):Promise<{success:boolean,message:string,data:any}>;

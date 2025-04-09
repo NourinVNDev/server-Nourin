@@ -1,6 +1,6 @@
 import {mLoginRepo} from '../../repository/managerRepository/MloginRepo';
 import { IMloginService } from './IMloginService';
-import { EventData, EventSeatDetails, OfferData } from '../../config/enum/dto';
+import { EventData, EventSeatDetails, OfferData, TicketType, verifierFormData } from '../../config/enum/dto';
 import GenerateOTP from '../../config/nodemailer';
 import { FormData } from '../../config/enum/dto';
 
@@ -69,20 +69,21 @@ export class mLoginService implements IMloginService{
             throw new Error('Error verifying OTP or saving user data');
         }
     }
-    async mloginDetails(formData:FormData){
-        try {
-          if (formData.email !== null && formData.password !==null) {
-              // Await the result of postUser Data to ensure proper handling of the promise
+    async mloginDetails(formData: FormData): Promise<{ success: boolean; message: string; user: any }> {
+      try {
+         
+          if (formData.email && formData.password) {
               const result = await this.managerService.checkManagerLogin(formData);
-              return { success: true, message: 'User  data saved successfully', user: result };
+              return { success: result.success, message: result.message, user: result.user };
           } else {
-              throw new Error('Invalid OTP. Please try again.');
+
+              return { success: false, message: 'Email and password are required', user: undefined };
           }
       } catch (error) {
-          console.error(`Error in verifyService:`, error instanceof Error ? error.message : error);
-          throw new Error('Error verifying OTP or saving user data');
+          console.error(`Error in mloginDetails:`, error instanceof Error ? error.message : error);
+          throw new Error('Error verifying login');
       }
-      }
+  }
 
       async managerForgotEmail(email: string){
         try {
@@ -92,12 +93,12 @@ export class mLoginService implements IMloginService{
       
           const result = await this.managerService.isManagerEmailValid(email);
       
-          if (result) {
+          if (result.success) {
             const otp = generateOTP();
             console.log('Generated OTP:', otp);
             const recipient = { email: 'nourinvn@gmail.com' };
             const { email } = recipient; 
-            console.log(email);
+        
             
             
             
@@ -110,7 +111,7 @@ export class mLoginService implements IMloginService{
       
             return { success: true, message: 'OTP sent successfully', otpValue: otp };
           } else {
-            return { success: false, message: 'Email not found', otpValue: null };
+            return { success: result.success, message: result.message, otpValue: null };
           }
         } catch (error) {
           console.error(
@@ -129,7 +130,7 @@ export class mLoginService implements IMloginService{
            
                 return { success: true, message: 'OTP are matched'};
             } else {
-                throw new Error('Invalid OTP. Please try again.');
+            return {success:false,message:'OTP is not matched!'}
             }
         } catch (error) {
             console.error(`Error in verifyService:`, error instanceof Error ? error.message : error);
@@ -331,12 +332,11 @@ async updateManagerPasswordService(formData:{[key:string]:string}): Promise<{ su
 
 
 async getAllOfferServiceDetails(
-  req: Request,
-  res: Response
+managerId:string
 ): Promise<{ success: boolean; message: string; data?: any }> {
   try {
     // Fetch data from the repository
-    const result = await this.managerOfferService.getOfferService(req, res);
+    const result = await this.managerOfferService.getOfferService(managerId);
     console.log("from service", result);
      return { success: result.success, message: result. message, data: result.data };
 
@@ -350,13 +350,12 @@ async getAllOfferServiceDetails(
 
 async postNewOfferServiceDetails(formData:OfferData): Promise<{ success: boolean; message: string; data?: any }> {
   try {
-    // Fetch data from the repository
-    console.log('checking the formData',formData)
+
+    console.log('checking the formData',formData);
     const result = await this.managerOfferService.postOfferService(formData);
     console.log("from service", result);
     return { success: result.success, message: result.message, data: result.data };
   } catch (error) {
-    // Log and return a generic error response
     console.error("Error in postNewOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer.");
   }
@@ -385,6 +384,24 @@ async fetchManagerWalletService(managerId:string){
     }
 
 }
+async fetchAllEventService(companyName:string){
+  const managerData = await this.managerService.fetchAllCompanyEventRepo(companyName); 
+
+  if (managerData.success) {
+      return {
+          success: managerData.success,
+          message: managerData.message,
+          data: managerData.data
+      };
+  } else {
+      return {
+          success: false,
+          message: managerData.message,
+          data: managerData.data
+      };
+  }
+
+}
 
 
 
@@ -394,18 +411,14 @@ async fetchManagerWalletService(managerId:string){
 
 
 
-async getAllEventService(
-  req: Request,
-  res: Response
-): Promise<{ success: boolean; message: string; data?: any }> {
+async getAllEventService(managerId:string) {
   try {
-    // Fetch data from the repository
-    const result = await this.managerEventservice.getAllEventDetailsService(req, res);
+    const result = await this.managerEventservice.getAllEventDetailsService(managerId);
     console.log("from service", result);
      return { success: result.success, message: result. message, data: result.data };
 
   } catch (error) {
-    // Log and return a generic error response
+ 
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
@@ -416,13 +429,26 @@ async getSelectedEventService(
 id:string
 ): Promise<{ success: boolean; message: string; data?: any }> {
   try {
-    // Fetch data from the repository
+
     const result = await this.managerEventservice.getSelectedEventService2(id);
     console.log("from service", result);
      return { success: result.success, message: result. message, data: result.data };
 
   } catch (error) {
-    // Log and return a generic error response
+
+    console.error("Error in getAllOfferServiceDetails:", error);
+    throw new Error("Failed to create event in another service layer."); 
+  }
+}
+async getSelectedEventTicketService(id:string){
+  try {
+
+    const result = await this.managerEventservice.getSelectedEventTicketService2(id);
+    console.log("from service", result);
+     return { success: result.success, message: result. message, data: result.data };
+
+  } catch (error) {
+
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
@@ -443,10 +469,10 @@ async getSelectedOfferService(offerId:string): Promise<{ success: boolean; messa
   }
 
 
-  async getTodaysBookingService():Promise<{ success: boolean; message: string; data?: any }>{
+  async getTodaysBookingService(managerId:string):Promise<{ success: boolean; message: string; data?: any }>{
     try {
       // Fetch data from the repository
-      const result = await this.managerBookingService.getTodaysBookingDetails2();
+      const result = await this.managerBookingService.getTodaysBookingDetails2(managerId);
       console.log("from service", result);
        return { success: result.success, message: result. message, data: result.data };
   
@@ -456,10 +482,10 @@ async getSelectedOfferService(offerId:string): Promise<{ success: boolean; messa
       throw new Error("Failed to create event in another service layer."); 
     }
 } 
-async getTotalBookingService():Promise<{ success: boolean; message: string; data?: any }>{
+async getTotalBookingService(managerId:string):Promise<{ success: boolean; message: string; data?: any }>{
   try {
     // Fetch data from the repository
-    const result = await this.managerBookingService.getTotalBookingDetails2();
+    const result = await this.managerBookingService.getTotalBookingDetails2(managerId);
     console.log("from total booking", result);
      return { success: result.success, message: result. message, data: result.data };
 
@@ -481,10 +507,10 @@ async getTotalBookingService():Promise<{ success: boolean; message: string; data
     throw new Error("Failed to create event in another service layer."); 
   }
 }
-async getAllVerifierService(){
+async getAllVerifierService(managerName:string){
   try {
  
-    const savedEvent = await this.managerVerifierService.getAllVerifierService2();
+    const savedEvent = await this.managerVerifierService.getAllVerifierService2(managerName);
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
   } catch (error) {
     
@@ -506,6 +532,78 @@ async updateVerifierStatusService(verifierId:string){
   }
 
 }
+
+   async fetchSelectedVerifierService(verifierId:string){
+    const verifierData = await this.managerVerifierService.fetchSelectedVerifierService2(verifierId); 
+
+    if (verifierData.success) {
+        return {
+            success: verifierData.success,
+            message: verifierData.message,
+            data: verifierData.data
+        };
+    } else {
+        return {
+            success: false,
+            message: verifierData.message,
+            data: verifierData.data
+        };
+    }
+
+   }
+async postVerifierLoginService(formData:verifierFormData){
+  const verifierData = await this.managerVerifierService.postVerifierLoginService2(formData); 
+
+  if (verifierData.success) {
+      return {
+          success: verifierData.success,
+          message: verifierData.message,
+          data: verifierData.data
+      };
+  } else {
+      return {
+          success: false,
+          message: verifierData.message,
+          data: verifierData.data
+      };
+  }
+
+}
+async updateVerifierService(formData:verifierFormData){
+  const verifierData = await this.managerVerifierService.updateVerifierService2(formData); 
+
+  if (verifierData.success) {
+      return {
+          success: verifierData.success,
+          message: verifierData.message,
+          data: verifierData.data
+      };
+  } else {
+      return {
+          success: false,
+          message: verifierData.message,
+          data: verifierData.data
+      };
+  }
+}
+async postSeatInformationService(ticketData:TicketType){
+  const verifierData = await this.managerEventservice.postTicketInformationService2(ticketData); 
+
+  if (verifierData.success) {
+      return {
+          success: verifierData.success,
+          message: verifierData.message,
+          data: verifierData.data
+      };
+  } else {
+      return {
+          success: false,
+          message: verifierData.message,
+          data: verifierData.data
+      };
+  }
+}
+
 
 async createChatSchemaService(formData:FormData){
   try {

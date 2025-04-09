@@ -5,14 +5,10 @@ private  managerBookingService:IMloginRepo;
 constructor(managerRepositoryInstance:IMloginRepo){
     this.managerBookingService=managerRepositoryInstance;
 }
-async getTodaysBookingDetails2(){
+async getTodaysBookingDetails2(managerId:string){
     try {
         console.log("Processing event data in another service...");
-
-
-
-        // Call repository to save the data
-        const savedEvent =await this.managerBookingService.getTodaysBookingRepo();
+        const savedEvent =await this.managerBookingService.getTodaysBookingRepo(managerId);
 
         return savedEvent;
     } catch (error) {
@@ -21,9 +17,9 @@ async getTodaysBookingDetails2(){
     }
 }
 
-async getTotalBookingDetails2(){
+async getTotalBookingDetails2(managerId:string){
     try {
-        const savedEvent =await this.managerBookingService.getTotalBookingRepo();
+        const savedEvent =await this.managerBookingService.getTotalBookingRepo(managerId);
 
         return savedEvent;
     } catch (error) {

@@ -1,6 +1,6 @@
 import MANAGERDB from '../../models/managerModels/managerSchema';
 import { IMloginRepo } from './IMloginRepo';
-import { EventData, eventLocation, EventSeatDetails, FormData1, OfferData } from '../../config/enum/dto';
+import { EventData, eventLocation, EventSeatDetails, FormData1, OfferData, TicketType, verifierFormData } from '../../config/enum/dto';
 import { managerEventRepository } from './mEventRepo';
 import { Request,Response } from 'express';
 import CATEGORYDB from '../../models/adminModels/adminCategorySchema';
@@ -15,6 +15,8 @@ interface User {
   }
 
 import bcrypt  from 'bcrypt';
+import SOCIALEVENTDB from '../../models/managerModels/socialEventSchema';
+import { isNull } from 'node:util';
 const hashPassword = async (password:string) => {
   try {
       // Generate a salt
@@ -97,7 +99,7 @@ export class mLoginRepo implements IMloginRepo{
                 return {
                     success: true,
                     message: 'Login successful.',
-                    user,
+                    user:user,
                 };
             } else {
                 console.log('Password does not match.');
@@ -123,16 +125,16 @@ export class mLoginRepo implements IMloginRepo{
           const user:User|null = await MANAGERDB.findOne({email });
       
           if (!user) {
-            console.log('User not found.');
+            console.log('Manager not found.');
             return {
               success: false,
-              message: 'User not found.',
+              message: 'Manager not found.',
               user: null,
             };
           }
           return {
             success: true,
-            message: 'Login successful.',
+            message: 'Found successful.',
             user,
           };
           
@@ -145,75 +147,81 @@ export class mLoginRepo implements IMloginRepo{
           };
         }
       }
-      async resetPasswordRepoForManager(email:string, password:string,password1:string){
-   
-        const confirmPassword=password1;
-      
+      async resetPasswordRepoForManager(email: string, password: string, password1: string) {
+        const confirmPassword = password1;
+    
         // Validate input
-        console.log("Last checking",password,confirmPassword,email);
-        
+        console.log("Last checking", password, confirmPassword, email);
+    
         if (!email || !password || !confirmPassword) {
-          console.log('Email, password, or confirm password is missing.');
-          return {
-            success: false,
-            message: 'Email, password, and confirm password are required.',
-            user: null,
-          };
-        }
-      
-        if (password !== confirmPassword) {
-          console.log('Passwords do not match.');
-          return {
-            success: false,
-            message: 'Passwords do not match.',
-            user: null,
-          };
-        }
-      
-        try {
-            console.log('Checking email:',email)
-          // Check if the user exists (ensuring the user is a Document)
-          const user = await MANAGERDB.findOne({email});
-          console.log('User',user);
-      
-          if (!user) {
-            console.log('User not found.');
+            console.log('Email, password, or confirm password is missing.');
             return {
-              success: false,
-              message: 'User not found.',
-              user: null,
+                success: false,
+                message: 'Email, password, and confirm password are required.',
+                user: null,
             };
-          }
-      
-          // Hash the password (asynchronous)
-          const hashedPassword = await hashPassword(password);
-      
-          // Update the user's password
-          user.password = hashedPassword;
-      
-          // Ensure you're calling `save()` on a Mongoose document instance
-          await user.save();
-      
-          console.log('Password reset successful.');
-          return {
-            success: true,
-            message: 'Password reset successful.',
-            user: { id: user._id, email: user.email }, // Return limited user info
-          };
-        } catch (error) {
-          console.error('Error during password reset:', error);
-          return {
-            success: false,
-            message: 'An error occurred during password reset.',
-            user: null,
-          };
         }
-      }
+    
+        // Simple email format validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            console.log('Invalid email format.');
+            return {
+                success: false,
+                message: 'Invalid email format.',
+                user: null,
+            };
+        }
+    
+        if (password !== confirmPassword) {
+            console.log('Passwords do not match.');
+            return {
+                success: false,
+                message: 'Passwords do not match.',
+                user: null,
+            };
+        }
+    
+        try {
+            console.log('Checking email:', email);
+            // Check if the user exists
+            const user = await MANAGERDB.findOne({ email });
+            console.log('User ', user);
+    
+            if (!user) {
+                console.log('User  not found.');
+                return {
+                    success: false,
+                    message: 'User  not found.',
+                    user: null,
+                };
+            }
+    
+            // Hash the new password
+            const hashedPassword = await hashPassword(password);
+            user.password = hashedPassword;
+    
+            await user.save();
+    
+            console.log('Password reset successful.');
+            return {
+                success: true,
+                message: 'Password reset successful.',
+             user:user
+            };
+        } catch (error) {
+            console.error('Error during password reset:', error);
+            return {
+                success: false,
+                message: 'An error occurred during password reset.',
+                user:{},
+            };
+        }
+    }
       async postEventRepository(formData: EventData,location:eventLocation, fileName: string) {
         try {
             console.log("Delegating event data to the actual repository...");
             
-            // Pass the data to the actual repository for database operations
             const savedEvent = await this.managerEventRepository.createEventData(formData,location,fileName);
             
             return {
@@ -295,7 +303,7 @@ export class mLoginRepo implements IMloginRepo{
     }
 }
 
-  async getAllOfferDetails(req: Request,res:Response): Promise<{ success: boolean; message: string; data?: any }> {
+  async getAllOfferDetails(managerId:string): Promise<{ success: boolean; message: string; data?: any }> {
     try {
         const result = await OFFERDB.find(); // Fetch data from the database
         console.log("DB data", result);
@@ -347,8 +355,21 @@ async fetchManagerWalletRepo(managerId:string){
     throw new Error("Failed to handle user wallet in main repository.");
 }
 }
+async fetchAllCompanyEventRepo(CompanyName: string) {
+  const eventDetails = await SOCIALEVENTDB.find({ companyName: CompanyName });
+  if (!eventDetails || eventDetails.length === 0) {
+      return { success: false, message: "No Events hosted in this company", data: null };
+  }
+  const actualEvents = eventDetails.filter((event: any) => new Date(event.endDate) > new Date());
 
+  console.log("Actual Events:", actualEvents);
 
+  if (actualEvents.length === 0) {
+      return { success: false, message: "No upcoming events in this company", data: null };
+  }
+
+  return { success: true, message: "Upcoming events found", data: actualEvents.map((event: any) => event.eventName) };
+}
 
 
 async getManagerProfileRepo(companyName: string): Promise<{ success: boolean; message: string; data?: any }> {
@@ -414,10 +435,10 @@ async updateManagerPasswordRepo(formData:{[key:string]:string}): Promise<{ succe
     return { success: false, message: "Internal server error" };
   }
 }
-async getAllEventRepo(req: Request,res:Response): Promise<{ success: boolean; message: string; data?: any }> {
+async getAllEventRepo(managerId:string): Promise<{ success: boolean; message: string; data?: any }> {
   try {
 
-    const savedEvent =await this.managerEventRepository.getAllEventDetailsRepository(req,res);
+    const savedEvent =await this.managerEventRepository.getAllEventDetailsRepository(managerId);
 
       return { success: true, message: "Event data retrieved successfully", data: savedEvent };
   } catch (error) {
@@ -438,6 +459,17 @@ async getSelectedEventRepo(id:string): Promise<{ success: boolean; message: stri
       return { success: false, message: "Internal server error" };
   }
 }
+async getSelectedEventTicketRepo(id:string){
+  try {
+
+    const savedEvent =await this.managerEventRepository.getSelectedEventTicketRepository(id);
+
+      return { success: true, message: "Event data retrieved successfully", data: savedEvent };
+  } catch (error) {
+      console.error("Error in getEventTypeDataService:", error);
+      return { success: false, message: "Internal server error" };
+  }
+}
 
 async getSelectedOfferRepo(offerId:string): Promise<{ success: boolean; message: string; data?: any }> {
   try {
@@ -451,10 +483,10 @@ async getSelectedOfferRepo(offerId:string): Promise<{ success: boolean; message:
   }
 }
 
-async getAllVerifierRepo(){
+async getAllVerifierRepo(managerName:string){
   try {
 
-    const savedEvent =await this.managerVerifierRepository.getAllVerifierRepository();
+    const savedEvent =await this.managerVerifierRepository.getAllVerifierRepository(managerName);
 
       return { success: true, message: "Verifier data retrieved successfully", data: savedEvent };
   } catch (error) {
@@ -474,11 +506,56 @@ async updateVerifierStatusRepo(verifierId:string){
       return { success: false, message: "Internal server error" };
   }
 }
+async postVerifierLoginRepo(formData:verifierFormData){
+  try {
+console.log("Form from Repo",formData);
 
-async getTodaysBookingRepo():Promise<{ success: boolean; message: string; data?: any }>{
+    const savedEvent =await this.managerVerifierRepository.postVerifierLoginRepository(formData);
+
+      return { success: true, message: "Verifier data saved successfully", data: savedEvent };
+  } catch (error) {
+      console.error("Error in updating status of verifier Service:", error);
+      return { success: false, message: "Internal server error" };
+  }
+}
+async updateVerifierRepo(formData:verifierFormData){
   try {
 
-    const savedEvent =await this.managerBookingRepository.getTodaysBookingRepository();
+    const savedEvent =await this.managerVerifierRepository.updateVerifierRepository(formData);
+
+      return { success: true, message: "Verifier data saved successfully", data: savedEvent };
+  } catch (error) {
+      console.error("Error in updating status of verifier Service:", error);
+      return { success: false, message: "Internal server error" };
+  }
+}
+async fetchSelectedVerifierRepo(verifierId:string){
+  try {
+
+    const savedEvent =await this.managerVerifierRepository.fetchSelectedVerifierRepository(verifierId);
+
+      return { success: true, message: "Verifier data fetched successfully", data: savedEvent };
+  } catch (error) {
+      console.error("Error in fetching  verifier Service:", error);
+      return { success: false, message: "Internal server error" };
+  }
+}
+async updateSeatInformationRepo(ticketData:TicketType){
+  try {
+
+    const savedEvent =await this.managerEventRepository.updateSeatInformationRepository(ticketData);
+
+      return { success: true, message: "Verifier data saved successfully", data: savedEvent };
+  } catch (error) {
+      console.error("Error in updating status of verifier Service:", error);
+      return { success: false, message: "Internal server error" };
+  }
+}
+
+async getTodaysBookingRepo(managerId:string):Promise<{ success: boolean; message: string; data?: any }>{
+  try {
+
+    const savedEvent =await this.managerBookingRepository.getTodaysBookingRepository(managerId);
 
       return { success: true, message: "Event data retrieved successfully", data: savedEvent };
   } catch (error) {
@@ -487,10 +564,10 @@ async getTodaysBookingRepo():Promise<{ success: boolean; message: string; data?:
   }
 }
 
-async getTotalBookingRepo():Promise<{ success: boolean; message: string; data?: any }>{
+async getTotalBookingRepo(managerId:string):Promise<{ success: boolean; message: string; data?: any }>{
   try {
 
-    const savedEvent =await this.managerBookingRepository.getTotalBookingRepository();
+    const savedEvent =await this.managerBookingRepository.getTotalBookingRepository(managerId);
 
       return { success: true, message: "Event data retrieved successfully", data: savedEvent };
   } catch (error) {

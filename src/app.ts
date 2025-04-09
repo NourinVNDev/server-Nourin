@@ -12,7 +12,7 @@ import cookieParser from 'cookie-parser';
 import path from "path";
 
 const PORT=process.env.PORT||3001
-console.log("SOCket",PORT)
+console.log("Socket",PORT);
 
 
 

@@ -1,4 +1,4 @@
-import { EventData, eventLocation, EventSeatDetails } from "../../config/enum/dto";
+import { EventData, eventLocation, EventSeatDetails, TicketType } from "../../config/enum/dto";
 import { mLoginRepo } from "../../repository/managerRepository/MloginRepo";
 import { IMloginRepo } from "../../repository/managerRepository/IMloginRepo";
 import { Request,Response } from "express";
@@ -11,12 +11,11 @@ export class managerEventService{
       try {
           console.log("Processing event data in another service...");
 
-          // Perform additional validations if needed
+
           if (!formData.title || !formData.startDate || !formData.endDate) {
               throw new Error("Title and date are required for event creation.");
           }
 
-          // Call repository to save the data
           const savedEvent =await this.managerEventService.postEventRepository(formData,location,fileName);
 
           return savedEvent;
@@ -62,14 +61,14 @@ export class managerEventService{
 
   
 
-  async getAllEventDetailsService(req:Request,res:Response) {
+  async getAllEventDetailsService(managerId:string) {
     try {
         console.log("Processing event data in another service...");
 
 
 
         // Call repository to save the data
-        const savedEvent =await this.managerEventService.getAllEventRepo(req,res);
+        const savedEvent =await this.managerEventService.getAllEventRepo(managerId);
 
         return savedEvent;
     } catch (error) {
@@ -91,6 +90,34 @@ async getSelectedEventService2(id:string) {
     } catch (error) {
         console.error("Error in handleEventCreation:", error);
         throw new Error("Failed to create event in another service layer.");
+    }
+}
+async getSelectedEventTicketService2(id:string){
+    try {
+        console.log("Processing event data in another service...");
+
+
+
+        // Call repository to save the data
+        const savedEvent =await this.managerEventService.getSelectedEventTicketRepo(id);
+
+        return savedEvent;
+    } catch (error) {
+        console.error("Error in handleEventCreation:", error);
+        throw new Error("Failed to create event in another service layer.");
+    }
+}
+async postTicketInformationService2(ticketData:TicketType){
+    try {
+        console.log("Hello World");
+        
+        const savedEvent =await this.managerEventService.updateSeatInformationRepo(ticketData); 
+        console.log("update Verifier status Data",savedEvent);
+    return savedEvent;
+    
+    } catch (error) {
+        console.error("Error in handleEventCreation:", error);
+        throw new Error("Failed to create event in another service layer."); 
     }
 }
 

@@ -8,12 +8,10 @@ export  class cancelEventService{
         try {
             console.log("Processing event data in another service for cancelling the events...",bookingId);
   
-            // Perform additional validations if needed
             if (!bookingId) {
                 throw new Error("There is no BookingId.");
             }
   
-            // Call repository to save the data
             const savedEvent =await this.loginRepository.cancelBookedEventRepo(bookingId,userId);
   
             return savedEvent;

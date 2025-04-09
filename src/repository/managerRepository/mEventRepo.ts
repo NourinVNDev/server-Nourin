@@ -1,4 +1,4 @@
-import { EventData, eventLocation, EventSeatDetails } from "../../config/enum/dto";
+import { EventData, eventLocation, EventSeatDetails, TicketType } from "../../config/enum/dto";
 import MANAGERDB from "../../models/managerModels/managerSchema";
 import CATEGORYDB from '../../models/adminModels/adminCategorySchema';
 import SOCIALEVENTDB from "../../models/managerModels/socialEventSchema";
@@ -53,7 +53,6 @@ export class managerEventRepository {
                 location: { type: 'Point', coordinates: location.coordinates },
                 startDate: formattedStartDate,
                 endDate: formattedEndDate,
-                noOfPerson: formData.noOfPerson,
                 noOfDays:noOfDays,
                 time: formData.time || "",
                 images: fileName ? [fileName] : [],
@@ -138,17 +137,16 @@ async createEventSeatInfo(formData:EventSeatDetails,eventId:string){
                 (new Date(formData.endDate).getTime() - new Date(formData.startDate).getTime()) / 
                 (1000 * 60 * 60 * 24)
               );
-    
-            // Update the event data
+
             existingEvent.title = formData.title;
             existingEvent.eventName = formData.eventName;
             existingEvent.companyName = formData.companyName;
             existingEvent.content = formData.content || "";
             address: formData.address.split(' ').slice(0, 4).join(' ')||"",
+            existingEvent.address=formData.address;
            existingEvent.location = { type: "Point", coordinates: location.coordinates };
             existingEvent.startDate = new Date(formData.startDate);
             existingEvent.endDate = new Date(formData.endDate);
-            existingEvent.noOfPerson = formData.noOfPerson;
             existingEvent.noOfDays=noOfDays;
             existingEvent.time = formData.time || "";
             existingEvent.destination=formData.destination;
@@ -187,9 +185,9 @@ async createEventSeatInfo(formData:EventSeatDetails,eventId:string){
 
     
     
-    async getAllEventDetailsRepository(req:Request,res:Response){
+    async getAllEventDetailsRepository(managerId:string){
    try {
-    const result = await SOCIALEVENTDB.find(); // Fetch data from the database
+    const result = await SOCIALEVENTDB.find({Manager:managerId}); // Fetch data from the database
     console.log("DB data", result);
     return { success: true, message: "Event data retrieved successfully", data: result };
 } catch (error) {
@@ -201,7 +199,7 @@ async createEventSeatInfo(formData:EventSeatDetails,eventId:string){
 
     async getSelectedEventRepository(id:string){
         try {
-         const result = await SOCIALEVENTDB.findById({_id:id}); // Fetch data from the database
+         const result = await SOCIALEVENTDB.findById({_id:id}); 
          const category=await CATEGORYDB.find();
          console.log("DB data", result);
          return { success: true, message: "Event data retrieved successfully", data: {result,category} };
@@ -209,8 +207,45 @@ async createEventSeatInfo(formData:EventSeatDetails,eventId:string){
          console.error("Error in getEventTypeDataService:", error);
          return { success: false, message: "Internal server error" };
      }
-         }
-     
+}
+async getSelectedEventTicketRepository(id:string){
+    try {
+        const result = await SOCIALEVENTDB.findById({_id:id}); 
+
+        console.log("DB data", result);
+        return { success: true, message: "Event data retrieved successfully", data: result?.typesOfTickets };
+    } catch (error) {
+        console.error("Error in getEventTypeDataService:", error);
+        return { success: false, message: "Internal server error" };
+    }
+} 
+async updateSeatInformationRepository(ticketData: TicketType) {
+    console.log("Ticket details from Repo:", ticketData);
+    try{
+    const socialEvent = await SOCIALEVENTDB.findById(ticketData.id);
+    
+    if (!socialEvent) {
+        console.log("Social event not found");
+        return;
+    }
+    socialEvent.typesOfTickets.forEach((event: any) => {
+        if (event.id === ticketData._id) {
+            event.type = ticketData.type;
+            event.noOfSeats = ticketData.noOfSeats;
+            event.Amount=ticketData.Amount;
+            event.Included=ticketData.Included;
+            event.notIncluded=ticketData.notIncluded;
+        }
+    });
+
+    await socialEvent.save();
+    console.log("Updated social event:", socialEvent);
+    return { success: true, message: "Event Seat Updated SuccessFully", data: socialEvent.typesOfTickets };
+} catch (error) {
+    console.error("Error in getEventTypeDataService:", error);
+    return { success: false, message: "Internal server error" };
+}
+}  
     
 }
 

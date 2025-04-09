@@ -78,7 +78,10 @@ export class userDetailsController{
         try {
             const result = await this.loginServices.updateBookedEventPaymentStatus(bookedId);
             console.log("Event created successfully", result);
-            return { success: result.success, message: result.message};
+            if(result){
+                return { success: result.success, message: result.message};
+            }
+          
           } catch (error) {
             console.error("Error saving billing details:", error);
             return { success: false, message: "Failed to save billing details", data: null };

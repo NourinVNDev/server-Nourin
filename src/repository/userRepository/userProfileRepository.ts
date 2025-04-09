@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import REVIEWRATINGDB from "../../models/userModels/reveiwRatingSchema";
 import USERDB from "../../models/userModels/userSchema";
 import MESSAGEDB from "../../models/userModels/messageSchema";
+import { eventNames } from "process";
 export class userProfileRepository{
     async postReviewRatingRepository(formData: FormData) {
         const eventId = formData.eventId;
@@ -44,8 +45,8 @@ export class userProfileRepository{
     }
     
     
-    async getEventHistoryRepository() {
-        const result = await BOOKEDUSERDB.find().populate('eventId');
+    async getEventHistoryRepository(userId:string) {
+        const result = await BOOKEDUSERDB.find({userId:userId}).populate('eventId');
     
         console.log("Result:", result);
     
@@ -97,13 +98,13 @@ export class userProfileRepository{
         }
     }
     
-    async getEventBookedRepository() {
+    async getEventBookedRepository(userId:string) {
         try {
-            const rawResult = await BOOKEDUSERDB.find().lean();
+            const rawResult = await BOOKEDUSERDB.find({userId:userId}).lean();
             console.log("Raw Data (Before Populate):", JSON.stringify(rawResult, null, 2));
     
             // Ensure `eventId` is properly populated
-            const result = await BOOKEDUSERDB.find()
+            const result = await BOOKEDUSERDB.find({userId:userId})
                 .populate({ path: 'eventId', model: 'SocialEvent'})
                 .lean();
     
@@ -159,7 +160,7 @@ export class userProfileRepository{
                 .populate({
                     path: 'eventId', // Populating event details
                     model: 'SocialEvent',  // Ensure 'Event' is the correct model name
-                    select: ['companyName','_id'] // Fetch only 'companyName'
+                    select: ['eventName','companyName','_id'] // Fetch only 'companyName'
                 });
     
             console.log("Result:", result);
@@ -174,9 +175,16 @@ export class userProfileRepository{
                     const event = booking.eventId as { companyName?: string } | null;
                     return event?.companyName || null;
                 })
-                .filter(companyName => companyName !== null); // Remove null entries
+                .filter(companyName => companyName !== null);
+                const eventNames = result
+                .map(booking => {
+                    const event = booking.eventId as { eventName?: string } | null;
+                    return event?.eventName || null;
+                })
+                .filter(eventName => eventName !== null);
+
     
-            return { success: true, message: "Data retrieved", data: companyNames };
+            return { success: true, message: "Data retrieved", data: {companyNames,eventNames }};
         } catch (error) {
             console.error("Error fetching company names:", error);
             return { success: false, message: "Internal server error", data: null };

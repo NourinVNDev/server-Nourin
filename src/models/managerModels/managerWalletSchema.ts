@@ -21,7 +21,8 @@ import { eventNames } from "process";
             status: { type: String, enum: ["pending", "completed", "failed"], default: "completed" },
             createdAt: { type: Date, default: Date.now },
             eventName:{type:String},
-            bookedId:{type:String}
+            bookedId:{type:String},
+            noOfPerson:{type:Number}
         },
         ],
     });

@@ -33,6 +33,7 @@ interface EventDocument extends Document {
     offer: any;
     endDate: Date;
     title: string;
+    startDate:string;
 
 }
 const hashPassword = async (password:string) => {
@@ -457,14 +458,9 @@ async getUserDetailsRepository(userId:string){
       console.log("Category details:", category);
 
       // Filter events that have a valid endDate
-      let filteredEvents = category.Events.filter(event => new Date(event.endDate) >= new Date());
+      let filteredEvents = category.Events.filter(event => new Date(event.startDate) >= new Date());
 
-      // Populate `offer` for each event
-      await Promise.all(
-        filteredEvents.map(async (event) => {
-          await event.populate("offer");
-        })
-      );
+
 
       console.log("First", filteredEvents);
       filteredEvents = filteredEvents.map(event => {
@@ -587,7 +583,7 @@ async getCategoryTypeRepo(categoryName1:string){
     async getPostDetailsRepo(postId:string) {
       try {
           console.log("Delegating event data to the actual repository...");
-          // Pass the data to the actual repository for database operations
+
           const savedEvent = await this.userRepositoy.getPostDetailsRepository(postId);
           
           return {savedEvent};
@@ -608,17 +604,46 @@ async getCategoryTypeRepo(categoryName1:string){
         throw new Error("Failed to handle event data in main repository.");
     }
 }
+async checkSeatAvailable(product: PaymentData) {
+  try {
+    const socialEvent = await SOCIALEVENT.findOne({ eventName: product.eventName });
+
+    if (!socialEvent) {
+      return { success: false, message: "Event not found", data: null };
+    }
+
+    const selectedEvent = socialEvent.typesOfTickets.find(
+      (ticket: any) => ticket.type.toLowerCase() === product.type
+    );
+
+    if (!selectedEvent) {
+      return { success: false, message: "Ticket type not found", data: null };
+    }
+
+    if (!selectedEvent.noOfSeats || selectedEvent.noOfSeats <= 0 || selectedEvent.noOfSeats<product.noOfPerson) {
+      return { success: false, message: "No seats available", data: null };
+    }
+
+    
+
+    return { success: true, message: "Seats available", data: { seatsRemaining: selectedEvent.noOfSeats } };
+
+  } catch (error) {
+    console.error("Error in checkSeatAvailable:", error);
+    throw new Error("Failed to check seat availability.");
+  }
+}
+
+
 
 async savePaymentData(paymentData: PaymentData) {
   try {
     console.log("Checking the bookedId", paymentData);
 
-    // Validate paymentData
+
     if (!paymentData.bookedId || !paymentData.paymentStatus || !paymentData.Amount || !paymentData.companyName) {
       throw new Error("Missing required payment data.");
     }
-
-    // Find the existing booking by ID
     const existingBooking = await BOOKEDUSERDB.findById(paymentData.bookedId);
     console.log("Existing booking found:", existingBooking);
 
@@ -645,8 +670,18 @@ async savePaymentData(paymentData: PaymentData) {
     existingBooking.ticketDetails.type = paymentData.type || undefined;
     existingBooking.ticketDetails.Included = paymentData.Included || [];
     existingBooking.ticketDetails.notIncluded = paymentData.notIncluded || [];
-    
-    
+    paymentData.bookedMembers.forEach((member: string) => {
+      existingBooking.bookedUser .push({ user: member, isParticipated: false}); 
+  });
+  const uniqueIncluded = new Set(existingBooking.ticketDetails.Included);
+  const uniqueNotIncluded = new Set(existingBooking.ticketDetails.notIncluded);
+
+  paymentData.Included.forEach(item => uniqueIncluded.add(item));
+  paymentData.notIncluded.forEach(item => uniqueNotIncluded.add(item));
+
+  existingBooking.ticketDetails.Included = Array.from(uniqueIncluded);
+  existingBooking.ticketDetails.notIncluded = Array.from(uniqueNotIncluded);
+
 
     // Save the updated booking
     const updatedBooking = await existingBooking.save();
@@ -681,7 +716,8 @@ async savePaymentData(paymentData: PaymentData) {
         type: "credit",
         status: "completed",
         eventName:paymentData.eventName,
-        bookedId:paymentData.bookingId
+        bookedId:paymentData.bookingId,
+        noOfPerson:paymentData.noOfPerson
       });
       await managerWallet.save();
     }
@@ -701,11 +737,14 @@ async savePaymentData(paymentData: PaymentData) {
             totalAmount: paymentData.Amount,
             userId: paymentData.userId,
             managerAmount: managerAmount,
+            adminAmount:adminAmount,
             type: 'credit',
             status: 'completed',
             createdAt: new Date(),
             eventName:paymentData.eventName,
-            bookedId:paymentData.bookingId
+            bookedId:paymentData.bookingId,
+            noOfperson:paymentData.noOfPerson,
+            companyName:paymentData.companyName
       
           }
         ]
@@ -717,6 +756,7 @@ async savePaymentData(paymentData: PaymentData) {
     totalAmount: paymentData.Amount,
     userId: paymentData.userId,
     managerAmount: managerAmount,
+    adminAmount:adminAmount,
     type: 'credit',
     status: 'completed',
     createdAt: new Date(),
@@ -733,7 +773,7 @@ async savePaymentData(paymentData: PaymentData) {
     if (socialEvent) {
       console.log("No of Person:",paymentData.noOfPerson);
       socialEvent.typesOfTickets.forEach((ticket: any) => {
-        if (ticket.type === paymentData.type) {
+        if (ticket.type.toLowerCase() === paymentData.type) {
           console.log("Hellom");
           
           ticket.noOfSeats -= paymentData.noOfPerson;
@@ -775,7 +815,6 @@ async handleReviewRatingRepo(formData:FormData) {
 async saveBillingDetailsRepo(formData:billingData){
   try {
     console.log("Delegating event data to the actual repository...");
-    // Pass the data to the actual repository for database operations
     const savedEvent = await this.userRepositoy.saveUserBilingDetailsRepository(formData);
   
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
@@ -791,19 +830,22 @@ async updatePaymentStatusRepo(bookedId:string){
 
     // Pass the data to the actual repository for database operations
     const savedEvent = await this.userRepositoy.updateBookedPaymentStatusRepository(bookedId);
-  
+  if(savedEvent){
     return {success:savedEvent.success,message:savedEvent.message};
+  }
+
 } catch (error) {
     console.error("Error in postEventRepository:", error);
     throw new Error("Failed to handle event data in main repository.");
 }
 }
 
-async getEventHistoryRepo(){
+async getEventHistoryRepo(userId:string){
   try {
 
-    // Pass the data to the actual repository for database operations
-    const savedEvent = await this.userProfileRepository.getEventHistoryRepository();
+console.log("UserId:",userId);
+
+    const savedEvent = await this.userProfileRepository.getEventHistoryRepository(userId);
   
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
 } catch (error) {
@@ -827,11 +869,11 @@ async getExistingReviewRepo(userId:string,eventId:string){
     throw new Error("Failed to handle event data in main repository.");
 }
 }
-async getEventBookedRepo(){
+async getEventBookedRepo(userId:string){
   try {
 
     // Pass the data to the actual repository for database operations
-    const savedEvent = await this.userProfileRepository.getEventBookedRepository();
+    const savedEvent = await this.userProfileRepository.getEventBookedRepository(userId);
   
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
 } catch (error) {
@@ -873,7 +915,6 @@ async checkOfferAvailableRepo(categoryName: string) {
 async cancelBookedEventRepo(bookingId:string,userId:string):Promise<{success:boolean,message:string,data:any}>{
   try {
 
-    // Pass the data to the actual repository for database operations
     const savedEvent = await this.cancelEventRepository.cancelBookedEventRepository(bookingId,userId);
   
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};

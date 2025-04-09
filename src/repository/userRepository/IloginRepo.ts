@@ -6,7 +6,7 @@ export interface IloginRepo{
     checkLogin(formData:FormData):Promise<{success:boolean,message:string,user:any}>;
     googleAuthData(payload:Object):Promise<{success:boolean,message:string,user:any}>;
     isEmailValid(email:string):Promise<{success:boolean,message:string,user:any}>;
-    resetPasswordRepo(email:string,formData:FormData):Promise<{success:boolean,message:string,user:any}>;
+    resetPasswordRepo(userId:string,formData:FormData):Promise<{success:boolean,message:string,user:any}>;
     fetchuserEmail(userId:string):Promise<{success:boolean,message:string,user:any}>
     resetUserProfile(email:string,formData:FormData):Promise<{success:boolean,message:string,user:any}>
     getAllCategoryRepository():Promise<{success:boolean,message:string,category:any}>
@@ -17,13 +17,14 @@ export interface IloginRepo{
     posthandleLikeForPost(index:string,userId:string,postId:string):Promise<{savedEvent:any}>
     getPostDetailsRepo(postId:string):Promise<{savedEvent:any}>
     getSelectedEventRepo(postId:string):Promise<{savedEvent:any}>
+    checkSeatAvailable(product:PaymentData):Promise<{success:boolean,message:string,data?:any|undefined|null}>
     savePaymentData(paymentData:PaymentData):Promise<{success:boolean,message:string,data:any}>
     saveBillingDetailsRepo(formData:billingData):Promise<{success:boolean,message:string,data:any}>
-    updatePaymentStatusRepo(bookedId:string):Promise<{success:boolean,message:string}>
+    updatePaymentStatusRepo(bookedId:string):Promise<{success:boolean,message:string}|undefined>
     handleReviewRatingRepo(formData:FormData):Promise<{savedEvent:any}>
-    getEventHistoryRepo():Promise<{success:boolean,message:string,data:any}>
+    getEventHistoryRepo(userId:string):Promise<{success:boolean,message:string,data:any}>
     getExistingReviewRepo(userId:string,eventId:string):Promise<{success:boolean,message:string,data:any}>
-    getEventBookedRepo():Promise<{success:boolean,message:string,data:any}>
+    getEventBookedRepo(userId:string):Promise<{success:boolean,message:string,data:any}>
     getManagerDataRepo(userId:string):Promise<{success:boolean,message:string,data:any}>
     createChatSchemaRepo(userId:string,manager:string):Promise<{success:boolean,message:string,data:any}>
     checkOfferAvailableRepo(categoryName:string):Promise<{success:boolean,message:string,data:any}>

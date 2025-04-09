@@ -37,14 +37,14 @@ export class userProfileService{
         }
     }
     
-    async getEventHistoryService2(){
+    async getEventHistoryService2(userId:string){
         try {
             console.log("Processing event data in another service...",);
   
             // Perform additional validations if needed
          
             // Call repository to save the data
-            const savedEvent =await this.loginRepository.getEventHistoryRepo();
+            const savedEvent =await this.loginRepository.getEventHistoryRepo(userId);
             return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
           
         } catch (error) {
@@ -70,14 +70,14 @@ export class userProfileService{
         }
     }
 
-    async getEventBookedService2(){
+    async getEventBookedService2(userId:string){
         try {
             console.log("Processing event data in another service...",);
   
             // Perform additional validations if needed
          
             // Call repository to save the data
-            const savedEvent =await this.loginRepository.getEventBookedRepo();
+            const savedEvent =await this.loginRepository.getEventBookedRepo(userId);
             return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
           
         } catch (error) {

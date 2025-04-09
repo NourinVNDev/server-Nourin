@@ -7,10 +7,10 @@ export class managerBookingDetailsControllers{
         this.bookingController=managerServiceInstance;
     }
 
-    async getTodaysBookingDetails2(){
+    async getTodaysBookingDetails2(managerId:string){
         try {
             console.log("Processing manager-specific event logic");
-            const result = await this.bookingController.getTodaysBookingService();
+            const result = await this.bookingController.getTodaysBookingService(managerId);
             console.log("Event created successfully", result);
 
             return result;
@@ -23,10 +23,10 @@ export class managerBookingDetailsControllers{
 
 
 
-    async getTotalBookingDetails2(){
+    async getTotalBookingDetails2(managerId:string){
         try {
   
-            const result = await this.bookingController.getTotalBookingService();
+            const result = await this.bookingController.getTotalBookingService(managerId);
             console.log("Event created successfully", result);
 
             return result;

@@ -18,10 +18,10 @@ export class userProfileController{
             throw new Error("Failed to process manager-specific event logic.");
         } 
     }
-    async getEventHistoryDetails2(){
+    async getEventHistoryDetails2(userId:string){
         try {
 
-            const savedEvent = await this.loginService.getEventHistoryService()
+            const savedEvent = await this.loginService.getEventHistoryService(userId)
             console.log("Event Retriving for Event History", savedEvent);
             console.log("From Controller",savedEvent);
             return {success:savedEvent.success,message:savedEvent.message,data:savedEvent};
@@ -50,10 +50,10 @@ export class userProfileController{
 
     
 
-    async getEventBookedDetails2(){
+    async getEventBookedDetails2(userId:string){
         try {
 
-            const savedEvent = await this.loginService.getEventBookedService()
+            const savedEvent = await this.loginService.getEventBookedService(userId)
             console.log("Event Retriving for Event History", savedEvent);
             console.log("From Controller",savedEvent);
             return {success:savedEvent.success,message:savedEvent.message,data:savedEvent};

@@ -41,9 +41,9 @@ userRoute.get(`/getExistingReview/:eventId/:userId`,checkIfUserBlocked,verifyTok
 userRoute.post('/review-rating',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.postReviewAndRating.bind(userLoginRouter));
 userRoute.post(`/saveBillingDetails`,checkIfUserBlocked,verifyToken(['user']),userLoginRouter.saveBillingDetails.bind(userLoginRouter));
 userRoute.post(`/updatePaymentStatus/:bookedId`,checkIfUserBlocked,verifyToken(['user']),userLoginRouter.updateBookedEventPaymentStatus.bind(userLoginRouter));
-userRoute.get('/getEventHistory',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getEventHistoryDetails.bind(userLoginRouter));
+userRoute.get('/getEventHistory/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getEventHistoryDetails.bind(userLoginRouter));
 userRoute.get('/getManagerName/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getBookedManagerDetails.bind(userLoginRouter));
-userRoute.get('/getBookedEvent',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getEventBookedDetails.bind(userLoginRouter));
+userRoute.get('/getBookedEvent/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getEventBookedDetails.bind(userLoginRouter));
 userRoute.post('/create-chatSchema',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.createChatSchema.bind(userLoginRouter));
 userRoute.post(`/uploadUserProfile/:userId`,checkIfUserBlocked,verifyToken(['user']),upload.single('profilePicture'),userLoginRouter.uploadUserProfilePicture.bind(userLoginRouter));
 userRoute.get(`/post/checkOfferAvailable/:category`,checkIfUserBlocked,verifyToken(['user']),userLoginRouter.checkOfferAvailable.bind(userLoginRouter));

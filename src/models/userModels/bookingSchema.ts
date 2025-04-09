@@ -9,21 +9,21 @@ const bookingSchema = new Schema({
     eventId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'SocialEvent',
-        required: true
+        required: true  
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    paymentStatus: { // Fixed typo
+    paymentStatus: {
         type: String,
         enum: ['Confirmed', 'Cancelled', 'Completed'],
         default: 'Confirmed'
     },
     categoryId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'categorys', // Ensure this is the correct reference
+        ref: 'categorys', 
         required: true
     },
     bookingDate: {
@@ -50,9 +50,17 @@ const bookingSchema = new Schema({
         type: Number,
      
     },
-    isParticipated:{
-        type:Boolean
-    }
+    bookedUser: [{
+        user: {
+            type: String,
+            required: true
+        },
+        isParticipated: {
+            type: Boolean,
+            default: false
+        }
+    }]
+
 });
 
 export default mongoose.model('BookedUser', bookingSchema);

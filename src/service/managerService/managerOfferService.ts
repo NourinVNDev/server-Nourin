@@ -8,9 +8,9 @@ export class managerOfferService{
     constructor(managerRepositoryInstance:IMloginRepo){
         this.managerOfferService=managerRepositoryInstance;
     }
-    async getOfferService(req:Request,res:Response):Promise<{ success: boolean; message: string; data?: any }>{
+    async getOfferService(managerId:string):Promise<{ success: boolean; message: string; data?: any }>{
         try {
-            const savedEvent =await this.managerOfferService.getAllOfferDetails(req,res); 
+            const savedEvent =await this.managerOfferService.getAllOfferDetails(managerId); 
             console.log("Saved Data",savedEvent);
             if(savedEvent){
                 return { success: savedEvent.success, message: savedEvent.message, data: savedEvent.data };

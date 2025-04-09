@@ -11,6 +11,7 @@ import { IMloginService } from "../../service/managerService/IMloginService";
 import { loginServices } from "../../service/userService/loginService";
 import HTTP_statusCode from "../../config/enum/enum";
 import { managerVerifierDetailsControllers } from "./verifierDetailsController";
+import { log } from "node:util";
 interface ManagerPayload {
   email: string;
   role:string
@@ -89,10 +90,12 @@ export class managerLogin{
         
                 // Get login result
                 const result = await this.managerController.mloginDetails(formData);
-                if (!result || !result.user || !result.user.user) {
-                    return res.status(HTTP_statusCode.BadRequest).json({ error: 'Invalid login credentials' });
+                console.log("Result  of Login",result);
+                
+                if (!result || !result.user) {
+                    return res.status(HTTP_statusCode.OK).json({ message: 'Invalid login credentials' });
                 }
-                const userData = result.user.user;
+                const userData = result.user;
         
                 let manager={email:userData.email,role:'manager'};
                 const accessToken = generateAccessToken(manager);
@@ -112,7 +115,7 @@ export class managerLogin{
                 sameSite: 'strict',
                 path: '/',
             });
-                // Send success response
+          
                 res.status(HTTP_statusCode.OK).json({ message: 'Login Success', data: (await result).user });
             
             } catch (error) {
@@ -126,11 +129,16 @@ export class managerLogin{
             
             try {
 
-             const email=req.body;
+             const email=req.body.email;
              console.log(email);
             let result= this.managerController.managerForgotEmail(email);
-            globalOTP=Number((await result).otpValue);
-             res.status(HTTP_statusCode.OK).json({ message: 'OTP Success' ,data:(await result).otpValue});
+            if((await result).success){
+              globalOTP=Number((await result).otpValue);
+              res.status(HTTP_statusCode.OK).json({ message: (await result).message ,data:(await result).otpValue});
+            }else{
+              res.status(HTTP_statusCode.OK).json({ message: (await result).message ,data:(await result).otpValue});
+            }
+
     
             } catch (error) {
                 res.status(HTTP_statusCode.InternalServerError).json({ error: 'Something went wrong' });
@@ -145,8 +153,13 @@ export class managerLogin{
                
         
                 console.log("Received OTP:", otp, "Global OTP:", globalOTP);
-                this.managerController.verifyOtpForForgot(email,otp,globalOTP);
-                res.status(HTTP_statusCode.OK).json({ message: 'OTP Matched' });
+                const result=this.managerController.verifyOtpForForgot(email,otp,globalOTP);
+                if((await result).success){
+                  res.status(HTTP_statusCode.OK).json({ message: 'OTP Matched' });
+                }else{
+                  res.status(HTTP_statusCode.OK).json({message:(await result).message});
+                }
+
               } catch (error) {
                   console.error("Error saving user data:", error);
                   res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
@@ -313,11 +326,7 @@ export class managerLogin{
           console.log("Received request for updating  an event");
           console.log(req.body,"Yeah",req.files);
           try {
-                // Ensure a file is uploaded
-            
-          
-  
-              // Delegate to manager-specific controller
+               
 
               const savedEvent = await this.eventController.updateEventPost(req, res);
               if(savedEvent.success){
@@ -448,17 +457,17 @@ export class managerLogin{
 
         async getAllOffers(req: Request, res: Response): Promise<void> {
             try {
-              // Call the controller method with only the necessary data (e.g., req.params, req.query, etc.)
-              const result = await this.offerController.getAllOffers(req,res);
+              const managerId=req.params.managerId;
+              const result = await this.offerController.getAllOffers(managerId);
         
-              // Check if the result indicates a failure
+           
               if (!result?.success) {
                  res.status(HTTP_statusCode.InternalServerError).json({
                   message: result?.message || "Failed to fetch offers",
                 });
               }
         
-              // Respond with the fetched data
+          
               res.status(HTTP_statusCode.OK).json({
                 message: "Offers fetched successfully",
                 data: result.data,
@@ -503,13 +512,11 @@ export class managerLogin{
           }
           async createNewOffer(req: Request, res: Response): Promise<void> {
             try {
-              // Extract formData from req.body
+            
               console.log(req.body);
               const  formData  = req.body;
               console.log("FormData from Offer", formData);
               const result = await this.offerController.createNewOfferController(formData);
-          
-              // Check if the result indicates a failure
               if (!result?.success) {
                 console.log('hai');
                 
@@ -612,26 +619,99 @@ export class managerLogin{
               res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
               
             }
-
+          }
+          async fetchAllCompanyEvents(req:Request,res:Response){
+            try {
+              const companyName = req.params.companyName;
+              console.log("your companyName:", companyName);
+      
+              const result = await this.managerController.fetchAllEventService(companyName);
+              res.status(200).json(result);
+          } catch (error) {
+              console.error("Error while checking manager status:", error);
+              res.status(500).json({
+                  success: false,
+                  error: 'Something went wrong'
+              });
+          }
 
           }
-          
+          async getSelectedVerifierData(req:Request,res:Response){
+            try {
+              const verifierId = req.params.verifierId;
+             
+      
+              const result = await this.verifierController.fetchSelectedVerifierData(verifierId);
+              res.status(200).json(result);
+          } catch (error) {
+              console.error("Error while checking manager status:", error);
+              res.status(500).json({
+                  success: false,
+                  error: 'Something went wrong'
+              });
+          }
+          }
+          async postNewVerifier(req:Request,res:Response){
+            try {
+              console.log("Req body:",req.body);
+              
+              const formData= req.body;
+              console.log("your companyNames:",formData);
+      
+              const result = await this.verifierController.postVerifierLoginDetails(formData);
+              res.status(200).json(result);
+          } catch (error) {
+              console.error("Error while checking manager status:", error);
+              res.status(500).json({
+                  success: false,
+                  error: 'Something went wrong'
+              });
+          }
 
-          
-          
+          }
+          async updateVerifierData(req:Request,res:Response){
+            try {
+              console.log("Req body:",req.body);
+              
+              const formData= req.body;
+              console.log("your FormData from backend:",formData);
+      
+              const result = await this.verifierController.updateVerifierDetails(formData);
+              res.status(200).json(result);
+          } catch (error) {
+              console.error("Error while updating verifier:", error);
+              res.status(500).json({
+                  success: false,
+                  error: 'Something went wrong'
+              });
+          }
+          }
+          async updateSeatInformation(req:Request,res:Response){
+            try {
+              console.log("Req body:",req.body);
+              
+              const TicketData= req.body;
+              console.log("your companyNames:",TicketData);
+      
+              const result = await this.eventController.postSeatDetails(TicketData);
+              res.status(200).json(result);
+          } catch (error) {
+              console.error("Error while checking manager status:", error);
+              res.status(500).json({
+                  success: false,
+                  error: 'Something went wrong'
+              });
+          }
+          }
           async getAllEventDetails(req: Request, res: Response): Promise<void> {
             try {
-              // Call the controller method with only the necessary data (e.g., req.params, req.query, etc.)
-              const result = await this.eventController.getAllEventData(req,res);
-        
-              // Check if the result indicates a failure
+              const managerId=req.params.managerId;
+              const result = await this.eventController.getAllEventData(managerId);
               if (!result?.success) {
                  res.status(HTTP_statusCode.InternalServerError).json({
                   message: result?.message || "Failed to fetch offers",
                 });
               }
-        
-              // Respond with the fetched data
               res.status(HTTP_statusCode.OK).json({
                 message: "Event fetched successfully",
                 data: result.data,
@@ -648,45 +728,71 @@ export class managerLogin{
 
           async getSelectedEventDetails(req: Request, res: Response): Promise<void> {
             try {
-              // Call the controller method with only the necessary data (e.g., req.params, req.query, etc.)
+
               const {id}=req.params;
               const result = await this.eventController.getSelectedEventDataService(id);
         
-              // Check if the result indicates a failure
+            
               if (!result?.success) {
                  res.status(HTTP_statusCode.InternalServerError).json({
-                  message: result?.message || "Failed to fetch offers",
+                  message: result?.message || "Failed to fetch event",
                 });
               }
         
-              // Respond with the fetched data
+          
               res.status(HTTP_statusCode.OK).json({
                 message: "Event fetched successfully",
                 data: result.data,
               });
             } catch (error) {
-              console.error("Error in getAllOffers:", error);
+              console.error("Error in fetching event:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
                 message: "Internal server error",
                 error: error instanceof Error ? error.message : error,
               });
             }
           }  
+          async fetchEventTicketDetails(req:Request,res:Response){
+            try {
+
+              const {id}=req.params;
+              const result = await this.eventController.getSelectedEventTicketDetails(id);
+        
+            
+              if (!result?.success) {
+                 res.status(HTTP_statusCode.InternalServerError).json({
+                  message: result?.message || "Failed to fetch event ticket",
+                });
+              }
+        
+          
+              res.status(HTTP_statusCode.OK).json({
+                message: "Event fetched successfully",
+                data: result.data,
+              });
+            } catch (error) {
+              console.error("Error in event ticket fetching:", error);
+              res.status(HTTP_statusCode.InternalServerError).json({
+                message: "Internal server error",
+                error: error instanceof Error ? error.message : error,
+              });
+            }
+          }
 
           async getTodaysBookingDetails(req:Request,res:Response):Promise<void>{
             try {
-              // Call the controller method with only the necessary data (e.g., req.params, req.query, etc.)
-            
-              const result = await this.bookingController.getTodaysBookingDetails2();
+
+              const {managerId}=req.params;
+              const result = await this.bookingController.getTodaysBookingDetails2(managerId);
         
-              // Check if the result indicates a failure
+              
               if (!result?.success) {
                  res.status(HTTP_statusCode.InternalServerError).json({
                   message: result?.message || "Failed to fetch offers",
                 });
               }
         
-              // Respond with the fetched data
+           
               res.status(HTTP_statusCode.OK).json({
                 message: result.data.message,
                 data: result.data.data,
@@ -703,18 +809,15 @@ export class managerLogin{
 
           async getTotalBookingDetails(req:Request,res:Response):Promise<void>{
             try {
-              // Call the controller method with only the necessary data (e.g., req.params, req.query, etc.)
-            
-              const result = await this.bookingController.getTotalBookingDetails2();
+
+              const {managerId}=req.params;
+              const result = await this.bookingController.getTotalBookingDetails2(managerId);
         
-              // Check if the result indicates a failure
               if (!result?.success) {
                  res.status(HTTP_statusCode.InternalServerError).json({
                   message: result?.message || "Failed to fetch offers",
                 });
               }
-        
-              // Respond with the fetched data
               res.status(HTTP_statusCode.OK).json({
                 message: result.data.message,
                 data: result.data.data,
@@ -761,10 +864,11 @@ export class managerLogin{
 
           async getAllVerifiers(req:Request,res:Response){
             try {
-              const formData = req.body;
-              console.log("Received billing details:", formData);
+              const managerName=req.params.managerName;
+              console.log("Maaa",managerName);
+              
           
-              const result = await this.verifierController.getAllVerifierDetails();
+              const result = await this.verifierController.getAllVerifierDetails(managerName);
               console.log("Nice",result.data)
           
               res.status(HTTP_statusCode.OK).json(result); // Send response to client

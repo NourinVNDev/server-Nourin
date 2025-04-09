@@ -26,23 +26,30 @@ ManagerRoute.post('/resetPasswordM',managerLoginRouter.managerResetPassword.bind
 ManagerRoute.post('/createEvent',checkIfManagerBlocked,verifyToken(['manager']), upload.single('images'),managerLoginRouter.createEventPost.bind(managerLoginRouter));
 ManagerRoute.post('/createEventSeatDetails/:eventId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.createEventSeatDetails.bind(managerLoginRouter));
 ManagerRoute.get('/manager/getEventType',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getEventTypeData.bind(managerLoginRouter));
-ManagerRoute.get('/getOffers',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getAllOffers.bind(managerLoginRouter));
+ManagerRoute.get('/getOffers/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getAllOffers.bind(managerLoginRouter));
 ManagerRoute.post('/addNewOffer',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.createNewOffer.bind(managerLoginRouter));
 ManagerRoute.get('/getSelectedOffer/:offerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getSelectedOfferDetails.bind(managerLoginRouter));
 ManagerRoute.post('/updateOffer',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateOfferDetails.bind(managerLoginRouter));
-ManagerRoute.get('/Manager/getAllEventData',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getAllEventDetails.bind(managerLoginRouter));
+ManagerRoute.get('/Manager/getAllEventData/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getAllEventDetails.bind(managerLoginRouter));
 ManagerRoute.post('/refresh-token',managerLoginRouter.reGenerateManagerAccessToken.bind(managerLoginRouter));
 ManagerRoute.get('/getPreviousEventDetails/:id',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getSelectedEventDetails.bind(managerLoginRouter));
+ManagerRoute.get(`/getPreviousTicketDetails/:id`,checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchEventTicketDetails.bind(managerLoginRouter));
 ManagerRoute.post('/updateEvent',checkIfManagerBlocked,verifyToken(['manager']),upload.array("images",10),managerLoginRouter.updateEventPost.bind(managerLoginRouter))
 ManagerRoute.get('/managerProfile/:companyName',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getManagerProfileDetails.bind(managerLoginRouter));
 ManagerRoute.post('/updateManagerData',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateManagerProfile.bind(managerLoginRouter));
 ManagerRoute.post('/changeManagerPassword',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateManagerPassword.bind(managerLoginRouter));
 ManagerRoute.get('/searchOfferInput/:inputSearch',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getSearchOfferUserInput.bind(managerLoginRouter));
-ManagerRoute.get('/fetchTodayBooking',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getTodaysBookingDetails.bind(managerLoginRouter));
-ManagerRoute.get('/fetchTotalBooking',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getTotalBookingDetails.bind(managerLoginRouter));
+ManagerRoute.get('/fetchTodayBooking/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getTodaysBookingDetails.bind(managerLoginRouter));
+ManagerRoute.get('/fetchTotalBooking/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getTotalBookingDetails.bind(managerLoginRouter));
 ManagerRoute.get('/getUserNames/:managerName',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getBookedUserDetails.bind(managerLoginRouter));
 ManagerRoute.post('/create-chatSchema2',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.createChatSchema.bind(managerLoginRouter));
-ManagerRoute.get('/fetchAllVerifier',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getAllVerifiers.bind(managerLoginRouter));
+ManagerRoute.get('/fetchAllVerifier/:managerName',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getAllVerifiers.bind(managerLoginRouter));
 ManagerRoute.get('/updateVerifierStatus/:verifierId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateVerifierStatus.bind(managerLoginRouter));
 ManagerRoute.get('/fetchManagerWallet/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchManagerWallet.bind(managerLoginRouter));
+ManagerRoute.get(`/fetchEventsName/:companyName`,checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchAllCompanyEvents.bind(managerLoginRouter));
+ManagerRoute.post('/addNewVerifier',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.postNewVerifier.bind(managerLoginRouter));
+ManagerRoute.get(`/fetchVerifierDetails/:verifierId`,checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getSelectedVerifierData.bind(managerLoginRouter));
+ManagerRoute.post('/updateVerifier',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateVerifierData.bind(managerLoginRouter))
+ManagerRoute.post('/updateSeatInfo',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateSeatInformation.bind(managerLoginRouter));
+
 export default ManagerRoute;    

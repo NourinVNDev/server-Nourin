@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+import mongoose,{Schema} from "mongoose";
+
 
 const offerSchema=new mongoose.Schema({
         offerName:{
@@ -24,6 +25,11 @@ const offerSchema=new mongoose.Schema({
         item_description:{
             type:String,
             required:true
+        },
+        managerId:{
+            type:Schema.Types.ObjectId,
+            ref:'socialEvent'
         }
-})
-export default mongoose.model('EventOffer',offerSchema);
+    })
+
+    export  default mongoose.model("offerSchema",offerSchema);

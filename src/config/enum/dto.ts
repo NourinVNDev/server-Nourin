@@ -17,7 +17,7 @@ export type EventData = {
   endDate: string;
 
   destination: string;
-  noOfPerson: number;
+
 
   content: string;
   time: string;
@@ -46,10 +46,11 @@ export type EventSeatDetails={
 
 
 export type verifierFormData={
-  name:string,
+  verifierName:string,
   email:string,
-  password:string,
+  Events:string[],
   companyName:string
+  _id?:string
 }
 
 
@@ -81,7 +82,8 @@ export type verifierFormData={
     type:string;
     managerId:string;
     Included:[string];
-    notIncluded:[string]
+    notIncluded:[string];
+    bookedMembers:string[]
 
   };
 
@@ -95,6 +97,7 @@ export type verifierFormData={
     startDate: string; 
     endDate: string;  
     item_description: string;
+    managerId:string;
 
   }
 
@@ -108,7 +111,8 @@ export type verifierFormData={
     lastName:string,
     email:string,
     phoneNo:number,
-    address:string
+    address:string,
+    ticketType:string
   }
 
 
@@ -121,3 +125,13 @@ export type verifierFormData={
     sessionId:string,
     paymentStatus:'Success'|'canceled'
   ]
+
+  export type TicketType ={
+    type: string;
+    noOfSeats: number;
+    Amount: number;
+    Included: string[];
+    notIncluded: string[];
+    _id: string
+    id:string
+}

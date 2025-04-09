@@ -10,10 +10,10 @@ constructor(managerServiceInstance:IMloginService){
     this.managerController=managerServiceInstance;
 
 }
-async getAllOffers(req:Request,res:Response):Promise<any>{
+async getAllOffers(managerId:string):Promise<any>{
     try {
 
-        const result = await this.managerController.getAllOfferServiceDetails(req,res)
+        const result = await this.managerController.getAllOfferServiceDetails(managerId)
         console.log("Event created successfully", result);
         return result;
         
@@ -94,6 +94,7 @@ async fetchWalletOfManager(managerId:string){
     } 
 
 }
+
 
 
 

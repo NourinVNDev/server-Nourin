@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 import CONVERSATIONDB from "../../models/userModels/conversationSchema";
 import MESSAGEDB from "../../models/userModels/messageSchema";
 export class managerBookingRepository{
-    async getTodaysBookingRepository() {
+    async getTodaysBookingRepository(managerId:string) {
         try {
             const startOfDay = new Date();
             startOfDay.setHours(0, 0, 0, 0); // Set time to 00:00:00.000
@@ -14,47 +14,73 @@ export class managerBookingRepository{
             const endOfDay = new Date();
             endOfDay.setHours(23, 59, 59, 999); // Set time to 23:59:59.999
     
-            console.log("Hello", await BOOKEDUSERDB.find());
+            // First, find all events managed by this manager
+            const managerEvents = await SOCIALEVENTDB.find({ 
+                Manager: managerId 
+            }, { _id: 1, eventName: 1 });
+            
+            // Get the event IDs managed by this manager
+            const managerEventIds = managerEvents.map(event => event._id);
     
-            // Find bookings within today's date range
+            // Get today's bookings for only this manager's events
             const result = await BOOKEDUSERDB.find({
-                bookingDate: { $gte: startOfDay, $lte: endOfDay }
+                bookingDate: { $gte: startOfDay, $lte: endOfDay },
+                eventId: { $in: managerEventIds }
+            }).populate({
+                path: 'eventId',
+                select: 'eventName'
             });
     
-            console.log("Today's Bookings:", result);
-            return { success: true, message: "Today's bookings retrieved successfully", data: result };
+            console.log("Manager's Today's Bookings:", result);
+            return { 
+                success: true, 
+                message: "Manager's today's bookings retrieved successfully", 
+                data: result
+            };
         } catch (error) {
             console.error("Error in getTodaysBookingRepository:", error);
             return { success: false, message: "Internal server error" };
         }
     }
-    async getTotalBookingRepository() {
+    async getTotalBookingRepository(managerId: string) {
         try {
-            const currentDate = new Date();
-            console.log("Current Date:", currentDate);
+         
+            const managerEvents = await SOCIALEVENTDB.find({ 
+                Manager: managerId 
+            }, { _id: 1 });
+            
+      
+            const managerEventIds = managerEvents.map(event => event._id);
+            
+         
+            if (managerEventIds.length === 0) {
+                return { 
+                    success: true, 
+                    message: "No events found for this manager", 
+                    data: {
+                        bookings: [],
+                        totalCount: 0
+                    }
+                };
+            }
     
-            // Set the start of today
-            const startOfDay = new Date();
-            startOfDay.setHours(0, 0, 0, 0); // Set time to 00:00:00.000
-    
-            // Find today's bookings
-            const todaysBookings = await BOOKEDUSERDB.find({
-                bookingDate: { $gte: startOfDay, $lte: currentDate } // Today's bookings
+
+            const allBookings = await BOOKEDUSERDB.find({
+                eventId: { $in: managerEventIds }
+            }).populate({
+                path: 'eventId',
+                select: 'eventName'
             });
     
-            // Find future bookings
-            const futureBookings = await BOOKEDUSERDB.find({
-                bookingDate: { $gt: currentDate } // Future bookings
-            });
+            console.log("Manager's Total Bookings:", allBookings.length);
     
-            // Combine today's and future bookings
-            const allBookings = [...todaysBookings, ...futureBookings];
-    
-            console.log("Today's Bookings:", todaysBookings);
-            console.log("Future Bookings:", futureBookings);
-            console.log("All Bookings:", allBookings);
-    
-            return { success: true, message: "Bookings retrieved successfully", data: allBookings };
+            return { 
+                success: true, 
+                message: "Manager's bookings retrieved successfully", 
+                data: allBookings,
+                  
+                
+            };
         } catch (error) {
             console.error("Error in getTotalBookingRepository:", error);
             return { success: false, message: "Internal server error" };

@@ -84,9 +84,12 @@ export class userDetailsService{
             try {
                 console.log("Processing event data in another services...",product.bookedId);
         
-                // Validate product object
                 if (!product) {
                     throw new Error("Invalid product provided.");
+                }
+                const result=await this.loginRepository.checkSeatAvailable(product)
+                if(!result.success){
+                    return {success:false,message:result.message,data:result.data};
                 }
                 const actualAmount=product.Amount/product.noOfPerson;
         
@@ -94,20 +97,20 @@ export class userDetailsService{
                     price_data: {
                         currency: "inr",
                         product_data: {
-                            name: product.eventName, // Use eventName as the product name
-                            images: product.images, // Ensure images is an array
+                            name: product.eventName, 
+                            images: product.images,
                         },
                         unit_amount: Math.round(actualAmount * 100),
                     },
                     quantity: product.noOfPerson,
                 };
         
-                // Create Stripe session
+               
                 const session = await stripe.checkout.sessions.create({
                     payment_method_types: ["card"],
-                    line_items: [lineItem], // Wrap the single item in an array
+                    line_items: [lineItem], 
                     mode: "payment",
-                    success_url: `http://localhost:5173/payment-success/${product.managerId}`, // Replace with actual URL
+                    success_url: `http://localhost:5173/payment-success/${product.managerId}`,
                     cancel_url: `http://localhost:5173/payment-cancel/${product.bookedId}`,
                 });
 
@@ -125,11 +128,9 @@ export class userDetailsService{
         
                 await this.loginRepository.savePaymentData(paymentData);
         
-                const savedId = {
-                    id: session.id,
-                };
+          
         
-                return savedId;
+                return {success:true,message:'Payment completed Successfully',data:session.id};
             } catch (error) {
                 console.error("Error in handleEventCreation:", error);
                 throw new Error("Failed to create event in another service layer.");
@@ -144,11 +145,6 @@ export class userDetailsService{
         async saveBillingDetailsService2(formData:billingData){
             try {
                 console.log("Processing event data in another service...",formData);
-      
-                // Perform additional validations if needed
-             
-      
-                // Call repository to save the data
                 const savedEvent =await this.loginRepository.saveBillingDetailsRepo(formData);
       
                 return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
@@ -166,8 +162,10 @@ export class userDetailsService{
       
                 // Call repository to save the data
                 const savedEvent =await this.loginRepository.updatePaymentStatusRepo(bookedId);
-      
-                return {success:savedEvent.success,message:savedEvent.message};
+                if(savedEvent){
+                    return {success:savedEvent.success,message:savedEvent.message};
+                }
+     
             } catch (error) {
                 console.error("Error in handleEventCreation:", error);
                 throw new Error("Failed to create event in another service layer.");

@@ -9,7 +9,7 @@ const socialEventSchema = new mongoose.Schema(
       },
       offer:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"EventOffer",
+        ref:"offerSchema",
       },
       title: {
         type: String,
@@ -65,10 +65,6 @@ const socialEventSchema = new mongoose.Schema(
 
         }
       ],
-      noOfPerson:{
-        type:Number,
-        required:true
-      },
       noOfDays:{
         type:Number,
         required:true

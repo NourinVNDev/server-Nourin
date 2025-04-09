@@ -9,11 +9,11 @@ export class verifierDetailsService implements IVerifierService{
 
     }
 
-    async checkIfManagerActive(email: string) {
+    async checkIfVerifierActive(email: string) {
 
 
     
-        const managerData = await this.verifierService.checkTheManagerIsActive(email); 
+        const managerData = await this.verifierService.checkTheVerifierIsActive(email); 
 
         if (managerData.success) {
             return {
@@ -47,8 +47,8 @@ export class verifierDetailsService implements IVerifierService{
             };
         }
     }
-    async fetchAllEvents(companyName:string){
-        const managerData = await this.verifierService.fetchAllCompanyEventRepo(companyName); 
+    async fetchAllEvents(email:string){
+        const managerData = await this.verifierService.fetchAllCompanyEventRepo(email); 
 
         if (managerData.success) {
             return {

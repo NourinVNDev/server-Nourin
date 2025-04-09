@@ -414,13 +414,13 @@ async getCategoryTypeServiice(categoryName:string){
 
 async posthandleLikeForPost(index:string,userId:string,postId:string){
   try {
-    // Fetch data from the repository
+
     const result = await this.userDetailService.postLikeService(index,userId,postId);
     console.log("from service", result);
-    //  return { success: result.success, message: result. message, data: result.data };
+
 return {result};
   } catch (error) {
-    // Log and return a generic error response
+  
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
@@ -431,13 +431,13 @@ return {result};
 
 async handlePostDetailsService(postId:string){
   try {
-    // Fetch data from the repository
+    
     const result = await this.userDetailService.getPostDetailsService(postId);
     console.log("from service", result);
-    //  return { success: result.success, message: result. message, data: result.data };
+
 return {result};
   } catch (error) {
-    // Log and return a generic error response
+ 
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
@@ -445,13 +445,13 @@ return {result};
 
 async getSelectedEventService(postId:string){
   try {
-    // Fetch data from the repository
+
     const result = await this.userDetailService.getSelectedEventService2(postId);
     console.log("from service", result);
-    //  return { success: result.success, message: result. message, data: result.data };
+
 return {result};
   } catch (error) {
-    // Log and return a generic error response
+
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
@@ -460,13 +460,13 @@ return {result};
 
 async makePaymentStripeService(products:PaymentData){
   try {
-    // Fetch data from the repository
+
     const result = await this.userDetailService.makePaymentStripeService2(products);
     console.log("from service", result);
-    //  return { success: result.success, message: result. message, data: result.data };
+
 return {result};
   } catch (error) {
-    // Log and return a generic error response
+
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
@@ -490,12 +490,12 @@ return {result};
 
 async saveBillingDetailsService(formData:billingData){
   try {
-    // Fetch data from the repository
+
     const result = await this.userDetailService.saveBillingDetailsService2(formData);
     console.log("from service", result);
     return {success:result.success,message:result.message,data:result.data};
   } catch (error) {
-    // Log and return a generic error response
+
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
@@ -507,17 +507,20 @@ async updateBookedEventPaymentStatus(bookedId:string){
     // Fetch data from the repository
     const result = await this.userDetailService.updatePayementStatusService2(bookedId);
     console.log("from service", result);
-    return {success:result.success,message:result.message};
+    if(result){
+      return {success:result.success,message:result.message};
+    }
+
   } catch (error) {
     // Log and return a generic error response
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
 }
-async getEventHistoryService(){
+async getEventHistoryService(userId:string){
   try {
     // Fetch data from the repository
-    const savedEvent = await this.userProfileService.getEventHistoryService2();
+    const savedEvent = await this.userProfileService.getEventHistoryService2(userId);
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
     // return {success:result.success,message:result.message,data:result.data};
   } catch (error) {
@@ -536,16 +539,16 @@ async getExistingReviewService(userId:string,eventId:string){
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
     // return {success:result.success,message:result.message,data:result.data};
   } catch (error) {
-    // Log and return a generic error response
+
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
 }
 
-async getEventBookedService(){
+async getEventBookedService(userId:string){
   try {
     // Fetch data from the repository
-    const savedEvent = await this.userProfileService.getEventBookedService2();
+    const savedEvent = await this.userProfileService.getEventBookedService2(userId);
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
     // return {success:result.success,message:result.message,data:result.data};
   } catch (error) {

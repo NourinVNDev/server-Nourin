@@ -1,7 +1,7 @@
     import { Request,Response } from "express";
     import { mLoginService } from "../../service/managerService/MloginService";
     import { IMloginService } from "../../service/managerService/IMloginService";
-import { EventData } from "../../config/enum/dto";
+import { EventData, TicketType } from "../../config/enum/dto";
 import { EventSeatDetails } from "../../config/enum/dto";
 
     export class managerEventControllers{
@@ -30,7 +30,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
                         endDate,
                        
                         destination,
-                        noOfPerson,
+                      
                  
                         companyName
                       } = body;
@@ -53,14 +53,14 @@ import { EventSeatDetails } from "../../config/enum/dto";
                         endDate,
                     
                         destination,
-                        noOfPerson,
+                     
                    
                         images:files!
 
                       };
         
-                    if (!formData.eventName || !formData.title || !formData.address  || !formData.startDate ||!formData.endDate  ||!formData.destination  ||!formData.noOfPerson||!files) {
-                        throw new Error("Missing required fields: EventName, title, address, city,startDate, endDate,destination,noOfPerson ,or Image.");
+                    if (!formData.eventName || !formData.title || !formData.address  || !formData.startDate ||!formData.endDate  ||!formData.destination ||!files) {
+                        throw new Error("Missing required fields: EventName, title, address, city,startDate, endDate,destination ,or Image.");
                     }
         
                     const result = await this.managerController.createEventPostService(formData, files);
@@ -129,13 +129,9 @@ import { EventSeatDetails } from "../../config/enum/dto";
                     address,
                     startDate,
                     endDate,
-                   
                     destination,
-                    noOfPerson,
-                 
-                    companyName
-                    
-                  } = body;
+               
+                    companyName} = body;
 
 
 
@@ -148,7 +144,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
                   const formData: EventData = {
                     id, companyName, content, time, tags, eventName, title,
                     address, startDate, endDate, 
-                    destination, noOfPerson,
+                    destination,
                     images: files,
                   };
                 console.log("checking the data ",formData,formData.images);
@@ -156,7 +152,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
 
 
     
-                if (!formData.eventName || !formData.title || !formData.address || !formData.startDate ||!formData.endDate  ||!formData.destination||!formData.noOfPerson  ||!files) {
+                if (!formData.eventName || !formData.title || !formData.address || !formData.startDate ||!formData.endDate  ||!formData.destination  ||!files) {
                     throw new Error("Missing required fields: EventName, title, address,startDate, endDate,amount,destination,noOfDays,noOfPerson,Included,notIncluded,or Image.");
                 }
     
@@ -171,12 +167,12 @@ import { EventSeatDetails } from "../../config/enum/dto";
         }
 
         
-        async getAllEventData(req: Request, res: Response): Promise<any> {
+        async getAllEventData(managerId:string): Promise<any> {
             console.log('hai');
             
             try {
                 console.log("Processing manager-specific event logic");
-                const result = await this.managerController.getAllEventService(req,res);
+                const result = await this.managerController.getAllEventService(managerId);
                 console.log("Event created successfully", result);
     
                 return result;
@@ -198,7 +194,33 @@ import { EventSeatDetails } from "../../config/enum/dto";
                 console.error("Error in managerEventControllers:", error);
                 throw new Error("Failed to process manager-specific event logic.");
             }
-        }   
+        }
+        async getSelectedEventTicketDetails(id:string){
+            try {
+                console.log("Processing manager-specific event logic");
+                const result = await this.managerController.getSelectedEventTicketService(id);
+                console.log("Event created successfully", result);
+    
+                return result;
+            } catch (error) {
+                console.error("Error in managerEventControllers:", error);
+                throw new Error("Failed to process manager-specific event logic.");
+            }
+        }
+        async postSeatDetails(ticketData:TicketType){
+            try {
+    
+                const result = await this.managerController.postSeatInformationService(ticketData)
+                console.log("Event created successfully", result);
+                return result;
+                
+            } catch (error) {
+                console.error("Error in managerEventControllers:", error);
+                throw new Error("Failed to process manager-specific event logic.");
+            }
+        }     
 
         
     }
+
+    

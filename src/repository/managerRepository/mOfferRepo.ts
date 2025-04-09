@@ -20,7 +20,7 @@ export class managerOfferRepository{
 
     async addNewOfferRepository(formData: OfferData) {
         try {
-            const { offerName, discount_on, discount_value, startDate, endDate, item_description } = formData;
+            const { offerName, discount_on, discount_value, startDate, endDate, item_description,managerId } = formData;
     
             const activeOffer = await OFFERDB.findOne({
                 discount_on,
@@ -43,24 +43,25 @@ export class managerOfferRepository{
                 startDate: new Date(startDate),
                 endDate: new Date(endDate),
                 item_description,
+                managerId
             });
     
             console.log("New offer added:", newOffer);
-    
-            // Fetch all related SocialEvents
-            const socialEvents = await SOCIALEVENTDB.find({ title: discount_on });
-    
-            if (socialEvents.length > 0) {
-                for (const event of socialEvents) {
+            const socialEvents = await SOCIALEVENTDB.find({Manager:managerId});
+
+            const actualEvents = socialEvents.filter(event => event.title === newOffer.discount_on);
+            console.log("Actual",actualEvents);
+            if (actualEvents.length > 0) {
+                for (const event of actualEvents) {
                     console.log("Event:", event);
-    
                     const offerPercentage = Number(discount_value);
                     event.typesOfTickets.forEach((ticket) => {
                         if (ticket.Amount != null) {
                             const deductionAmount = (ticket.Amount * offerPercentage) / 100;
                             const offerAmount = ticket.Amount - deductionAmount;
+                            
     
-                            // Update each ticket with offer details
+                            
                             ticket.offerDetails = {
                                 offerPercentage,
                                 offerAmount,
@@ -72,12 +73,11 @@ export class managerOfferRepository{
     
                     event.offer = newOffer._id;
     
-                    // Save the updated event
+                 
                     await event.save();
                 }
             }
-    
-            // Fetch all offers from DB
+
             const allOffers = await OFFERDB.find();
             console.log("All offers:", allOffers);
     
@@ -127,7 +127,6 @@ export class managerOfferRepository{
                 };
             }
     
-            // Ensure valid dates
             const startDateParsed = new Date(startDate);
             const endDateParsed = new Date(endDate);
     
@@ -162,9 +161,10 @@ export class managerOfferRepository{
     
             // Fetch all related SocialEvents
             const socialEvents = await SOCIALEVENTDB.find({ title: discount_on });
+            const actualEvents=await socialEvents.filter((event)=>event.title===updatedOffer.discount_on);
     
-            if (socialEvents.length > 0) {
-                for (const event of socialEvents) {
+            if (actualEvents.length > 0) {
+                for (const event of actualEvents) {
                     console.log("Event:", event);
     
                     const offerPercentage = discountValueAsNumber;
@@ -223,7 +223,7 @@ export class managerOfferRepository{
 
   async fetchManagerWalletRepository(managerId:string){
         try{
-        const managerWallet=await MANAGERWALLETDB.findOne({managerId:managerId});
+        const managerWallet=await MANAGERWALLETDB.findOne({managerId:managerId}).populate('managerId');
         console.log(managerWallet)
         return {
           success: true,
