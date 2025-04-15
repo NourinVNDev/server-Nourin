@@ -8,6 +8,7 @@ import { userDetailsService } from './userDetailsService';
 import { userProfileService } from './userProfileService';
 import { IloginRepo } from '../../repository/userRepository/IloginRepo';
 import { cancelEventService } from './cancelEventService';
+import { NotificationVideoCallService } from './notificationVideoService';
 function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -23,11 +24,13 @@ export class loginServices  implements ILoginService {
   private userDetailService:userDetailsService;
   private userProfileService:userProfileService;
   private cancelEventService:cancelEventService;
-  constructor(userRepositoryInstence:IloginRepo){
-    this.userService=userRepositoryInstence;
-    this.userDetailService=new userDetailsService(userRepositoryInstence);
-    this.userProfileService=new userProfileService(userRepositoryInstence);
-    this.cancelEventService=new cancelEventService(userRepositoryInstence);
+  private NotificationService:NotificationVideoCallService
+  constructor(userRepositoryInstance:IloginRepo){
+    this.userService=userRepositoryInstance;
+    this.userDetailService=new userDetailsService(userRepositoryInstance);
+    this.userProfileService=new userProfileService(userRepositoryInstance);
+    this.cancelEventService=new cancelEventService(userRepositoryInstance);
+    this.NotificationService=new NotificationVideoCallService(userRepositoryInstance)
   }
 
   async getAllEventService(): Promise<{ success: boolean; message: string; data: any[] }> {
@@ -261,14 +264,14 @@ async verifyForgotOtpService(otp: string, globalOTP: string | number | null ){
   }
 }
 
-async resetPasswordDetails(formData: FormData,userId:string){
+async resetPasswordDetails(formData: FormData,email:string){
   try {
-    console.log("menu",formData,userId);
+    console.log("menu",formData,email);
     
-    if (userId && formData.password && formData.password1) {
+    if (email && formData.password && formData.password1) {
       console.log("bhai");
       
-      const result = await this.userService.resetPasswordRepo(userId,formData);
+      const result = await this.userService.resetPasswordRepo(email,formData);
       return { success: true, message: 'Reset Password SuccessFully', user: result };
     } else {
       throw new Error('Invalid login credentials.');
@@ -588,16 +591,25 @@ async fetchUserWalletService(userId:string){
   }
 
 }
+async  fetchUserNotificationService(userId:string){
+  try {
+    const savedEvent = await this.NotificationService.fetchUserNotificationService2(userId);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    console.error("Error in fetching Notification:", error);
+    throw new Error("Failed to fetching notification of user"); 
+  }
+}
 
 
 async getBookedManagerService(userId:string){
   try {
-    // Fetch data from the repository
+
     const savedEvent = await this.userProfileService.getBookedManagerService2(userId);
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
-    // return {success:result.success,message:result.message,data:result.data};
+
   } catch (error) {
-    // Log and return a generic error response
+
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }

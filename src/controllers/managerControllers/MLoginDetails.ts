@@ -703,6 +703,23 @@ export class managerLogin{
               });
           }
           }
+    async fetchManagerNotification(req:Request,res:Response){
+       try {
+              const managerId=req.params.managerId;
+              if(!managerId) return;
+             
+      const savedEvent = await this.managerController.fetchNotificationOfManager(managerId);
+      if(savedEvent.success){
+        res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+        return;
+        }
+         res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+    } catch (error) {
+      console.error("Error in check User Wallet:", error);
+      res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+      
+    }
+          }
           async getAllEventDetails(req: Request, res: Response): Promise<void> {
             try {
               const managerId=req.params.managerId;

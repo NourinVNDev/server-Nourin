@@ -26,6 +26,7 @@ import MANAGERSCHEMA from '../../models/managerModels/managerSchema';
 import MANAGERWALLETDB from '../../models/managerModels/managerWalletSchema';
 import ADMINDB from '../../models/adminModels/adminSchema';
 import ADMINWALLETSCHEMA from '../../models/adminModels/adminWalletSchema';
+import { NotificationVideoCallRepository } from './notificationVideoCallRepository';
 
 
 // Define an interface for Events (adjust fields as needed)
@@ -56,10 +57,12 @@ export class loginRepo implements IloginRepo{
   private userRepositoy:userDetailsRepository;
   private userProfileRepository:userProfileRepository;
   private cancelEventRepository:CancelEventRepository;
+  private notificationRepository:NotificationVideoCallRepository;
   constructor(){
     this.userRepositoy=new userDetailsRepository();
     this.userProfileRepository=new userProfileRepository();
     this.cancelEventRepository=new CancelEventRepository();
+    this.notificationRepository=new NotificationVideoCallRepository();
   }
   async isEmailPresent(email: string){
     try {
@@ -144,6 +147,31 @@ async checkLogin(formData:FormData){
     const categoryNames = categoryData.map((category) => category.categoryName);
     
     console.log(categoryNames);
+
+    const offers = await OFFERDB.find({ endDate: { $lt: new Date() } });
+
+    for (const offer of offers) {
+      const socialEvents = await SOCIALEVENT.find({ offer: offer._id });
+    
+      for (const event of socialEvents) {
+        event.typesOfTickets.forEach((ticket: any) => {
+          ticket.offerDetails = {};
+        });
+    
+        event.offer = undefined;
+    
+        await event.save();
+    
+        await OFFERDB.updateOne(
+          { _id: offer._id },
+          { $pull: { Events: event._id } }
+        );
+      }
+    }
+    
+    
+    
+
     
 
 
@@ -276,14 +304,14 @@ async fetchuserEmail(userId:string){
 
 
 
-async resetPasswordRepo(userId: string, formData:FormData){
+async resetPasswordRepo(email: string, formData:FormData){
   const  password = formData.password;
   const confirmPassword=formData.password1;
 
   // Validate input
   console.log("Last checking",password,confirmPassword);
   
-  if (!userId || !password || !confirmPassword) {
+  if (!email || !password || !confirmPassword) {
     console.log('Email, password, or confirm password is missing.');
     return {
       success: false,
@@ -303,7 +331,7 @@ async resetPasswordRepo(userId: string, formData:FormData){
 
   try {
     // Check if the user exists (ensuring the user is a Document)
-    const user = await USERDB.findById(userId);
+    const user = await USERDB.findById(email);
 
     if (!user) {
       console.log('User not found.');
@@ -458,15 +486,15 @@ async getUserDetailsRepository(userId:string){
       console.log("Category details:", category);
 
       // Filter events that have a valid endDate
-      let filteredEvents = category.Events.filter(event => new Date(event.startDate) >= new Date());
-
-
+      const now = Date.now();
+      let filteredEvents = category.Events.filter(event => new Date(event.startDate).getTime() >= now);
+      
 
       console.log("First", filteredEvents);
       filteredEvents = filteredEvents.map(event => {
         if (event.offer && new Date(event.offer.endDate) < new Date()) {
             console.log(`Offer expired for event: ${event.endDate}`);
-            event.offer = null; // Remove expired offer instead of filtering event out
+            event.offer = null; 
         }
         return event;
     });
@@ -495,38 +523,33 @@ async getUserDetailsRepository(userId:string){
 
 async getAllEventBasedRepo(): Promise<any> { // Use 'any' or a more specific type if needed
   try {
-    const categories = await CATEGORYDB.find().populate<{ Events: EventDocument[] }>("Events");
+    const eventData = await SOCIALEVENT.find();
 
-    if (!categories || categories.length === 0) {
-      return {
-        success: false,
-        message: "No categories found.",
-        categories: [], // Return an empty array instead of null
-      } as const; // Use 'as const' to infer the literal type
+    const updatedEvents: any[] = [];
+
+    for (const event of eventData) {
+      if (new Date(event.endDate) >= new Date()) {
+        const category = await CATEGORYDB.findOne({ categoryName: event.title });
+        console.log("Category",category);
+        
+        if (category && category.isListed) {  // assuming 'isBlocked' is the field name
+          updatedEvents.push(event);
+        }
+      }
     }
-
-    console.log("Category details:", categories);
-
-    const updatedCategories = categories.map(category => {
-      const filteredEvents = category.Events.filter(event => new Date(event.endDate) >= new Date());
-      return {
-        ...category.toObject(),
-        Events: filteredEvents,
-      };
-    });
 
     return {
       success: true,
-      message: "Category details retrieved successfully.",
-      categories: updatedCategories, // Return all categories with filtered events
-    } as const; // Use 'as const' to infer the literal type
+      message: "Event Details retrieved successfully.",
+      events: updatedEvents,
+    } as const; 
   } catch (error) {
     console.error("Error retrieving category details:", error);
     return {
       success: false,
       message: "An error occurred while retrieving category details.",
-      categories: [], // Return an empty array in case of an error
-    } as const; // Use 'as const' to infer the literal type
+      categories: [],
+    } as const; 
   }
 }
 
@@ -927,7 +950,7 @@ async cancelBookedEventRepo(bookingId:string,userId:string):Promise<{success:boo
 async fetchUserWalletRepo(userId:string){
   try {
 
-    // Pass the data to the actual repository for database operations
+
     const savedEvent = await this.cancelEventRepository.fetchUserWalletRepository(userId);
   
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
@@ -937,6 +960,19 @@ async fetchUserWalletRepo(userId:string){
 }
 
 }
+async fetchUserNotificationRepo(userId:string){
+  try {
+
+
+    const savedEvent = await this.notificationRepository.fetchUserNotificationRepository(userId);
+  
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+} catch (error) {
+    console.error("Error in User Wallet Repository:", error);
+    throw new Error("Failed to handle user wallet in main repository.");
+}
+}
+
 
 
 
@@ -945,7 +981,7 @@ async fetchUserWalletRepo(userId:string){
 async getManagerDataRepo(userId:string){
   try {
 
-    // Pass the data to the actual repository for database operations
+
     const savedEvent = await this.userProfileRepository.getBookedManagerRepository(userId);
   
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};

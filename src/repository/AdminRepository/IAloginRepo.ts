@@ -6,6 +6,7 @@ export interface IAloginRepo{
     checkAdminLogin( formData: { [key: string]: string }): Promise<{ success: boolean; message: string; user: any }>;
       getUserDetailsRepository():Promise<{ success: boolean; message: string; user: any }>;
       getManagerDetailsRepository():Promise<{success:boolean,message:string,user:any}>
+      getManagerAndBookedRepository(managerId:string):Promise<{success:boolean,message:string,user:any}>
       postToggleIsBlockRepository(userId:string,updatedStatus:boolean):Promise<{success:boolean,message:string,user:any}>
       postManagerIsBlockRepository(managerId:string,updatedStatus:boolean):Promise<{success:boolean,message:string,user:any}>
       fetchAdminWalletRepository():Promise<{success:boolean,message:string,user:any}>

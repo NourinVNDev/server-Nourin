@@ -49,4 +49,5 @@ userRoute.post(`/uploadUserProfile/:userId`,checkIfUserBlocked,verifyToken(['use
 userRoute.get(`/post/checkOfferAvailable/:category`,checkIfUserBlocked,verifyToken(['user']),userLoginRouter.checkOfferAvailable.bind(userLoginRouter));
 userRoute.get('/cancelEventBooking/:bookingId/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.cancelBookingEvent.bind(userLoginRouter));
 userRoute.get('/fetchUserWallet/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.fetchUserWallet.bind(userLoginRouter));
+userRoute.get('/fetchUserNotification/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.fetchUserNotification.bind(userLoginRouter));
 export default userRoute;

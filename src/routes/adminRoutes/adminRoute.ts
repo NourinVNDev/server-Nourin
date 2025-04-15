@@ -14,6 +14,7 @@ adminRoute.post('/adminlogin',adminLoginRouter.createAdminData.bind(adminLoginRo
 adminRoute.post('/adminlogin1',adminLoginRouter.adminLogin.bind(adminLoginRouter));
 adminRoute.get('/admin/users',verifyToken(['admin']),adminLoginRouter.getUserDetails.bind(adminLoginRouter));
 adminRoute.get('/admin/managers',verifyToken(['admin']),adminLoginRouter.getManagerDetails.bind(adminLoginRouter));
+adminRoute.get('/admin/managerEvents/:managerId',verifyToken(['admin']),adminLoginRouter.getEventAndBookedDetails.bind(adminLoginRouter));
 adminRoute.get('/admin/category',verifyToken(['admin']),adminLoginRouter.getCategoryDetails.bind(adminLoginRouter));
 adminRoute.post('/admin/addCategory',verifyToken(['admin']),adminLoginRouter.addEventCategoryDetails.bind(adminLoginRouter));
 adminRoute.get('/admin/fetchSelectedCategory/:id',verifyToken(['admin']),adminLoginRouter.fetchSelectedCategory.bind(adminLoginRouter));

@@ -4,7 +4,9 @@ import { Server } from "socket.io";
 import { Server as HttpServer } from "http";
 import { WebSocketRepository } from "../../repository/Sockets/commentLikeRepo";
 import { timeStamp } from "console";
-
+import { NotificationSocketRepository } from "../../repository/Sockets/paymentNotificationRepo";
+let ioInstance: Server | null = null;
+export const onlineUsers = new Map();
 const initializeSocket = (server: HttpServer) => {
   const io = new Server(server, {
     cors: {
@@ -12,9 +14,6 @@ const initializeSocket = (server: HttpServer) => {
       methods: ["GET", "POST"],
     },
   });
-
-  // Store online users
-  const onlineUsers = new Map();
 
   io.on("connection", (socket) => {
     console.log("New client connected:", socket.id);
@@ -38,6 +37,7 @@ const initializeSocket = (server: HttpServer) => {
         callback(null);
       }
     });
+    ioInstance = io;
 
 
     // Handle sending messages  chat
@@ -60,6 +60,23 @@ const initializeSocket = (server: HttpServer) => {
       }
       callback({ success: true, message: "Message delivered successfully!" });
     });
+        socket.on('post-payment-success',async(newMessage,callback)=>{
+            console.log("Yeah");
+            
+        console.log("Received message of payment:",newMessage);
+        const {senderId,receiverId,message}=newMessage;
+       const heading='Payment SuccessFully'
+        const result=await NotificationSocketRepository.addNewNotification(senderId,receiverId,message,heading)
+        console.log(`Message from ${senderId} to ${receiverId}:`, message);
+        const receiver=onlineUsers.get(receiverId);
+        console.log("reciever 1?",onlineUsers);
+        if(receiver){
+            console.log('userid ///', senderId);
+            console.log('reciever 1 ///', receiver)
+        io.to(receiver.socketId).emit("receive-notification-message", { senderId, message  })
+        }
+        callback({success:true,message:"Message delivered successfully!"})
+        })
 
 
     // Handle disconnection
@@ -77,5 +94,5 @@ const initializeSocket = (server: HttpServer) => {
 
   return io;
 };
-
+export const getSocketInstance = (): Server | null => ioInstance;
 export default initializeSocket;

@@ -35,6 +35,5 @@ export interface IMloginService{
    updateVerifierService(formData:verifierFormData):Promise<{success:boolean,message:string,data:any}>;
    fetchSelectedVerifierService(verifierId:string):Promise<{success:boolean,message:string,data:any}>;
    postSeatInformationService(ticket:TicketType):Promise<{success:boolean,message:string,data:any}>;
-   
-   
+   fetchNotificationOfManager(managerId:string):Promise<{success:boolean,message:string,data:any}>;
 }

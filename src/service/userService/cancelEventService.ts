@@ -1,8 +1,8 @@
 import { IloginRepo } from "../../repository/userRepository/IloginRepo";
 export  class cancelEventService{
     private loginRepository:IloginRepo
-    constructor(userRepositoryInstence:IloginRepo){
-        this.loginRepository=userRepositoryInstence;
+    constructor(userRepositoryInstance:IloginRepo){
+        this.loginRepository=userRepositoryInstance;
     }
     async cancelEventService2(bookingId:string,userId:string){
         try {
@@ -25,12 +25,12 @@ export  class cancelEventService{
         try {
             console.log("For getting user Wallet,userId",userId);
   
-            // Perform additional validations if needed
+        
             if (!userId) {
                 throw new Error("There is no UserId.");
             }
   
-            // Call repository to save the data
+         
             const savedEvent =await this.loginRepository.fetchUserWalletRepo(userId);
   
             return savedEvent;

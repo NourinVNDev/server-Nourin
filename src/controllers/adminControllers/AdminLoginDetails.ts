@@ -226,6 +226,22 @@ export  class AdminLogin {
             
         }
     }
+    async getEventAndBookedDetails(req:Request,res:Response):Promise<void>{
+        try {
+
+            const managerId=req.params.managerId;
+            const result=await  this.adminController.getManagerEventService(managerId);
+            console.log('data from getManager',result);
+            res.status(HTTP_statusCode.OK).json({result:result});
+        } catch (error) {
+            console.error('Error fetching user details:', error instanceof Error ? error.message : error);
+            res.status(HTTP_statusCode.InternalServerError).json({
+                success: false,
+                message: 'Failed to fetch user details',
+            });
+            
+        } 
+    }
 
     async postManagerIsBlock(req: Request, res: Response): Promise<void|any> {
       

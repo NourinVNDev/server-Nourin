@@ -35,5 +35,7 @@ export interface ILoginService{
     checkOfferAvailableService(categoryName:string):Promise<{success:boolean,message:string,data:any}>
     cancelBookingEventService(bookingId:string,userId:string):Promise<{success:boolean,message:string,data:any}>
     fetchUserWalletService(userId:string):Promise<{success:boolean,message:string,data:any}>
+    fetchUserNotificationService(userId:string):Promise<{success:boolean,message:string,data:any}>
+
 
 }

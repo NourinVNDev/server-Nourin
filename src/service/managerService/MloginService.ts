@@ -195,6 +195,7 @@ export class mLoginService implements IMloginService{
       }
   }
 
+
   async createEventSeatService(formData:EventSeatDetails,eventId:string):Promise<{ success: boolean; message: string; data?: any }>{
     try {
     
@@ -603,6 +604,16 @@ async postSeatInformationService(ticketData:TicketType){
       };
   }
 }
+async fetchNotificationOfManager(managerId:string){
+  try {
+    const savedEvent = await this.managerService.fetchManagerNotificationRepo(managerId);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    console.error("Error in fetching Notification:", error);
+    throw new Error("Failed to fetching notification of user"); 
+  }
+
+}
 
 
 async createChatSchemaService(formData:FormData){
@@ -627,9 +638,6 @@ async createChatSchemaService(formData:FormData){
   
 
 }
-
-
-
 }
 
 

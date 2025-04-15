@@ -235,8 +235,9 @@ export class VerifierDetailsController {
         try {
             const bookingId = req.params.bookingId;
             console.log("bookedID:", bookingId);
+            const userName=req.params.userName;
     
-            const result = await this.verifierController.markUserEntryService(bookingId);
+            const result = await this.verifierController.markUserEntryService(bookingId,userName);
             res.status(200).json(result);
         } catch (error) {
             console.error("Error while checking manager status:", error);

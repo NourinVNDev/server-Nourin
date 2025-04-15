@@ -6,7 +6,7 @@ export interface IloginRepo{
     checkLogin(formData:FormData):Promise<{success:boolean,message:string,user:any}>;
     googleAuthData(payload:Object):Promise<{success:boolean,message:string,user:any}>;
     isEmailValid(email:string):Promise<{success:boolean,message:string,user:any}>;
-    resetPasswordRepo(userId:string,formData:FormData):Promise<{success:boolean,message:string,user:any}>;
+    resetPasswordRepo(email:string,formData:FormData):Promise<{success:boolean,message:string,user:any}>;
     fetchuserEmail(userId:string):Promise<{success:boolean,message:string,user:any}>
     resetUserProfile(email:string,formData:FormData):Promise<{success:boolean,message:string,user:any}>
     getAllCategoryRepository():Promise<{success:boolean,message:string,category:any}>
@@ -31,6 +31,6 @@ export interface IloginRepo{
     uploadUserProfilePictureRepo(userId:string,profilePicture:string):Promise<{success:boolean,message:string,data:any}>
     cancelBookedEventRepo(bookingId:string,userId:string):Promise<{success:boolean,message:string,data:any}>
     fetchUserWalletRepo(userId:string):Promise<{success:boolean,message:string,data:any}>
-
+    fetchUserNotificationRepo(userId:string):Promise<{success:boolean,message:string,data:any}>
 
 }

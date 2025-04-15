@@ -1,6 +1,6 @@
 import MANAGERDB from '../../models/managerModels/managerSchema';
 import { IMloginRepo } from './IMloginRepo';
-import { EventData, eventLocation, EventSeatDetails, FormData1, OfferData, TicketType, verifierFormData } from '../../config/enum/dto';
+import { EventData, eventLocation, EventSeatDetails, OfferData, TicketType, verifierFormData } from '../../config/enum/dto';
 import { managerEventRepository } from './mEventRepo';
 import { Request,Response } from 'express';
 import CATEGORYDB from '../../models/adminModels/adminCategorySchema';
@@ -8,6 +8,7 @@ import OFFERDB from '../../models/managerModels/offerSchema';
 import { managerOfferRepository } from './mOfferRepo';
 import { managerBookingRepository } from './mBookingUserRepo';
 import { managerVerifierRepository } from './mVerifierRepo';
+import NOTIFICATIONDB from '../../models/userModels/notificationSchema';
 
 interface User {
     email: string;
@@ -16,14 +17,15 @@ interface User {
 
 import bcrypt  from 'bcrypt';
 import SOCIALEVENTDB from '../../models/managerModels/socialEventSchema';
-import { isNull } from 'node:util';
+
 const hashPassword = async (password:string) => {
   try {
-      // Generate a salt
-      const salt = await bcrypt.genSalt(10); // 10 is the salt rounds
-      
-      // Hash the password
-      const hashedPassword = await bcrypt.hash(password, salt);
+  
+      const salt = await bcrypt.genSalt(10); 
+      console.log("Sa;t",salt);
+   console.log( await bcrypt.hash(password,salt));
+   
+      const hashedPassword = await bcrypt.hash(password,salt);
       
       console.log('Hashed Password:', hashedPassword);
       return hashedPassword;
@@ -93,7 +95,7 @@ export class mLoginRepo implements IMloginRepo{
         const hashedPassword = user.password;
       
         try {
-            const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
+            const isMatch = await bcrypt.compare(plainPassword,hashedPassword);
             if (isMatch) {
                 console.log('Password matches!');
                 return {
@@ -225,9 +227,9 @@ export class mLoginRepo implements IMloginRepo{
             const savedEvent = await this.managerEventRepository.createEventData(formData,location,fileName);
             
             return {
-                success: true,
+                success: savedEvent.success,
                 data: savedEvent.data,
-                message: "Event successfully saved."
+                message: savedEvent.message
             };
         } catch (error) {
             console.error("Error in postEventRepository:", error);
@@ -241,7 +243,7 @@ export class mLoginRepo implements IMloginRepo{
 
     async   postEventSeatRepository(formData:EventSeatDetails,eventId:string){
       try {
-;
+
         
         // Pass the data to the actual repository for database operations
         const savedEvent = await this.managerEventRepository.createEventSeatInfo(formData, eventId);
@@ -258,7 +260,7 @@ export class mLoginRepo implements IMloginRepo{
             success: false,
             message: "Failed to handle event data in main repository."
         };
-    }
+    } 
     }
     
 
@@ -305,7 +307,7 @@ export class mLoginRepo implements IMloginRepo{
 
   async getAllOfferDetails(managerId:string): Promise<{ success: boolean; message: string; data?: any }> {
     try {
-        const result = await OFFERDB.find(); // Fetch data from the database
+        const result = await OFFERDB.find({managerId:managerId}); // Fetch data from the database
         console.log("DB data", result);
         return { success: true, message: "Event data retrieved successfully", data: result };
     } catch (error) {
@@ -425,7 +427,7 @@ async updateManagerPasswordRepo(formData:{[key:string]:string}): Promise<{ succe
       return { success: false, message: "Manager email not found" ,data:null};
     }
 
-    result.password=formData.newPassword;
+    result.password = await hashPassword(formData.newPassword);
     await result.save();
 
     console.log("DB data", result);
@@ -548,6 +550,25 @@ async updateSeatInformationRepo(ticketData:TicketType){
       return { success: true, message: "Verifier data saved successfully", data: savedEvent };
   } catch (error) {
       console.error("Error in updating status of verifier Service:", error);
+      return { success: false, message: "Internal server error" };
+  }
+}
+async fetchManagerNotificationRepo(managerId:string){
+  try {
+    const notificationData=await NOTIFICATIONDB.find({
+      to:managerId
+    })
+    if(!notificationData){
+      return { success: true, message: "No notification in the manager-side", data: null };
+    }else{
+      return { success: true, message: "notification retrieve successfully", data: notificationData };
+    }
+
+
+
+
+  } catch (error) {
+      console.error("Error in updating notification:", error);
       return { success: false, message: "Internal server error" };
   }
 }

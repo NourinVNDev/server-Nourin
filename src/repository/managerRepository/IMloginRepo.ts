@@ -15,7 +15,7 @@ export interface IMloginRepo{
     getTodaysBookingRepo(managerId:string):Promise<{success:boolean,message:string,data?:any}>;
     getTotalBookingRepo(managerId:string):Promise<{success:boolean,message:string,data?:any}>;
     getUserDataRepo(managerName:string):Promise<{success:boolean,message:string,data:any}>;
-    postEventRepository(formData:EventData,location:eventLocation,fileName:string):Promise<{ success: boolean; message: string; data?:any; }>
+    postEventRepository(formData:EventData,location:eventLocation,fileName:string):Promise<{ success: boolean; message: string|undefined; data?:any|undefined; }>
     postEventSeatRepository(formData:EventSeatDetails,eventId:string):Promise<{ success: boolean; message: string; data?:any; }>
     postUpdateEventRepository(formData:EventData,fileName:string[],eventId:string,location:eventLocation):Promise<{ success: boolean; message: string; data?:any; }>
     getAllEventRepo(managerId:string):Promise<{ success: boolean; message: string; data?:any; }>
@@ -35,4 +35,5 @@ export interface IMloginRepo{
     fetchSelectedVerifierRepo(verifierId:string):Promise<{ success: boolean; message: string; data?: any }>
     updateSeatInformationRepo(ticketData:TicketType):Promise<{ success: boolean; message: string; data?: any }>
     createChatSchemaRepo(userId:string,manager:string):Promise<{success:boolean,message:string,data:any}>
+    fetchManagerNotificationRepo(managerId:string):Promise<{success:boolean,message:string,data?:any|null}>
 }

@@ -5,6 +5,7 @@ import USERDB from "../../models/userModels/userSchema";
 import mongoose from "mongoose";
 import CONVERSATIONDB from "../../models/userModels/conversationSchema";
 import MESSAGEDB from "../../models/userModels/messageSchema";
+import MANAGERDB from "../../models/managerModels/managerSchema";
 export class managerBookingRepository{
     async getTodaysBookingRepository(managerId:string) {
         try {
@@ -88,6 +89,8 @@ export class managerBookingRepository{
     }
     async getBookedUserRepository(managerName: string) {
         try {
+            console.log("Yeah");
+            
             const events = await SOCIALEVENTDB.find({ companyName: managerName });
             
             if (!events || events.length === 0) {
@@ -101,6 +104,8 @@ export class managerBookingRepository{
             if (!bookedUsers || bookedUsers.length === 0) {
                 return { success: false, message: "No users booked for this event", data: null };
             }
+       
+
     
             const uniqueEmails = new Set();
             const uniqueBookedUsers = [];
@@ -112,6 +117,11 @@ export class managerBookingRepository{
                     uniqueBookedUsers.push(user);
                 }
             }
+
+            // for(const user of conversation){
+            
+            // }
+
     
             const result = uniqueBookedUsers.map(user => user.billingDetails);
     
@@ -137,12 +147,12 @@ export class managerBookingRepository{
                 }
         
                 const userId = new mongoose.Types.ObjectId(userData._id);
-                const managerId = new mongoose.Types.ObjectId(sender); // Convert userId to ObjectId
+                const managerId = new mongoose.Types.ObjectId(sender); 
         
                 console.log("fgh", managerId, userId);
         
                 let conversation = await CONVERSATIONDB.findOne({
-                    participants: { $all: [userId, managerId] } // Use ObjectIds directly
+                    participants: { $all: [userId, managerId] }
                 });
         
                 if (!conversation) {

@@ -8,6 +8,9 @@ import CATEGORYDB from '../../models/adminModels/adminCategorySchema';
 import { adminCategoryRepository } from './adminCategoryRepo';
 import { Request,Response } from 'express-serve-static-core';
 import ADMINWALLETDB from '../../models/adminModels/adminWalletSchema';
+import SOCIALEVENTDB from '../../models/managerModels/socialEventSchema';
+import BOOKEDEVENTDB from '../../models/userModels/bookingSchema';
+import mongoose from 'mongoose';
 export class AdminLoginRepo  implements IAloginRepo{
     private adminCategoryRepo:adminCategoryRepository;
     constructor(){
@@ -136,6 +139,82 @@ export class AdminLoginRepo  implements IAloginRepo{
             
         }
     }
+ async getManagerAndBookedRepository(managerId: string) {
+        try {
+          const bookedEvents = await BOOKEDEVENTDB.find()
+            .populate({
+              path: 'eventId',
+              match: { Manager: new mongoose.Types.ObjectId(managerId) },
+              select: 'title startDate eventName images'
+            });
+
+
+            console.log("Booking Events:",bookedEvents);
+          const filteredBookings = bookedEvents
+            .filter(booking => booking.eventId)
+            .map(booking => ({
+              event: booking.eventId,
+              bookingDetails: {
+                noOfPersons: booking.NoOfPerson ?? 0,
+                paymentStatus: booking.paymentStatus,
+                bookingDate: booking.bookingDate,
+                totalAmount: booking.totalAmount,
+                ticketType: booking.ticketDetails?.type
+              }
+            }));
+
+            console.log("FilterBooking",filteredBookings);
+            
+      
+          // Now process the summary
+          const summaryMap: Record<string, any> = {};
+      
+          filteredBookings.forEach(({ event, bookingDetails }) => {
+            const eventId = event._id.toString();
+            const ticketType = bookingDetails.ticketType || 'Unknown';
+            const status = bookingDetails.paymentStatus;
+      
+            if (!summaryMap[eventId]) {
+              summaryMap[eventId] = {
+                event,
+                tickets: {}
+              };
+            }
+      
+            if (!summaryMap[eventId].tickets[ticketType]) {
+              summaryMap[eventId].tickets[ticketType] = {
+                Confirmed: 0,
+                Cancelled: 0,
+                Completed: 0
+              };
+            }
+      
+            if (status in summaryMap[eventId].tickets[ticketType]) {
+              summaryMap[eventId].tickets[ticketType][status]++;
+            }
+          });
+      
+          const eventSummaries = Object.values(summaryMap);
+
+          console.log("Event Summarries",eventSummaries);
+          
+      
+          return {
+            success: true,
+            message: 'Manager Data fetched',
+            user: filteredBookings,
+            eventSummaries 
+          };
+        } catch (error) {
+          console.error('Error fetching user details from database:', error);
+          return {
+            success: false,
+            message: 'An error occurred while fetching user details',
+            user: null,
+          };
+        }
+      }
+      
 
     async postManagerIsBlockRepository(managerId: string, updatedStatus: boolean) {
         try {

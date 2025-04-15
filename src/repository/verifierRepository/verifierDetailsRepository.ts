@@ -24,7 +24,7 @@ const hashPassword = async (password: string) => {
 export class verifierDetailsRepository implements IVerifierRepo {
     async checkTheVerifierIsActive(email: string) {
         const manager = await VERIFIERDB.findOne({ email: email });
-        if (!manager) {
+        if (!manager || !manager.isActive) {
             return { success: false, message: 'Manager has not found', data: null }
         }
 
@@ -40,11 +40,11 @@ export class verifierDetailsRepository implements IVerifierRepo {
         console.log("Hello");
         console.log("Events", formData.Events);
     
-        // Remove empty events
+     
         const validEvents = formData.Events.filter((event:any) => event.trim() !== "");
         console.log("ValidEvents", validEvents);
     
-        // Fetch matching events by name
+       
         const socialEvents = await SOCIALEVENTSDB.find({ eventName: { $in: validEvents } });
         console.log("Social Events:", socialEvents);
     
@@ -119,14 +119,14 @@ export class verifierDetailsRepository implements IVerifierRepo {
     }
     
 
-    async markUserEntryRepo(bookedId: string) {
+    async markUserEntryRepo(bookedId: string,userName:string) {
         const eventDetails = await BOOKINGDB.findOne({ bookingId: bookedId });
         if (!eventDetails) {
             return { success: false, message: 'No booked user is in events', data: null };
         }
     
         eventDetails.bookedUser .forEach((user: any) => {
-            user.isParticipated = !user.isParticipated; 
+            if(user.user===userName){ user.isParticipated = !user.isParticipated;} 
         });
     
         await eventDetails.save();

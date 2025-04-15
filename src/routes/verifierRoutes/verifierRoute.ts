@@ -15,5 +15,5 @@ verifierRoute.post('/verifierLogin',verifierControllerInstance.postVerifierLogin
 verifierRoute.post('/refresh-token',verifierControllerInstance.reGenerateVerifierAccessToken.bind(verifierControllerInstance));
 verifierRoute.get('/fetchEvents/:email',verifyToken(['verifier']),verifierControllerInstance.getAllCompanyEvents.bind(verifierControllerInstance));
 verifierRoute.get('/fetchBookedDetails/:eventId',verifyToken(['verifier']),verifierControllerInstance.getBookedDetails.bind(verifierControllerInstance));
-verifierRoute.get('/markUserEntry/:bookingId',verifyToken(['verifier']),verifierControllerInstance.markUserEntry.bind(verifierControllerInstance));
+verifierRoute.get('/markUserEntry/:bookingId/:userName',verifyToken(['verifier']),verifierControllerInstance.markUserEntry.bind(verifierControllerInstance));
 export default verifierRoute

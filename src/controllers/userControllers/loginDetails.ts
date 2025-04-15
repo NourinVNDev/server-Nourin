@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 import { userProfileController } from './userProfileController';
 import HTTP_statusCode from '../../config/enum/enum';
 import { CancelBookedEventController } from './cancelBookedEventController';
-
+import { NotificationVideoCallController } from './NotificationVideoCall';
 interface UserPayload {
   email: string;
   role:string
@@ -24,12 +24,14 @@ class userlogin  {
   private userController:ILoginService;
   private userDetailsController:userDetailsController;
   private userProfileController:userProfileController;
-  private cancelEventController:CancelBookedEventController
+  private cancelEventController:CancelBookedEventController;
+  private notificationVideoCallCOntroller:NotificationVideoCallController
   constructor(userServiceInstance:loginServices){
     this.userController=userServiceInstance;
     this.userDetailsController=new userDetailsController(userServiceInstance);
     this.userProfileController=new userProfileController(userServiceInstance);
-    this.cancelEventController=new CancelBookedEventController(userServiceInstance)
+    this.cancelEventController=new CancelBookedEventController(userServiceInstance);
+    this.notificationVideoCallCOntroller=new NotificationVideoCallController(userServiceInstance);
   }
 
 
@@ -116,22 +118,28 @@ class userlogin  {
             console.log('hello', email);
 
             const otpNumber = await this.userController.CheckingEmail(email);
-        
-             if (typeof otpNumber.success === 'boolean') {
-              // Handle the case where otpNumber is a boolean
-              console.error("Received a boolean value instead of a number:", otpNumber);
-              res.status(HTTP_statusCode.BadRequest).json({ error: 'Failed to generate OTP.' });
-              return;
-          } else if(typeof otpNumber.success==='number') {
-            console.log("check otp",globalOTP);
+            if(otpNumber.success){
+              if (typeof otpNumber.success === 'boolean') {
+                // Handle the case where otpNumber is a boolean
+                console.error("Received a boolean value instead of a number:", otpNumber);
+                res.status(HTTP_statusCode.BadRequest).json({ error: 'Failed to generate OTP.' });
+                return;
+            } else if(typeof otpNumber.success==='number') {
+              console.log("check otp",globalOTP);
+              
+                globalOTP = otpNumber.success; // If it's already a number
+            }
+            console.log('Checking',otpNumber);
+            console.log("Hash",globalOTP);
             
-              globalOTP = otpNumber.success; // If it's already a number
-          }
-          console.log('Checking',otpNumber);
-          console.log("Hash",globalOTP);
-          
+  
+              res.status(HTTP_statusCode.OK).json({ message: 'OTP sent', otpData: otpNumber });
 
-            res.status(HTTP_statusCode.OK).json({ message: 'OTP sent', otpData: otpNumber });
+            }else{
+              res.status(HTTP_statusCode.OK).json({error:'Email is Already Registered'})
+            }
+        
+          
         } catch (error) {
             console.error("Error saving user data:", error);
             res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session'});
@@ -926,6 +934,25 @@ async cancelBookingEvent(req:Request,res:Response){
       
     }
 
+  }
+  async fetchUserNotification(req:Request,res:Response){
+    try {
+  
+      const userId=req.params.userId;
+  
+      console.log("Chech the userId",userId);
+  
+      const savedEvent = await this.notificationVideoCallCOntroller.fetchNotificationOfUser(userId);
+      if(savedEvent.result.success){
+        res.status(HTTP_statusCode.OK).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
+        return;
+        }
+         res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
+    } catch (error) {
+      console.error("Error in check User Wallet:", error);
+      res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+      
+    }
   }
 
 

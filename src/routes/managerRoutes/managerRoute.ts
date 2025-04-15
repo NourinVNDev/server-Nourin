@@ -51,5 +51,6 @@ ManagerRoute.post('/addNewVerifier',checkIfManagerBlocked,verifyToken(['manager'
 ManagerRoute.get(`/fetchVerifierDetails/:verifierId`,checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getSelectedVerifierData.bind(managerLoginRouter));
 ManagerRoute.post('/updateVerifier',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateVerifierData.bind(managerLoginRouter))
 ManagerRoute.post('/updateSeatInfo',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateSeatInformation.bind(managerLoginRouter));
+ManagerRoute.get('/fetchManagerNotification/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchManagerNotification.bind(managerLoginRouter));
 
 export default ManagerRoute;    

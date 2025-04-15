@@ -158,9 +158,9 @@ export class userProfileRepository{
         try {
             const result = await BOOKEDUSERDB.find({ userId })
                 .populate({
-                    path: 'eventId', // Populating event details
-                    model: 'SocialEvent',  // Ensure 'Event' is the correct model name
-                    select: ['eventName','companyName','_id'] // Fetch only 'companyName'
+                    path: 'eventId', 
+                    model: 'SocialEvent',  
+                    select: ['eventName','companyName','_id']
                 });
     
             console.log("Result:", result);
@@ -183,8 +183,19 @@ export class userProfileRepository{
                 })
                 .filter(eventName => eventName !== null);
 
-    
-            return { success: true, message: "Data retrieved", data: {companyNames,eventNames }};
+                const uniqueCompanyNames = [...new Set(companyNames)];
+                const uniqueEventNames = [...new Set(eventNames)];
+
+                console.log("Unique Companies:", uniqueCompanyNames);
+                console.log("Unique Events:", uniqueEventNames);
+                return {
+                    success: true,
+                    message: "Data retrieved",
+                    data: {
+                        companyNames: uniqueCompanyNames,
+                        eventNames: uniqueEventNames
+                    }
+                };
         } catch (error) {
             console.error("Error fetching company names:", error);
             return { success: false, message: "Internal server error", data: null };

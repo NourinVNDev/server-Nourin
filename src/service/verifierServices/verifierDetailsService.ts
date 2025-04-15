@@ -82,8 +82,8 @@ export class verifierDetailsService implements IVerifierService{
             };
         }
     }
-    async markUserEntryService(bookedId:string){
-        const BookedData = await this.verifierService.markUserEntryRepo(bookedId); 
+    async markUserEntryService(bookedId:string,userName:string){
+        const BookedData = await this.verifierService.markUserEntryRepo(bookedId,userName); 
         if (BookedData.success) {
             return {
                 success: BookedData.success,
