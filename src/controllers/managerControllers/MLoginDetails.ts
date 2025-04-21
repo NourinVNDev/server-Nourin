@@ -853,6 +853,8 @@ export class managerLogin{
               console.log("ManagerName",managerName);
               const savedEvent = await this.bookingController.getBookedUserDetails2(managerName);
               if (savedEvent.success) {
+                console.log("SavedEvent:",savedEvent);
+                
                 res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
               return;
               }

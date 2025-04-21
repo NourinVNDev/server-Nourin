@@ -34,13 +34,13 @@ Database();
 
 app.use(
   session({
-      secret: 'your_secret_key', // Encrypts session data
-      resave: false, // Avoids resaving session if not modified
-      saveUninitialized: false, // Only save sessions that are initialized
+      secret: 'your_secret_key', 
+      resave: false,
+      saveUninitialized: false,
       cookie: {
-        maxAge: 3600000, // Set a longer session expiration (1 hour for example)
-        httpOnly: true, // Ensures cookies can't be accessed by JavaScript
-        secure: process.env.NODE_ENV === 'production', // Ensure cookie is sent only over HTTPS in production
+        maxAge: 3600000,
+        httpOnly: true, 
+        secure: process.env.NODE_ENV === 'production',
       },
   })
 );

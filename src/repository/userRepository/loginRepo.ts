@@ -994,8 +994,6 @@ async getManagerDataRepo(userId:string){
 
 async createChatSchemaRepo(userId:string,manager:string){
   try {
-
-    // Pass the data to the actual repository for database operations
     const savedEvent = await this.userProfileRepository.createChatSchemaRepository(userId,manager);
   
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};

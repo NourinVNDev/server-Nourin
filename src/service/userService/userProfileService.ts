@@ -92,10 +92,7 @@ export class userProfileService{
     async getBookedManagerService2(userId:string){
         try {
             console.log("Processing Booked Manager data in another service...",);
-  
-            // Perform additional validations if needed
-         
-            // Call repository to save the data
+
             const savedEvent =await this.loginRepository.getManagerDataRepo(userId);
             return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
           
@@ -111,10 +108,7 @@ export class userProfileService{
     async createChatSchemaService2(userId:string,manager:string){
         try {
             console.log("Processing create chat Schema in another service...",);
-  
-            // Perform additional validations if needed
-         
-            // Call repository to save the data
+
             const savedEvent =await this.loginRepository.createChatSchemaRepo(userId,manager);
             return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
           

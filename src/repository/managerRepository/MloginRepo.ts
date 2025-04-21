@@ -17,6 +17,7 @@ interface User {
 
 import bcrypt  from 'bcrypt';
 import SOCIALEVENTDB from '../../models/managerModels/socialEventSchema';
+import USERDB from '../../models/userModels/userSchema';
 
 const hashPassword = async (password:string) => {
   try {
@@ -558,15 +559,30 @@ async fetchManagerNotificationRepo(managerId:string){
     const notificationData=await NOTIFICATIONDB.find({
       to:managerId
     })
-    if(!notificationData){
-      return { success: true, message: "No notification in the manager-side", data: null };
-    }else{
-      return { success: true, message: "notification retrieve successfully", data: notificationData };
+    if (!notificationData || notificationData.length === 0) {
+      return {
+        success: true,
+        message: "No notification in the manager-side",
+        data: [],
+      };
     }
 
-
-
-
+    // Fetch user details (assuming you want to add sender info)
+    const enrichedNotifications = await Promise.all(
+      notificationData.map(async (notification: any) => {
+        const user = await USERDB.findById(notification.from);
+        return {
+          ...notification._doc,
+          senderName: user ? `${user.firstName} ${user.lastName}` : "Unknown",
+          senderImage: user?.profilePhoto  || null,
+        };
+      })
+    );
+    return {
+      success: true,
+      message: "notification retrieve successfully",
+      data: {user:enrichedNotifications},
+    };
   } catch (error) {
       console.error("Error in updating notification:", error);
       return { success: false, message: "Internal server error" };
@@ -601,7 +617,7 @@ async getTotalBookingRepo(managerId:string):Promise<{ success: boolean; message:
 async getUserDataRepo(managerName:string){
   try {
 
-    // Pass the data to the actual repository for database operations
+
     const savedEvent = await this.managerBookingRepository.getBookedUserRepository(managerName);
   
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};

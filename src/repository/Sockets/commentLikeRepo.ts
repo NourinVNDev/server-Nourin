@@ -62,22 +62,45 @@ export class WebSocketRepository {
         chatId: conversation._id,
         senderId: sender, 
         receiverId: receiver, 
-        message: message
+        message: message,
+        isRead:false
+     
       });
   
   
       conversation.messages.push(savedMessage._id);
       await conversation.save();
+      conversation.lastMessage=savedMessage._id;
+      await conversation.save();
+      const totalMessage=await MESSAGEDB.find({senderId:sender||receiver,receiverId:receiver||sender})
+      
   
    
       return {
         messageId: savedMessage._id,
         content: savedMessage.message, 
         createdAt: savedMessage.createdAt,
+        totalMessage:totalMessage.length,
+        chatId:conversation._id
       };
     } catch (error) {
       console.error("Error adding new message:", error);
       throw error; 
     }
+  }
+
+  static async calculateUnReadMessage(senderId: string) {
+    const conversations = await CONVERSATIONDB.find({ participants: { $in: [senderId] } }).populate('messages');
+    let unreadCount = 0;
+  
+    conversations.forEach((conversation: any) => {
+      conversation.messages.forEach((message: any) => {
+        if (message.senderId !== senderId && !message.isRead) {
+          unreadCount++;
+        }
+      });
+    });
+  
+    return unreadCount;
   }
 }

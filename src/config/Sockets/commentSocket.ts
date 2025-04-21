@@ -1,12 +1,12 @@
-
-
 import { Server } from "socket.io";
 import { Server as HttpServer } from "http";
 import { WebSocketRepository } from "../../repository/Sockets/commentLikeRepo";
-import { timeStamp } from "console";
 import { NotificationSocketRepository } from "../../repository/Sockets/paymentNotificationRepo";
+
 let ioInstance: Server | null = null;
 export const onlineUsers = new Map();
+const users: { [key: string]: string[] } = {}; // For video rooms
+
 const initializeSocket = (server: HttpServer) => {
   const io = new Server(server, {
     cors: {
@@ -22,77 +22,85 @@ const initializeSocket = (server: HttpServer) => {
 
     if (userId) {
       onlineUsers.set(userId, { socketId: socket.id, role });
-      io.emit("get-online-users", Array.from(onlineUsers.keys())); // Notify all users
+      io.emit("get-online-users", Array.from(onlineUsers.keys()));
     }
 
+    // 1. Comment Handling
     socket.on('post_comment', async (comment: string, userId: string, postId: string, callback: (response: { comment: string, userName: string } | null) => void) => {
       try {
         const newComment = await WebSocketRepository.addComment(userId, postId, comment);
-        // callback({ comment: newComment.comment, userName: newComment.userName });
-
-        // Optionally, broadcast the new comment to all connected clients (or to specific clients)
         io.emit('new_comment', { comment: newComment.comment, userName: newComment.userName, postId });
       } catch (error) {
         console.error("Error handling comment:", error);
         callback(null);
       }
     });
-    ioInstance = io;
 
-
-    // Handle sending messages  chat
+    // 2. Chat Message Handling
     socket.on("post-new-message", async (newMessage, callback) => {
-      console.log('////////////////////////////////')
+      const { sender, receiver, message } = newMessage;
       console.log("Received message:", newMessage);
-      const { sender, receiver, message } = newMessage; // Ensure correct names
-      const result = await WebSocketRepository.addNewMessage(newMessage)
-      console.log(`Message from ${sender} to ${receiver}:`, message);
-      const receiver1 = onlineUsers.get(receiver);
-      console.log('reciever 1 ?', onlineUsers)
-      if (receiver1) {
-        const formattedTime = new Date(result.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        console.log("Formatted Date for Message", formattedTime);
-        console.log('userid ///', userId);
-        console.log('reciever 1 ///', receiver1)
 
-        io.to(receiver1.socketId).emit("receive-message", { senderId: sender, message, timeStamp: formattedTime })
+      const result = await WebSocketRepository.addNewMessage(newMessage);
+      const receiverData = onlineUsers.get(receiver);
 
+      if (receiverData) {
+        console.log("Checking the time",result.createdAt);
+        
+        io.to(receiverData.socketId).emit("receive-message", { senderId: sender, message, timestamp:result.createdAt,totalMessage:result.totalMessage,chatId:result.chatId});
       }
-      callback({ success: true, message: "Message delivered successfully!" });
+
+      callback({ success: true, message: "Message delivered successfully!",data:result });
     });
-        socket.on('post-payment-success',async(newMessage,callback)=>{
-            console.log("Yeah");
-            
-        console.log("Received message of payment:",newMessage);
-        const {senderId,receiverId,message}=newMessage;
-       const heading='Payment SuccessFully'
-        const result=await NotificationSocketRepository.addNewNotification(senderId,receiverId,message,heading)
-        console.log(`Message from ${senderId} to ${receiverId}:`, message);
-        const receiver=onlineUsers.get(receiverId);
-        console.log("reciever 1?",onlineUsers);
-        if(receiver){
-            console.log('userid ///', senderId);
-            console.log('reciever 1 ///', receiver)
-        io.to(receiver.socketId).emit("receive-notification-message", { senderId, message  })
-        }
-        callback({success:true,message:"Message delivered successfully!"})
-        })
+    socket.on("new-badge",async (senderId,callback)=>{
+      
+      console.log("SenderrrrrId:",senderId);
+      
+      const result=await WebSocketRepository.calculateUnReadMessage(senderId);
+      console.log("Result of Badge:",result);
 
 
-    // Handle disconnection
+      
+
+      
+    })
+
+    socket.on('post-payment-success', async (newMessage, callback) => {
+      const { senderId, receiverId, message } = newMessage;
+      const heading = 'Payment Successfully';
+
+      const result = await NotificationSocketRepository.addNewNotification(senderId, receiverId, message, heading);
+      const receiverData = onlineUsers.get(receiverId);
+      console.log("OnlineUser",onlineUsers);
+      console.log("RecieverId:",receiverData);
+      
+      
+      if (receiverData) {
+        io.to(receiverData.socketId).emit("receive-notification-message", { senderId, message });
+      }
+
+      callback({ success: true, message: "Notification sent successfully!" });
+    });
+
+
     socket.on("disconnect", () => {
       console.log("Client disconnected:", socket.id);
+
       for (const [userId, user] of onlineUsers) {
         if (user.socketId === socket.id) {
           onlineUsers.delete(userId);
           break;
         }
       }
-      io.emit("get-online-users", Array.from(onlineUsers.keys())); // Update online users
+
+      io.emit("get-online-users", Array.from(onlineUsers.keys()));
     });
   });
 
+  ioInstance = io;
   return io;
 };
+
 export const getSocketInstance = (): Server | null => ioInstance;
 export default initializeSocket;
+
