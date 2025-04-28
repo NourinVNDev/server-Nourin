@@ -12,13 +12,13 @@ export type EventData = {
   companyName: string;
   eventName: string;
   title: string;
- address:string;
+ address?:string;
   startDate: string;
   endDate: string;
 
-  destination: string;
+  destination?: string;
 
-
+amount?:string;
   content: string;
   time: string;
   tags: string;
@@ -83,7 +83,8 @@ export type verifierFormData={
     managerId:string;
     Included:[string];
     notIncluded:[string];
-    bookedMembers:string[]
+    bookedMembers:string[];
+    amount:number
 
   };
 
@@ -112,14 +113,14 @@ export type verifierFormData={
     email:string,
     phoneNo:number,
     address:string,
-    ticketType:string
+    ticketType:string,
   }
 
 
   export type makePaymentType=[
     bookedId: string,
     eventName: string,
-    images: string[],// Array of image URLs
+    images: string[],
     Amount: number,
     noOfPerson: number,
     sessionId:string,

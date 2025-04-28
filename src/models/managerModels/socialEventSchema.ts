@@ -31,11 +31,11 @@ const socialEventSchema = new mongoose.Schema(
       },
       address:{
         type:String,
-        required:true
+      
       },
       location: {
-          type:{type: String, required: true ,enum:["Point"]},
-          coordinates:{type:[Number],required:true}//ivide latitude,longitude kittum
+          type:{type: String ,enum:["Point"]},
+          coordinates:{type:[Number]}//ivide latitude,longitude kittum
         },
       startDate: {
         type: Date,
@@ -44,6 +44,10 @@ const socialEventSchema = new mongoose.Schema(
       endDate:{
         type:Date,
         required:true
+      },
+      amount:{
+        type:Number,
+
       },
       typesOfTickets:[
         {
@@ -73,7 +77,6 @@ const socialEventSchema = new mongoose.Schema(
   
       destination:{
         type:String,
-        required:true
       },
       time: { 
         type: String,

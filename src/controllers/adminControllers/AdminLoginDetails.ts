@@ -183,6 +183,22 @@ export  class AdminLogin {
             }); // Handle and send error response
         }
     }
+    async fetchAdminDashboardData(req:Request,res:Response){
+        try {
+            console.log("hai");
+            
+            const result = await this.adminController.getUserManagerDetailsService();
+
+            console.log("data from admin dashboard",result);
+            res.status(HTTP_statusCode.OK).json({result:result}); 
+        } catch (error) {
+            console.error('Error fetching admin dashboard:', error instanceof Error ? error.message : error);
+            res.status(HTTP_statusCode.InternalServerError).json({
+                success: false,
+                message: 'Failed to fetch admin dashboard',
+            });
+        }
+    }
     async postToggleIsBlock(req: Request, res: Response): Promise<void|any> {
         console.log('try');
         try {

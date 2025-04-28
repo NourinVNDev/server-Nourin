@@ -9,7 +9,7 @@ import { managerOfferRepository } from './mOfferRepo';
 import { managerBookingRepository } from './mBookingUserRepo';
 import { managerVerifierRepository } from './mVerifierRepo';
 import NOTIFICATIONDB from '../../models/userModels/notificationSchema';
-
+const monthMap = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 interface User {
     email: string;
     password: string; // Password is of type string
@@ -18,8 +18,9 @@ interface User {
 import bcrypt  from 'bcrypt';
 import SOCIALEVENTDB from '../../models/managerModels/socialEventSchema';
 import USERDB from '../../models/userModels/userSchema';
+import BOOKINGDB from '../../models/userModels/bookingSchema';
 
-const hashPassword = async (password:string) => {
+const hashPassword = async (password:string): Promise<string> => {
   try {
   
       const salt = await bcrypt.genSalt(10); 
@@ -221,7 +222,7 @@ export class mLoginRepo implements IMloginRepo{
             };
         }
     }
-      async postEventRepository(formData: EventData,location:eventLocation, fileName: string) {
+      async postEventRepository(formData: EventData,location:eventLocation|null, fileName: string) {
         try {
             console.log("Delegating event data to the actual repository...");
             
@@ -265,7 +266,7 @@ export class mLoginRepo implements IMloginRepo{
     }
     
 
-    async postUpdateEventRepository(formData: EventData, fileName: string[],eventId:string,location:eventLocation) {
+    async postUpdateEventRepository(formData: EventData, fileName: string[],eventId:string,location:eventLocation|null) {
       try {
           console.log("Delegating event data to the actual repository...");
           // Pass the data to the actual repository for database operations
@@ -588,6 +589,218 @@ async fetchManagerNotificationRepo(managerId:string){
       return { success: false, message: "Internal server error" };
   }
 }
+async fetchUserCountAndRevenueRepo(managerId: string) {
+  try {
+    const socialEvents = await SOCIALEVENTDB.find({ Manager: managerId });
+    const eventIds = socialEvents.map((event: any) => event._id);
+    const userData = await BOOKINGDB.find({ eventId: { $in: eventIds } }).populate('userId');
+    
+    console.log("User Data", userData);
+    
+    if (!userData || userData.length === 0) {
+      return { success: false, message: 'No Booked User', data: null };
+    }
+    
+    const userCount = new Set();
+    userData.forEach((booking: any) => {
+      console.log("Name:", booking.userId.firstName);
+      userCount.add(booking.userId.firstName);
+    });
+    
+    console.log("COUNT", userCount);
+
+    const totalUserCount = userCount.size;
+    const totalRevenue = userData.reduce((acc: number, booking: any) => {
+      return acc + (booking.totalAmount || 0);
+    }, 0);
+
+    console.log("Total", totalUserCount, totalRevenue);
+
+    return {
+      success: true,
+      message: 'Fetch User Count and Revenue Successfully',
+      data: {
+        totalUserCount,
+        totalRevenue
+      }
+    };
+
+  } catch (error) {
+    console.error("Error fetching user count and revenue:", error);
+    throw error;
+  }
+}
+
+async fetchDashboardGraphRepo(
+  managerId: string,
+  selectedType: string,
+  selectedTime: string
+) {
+
+  try {
+    const manager = await MANAGERDB.findOne({ _id: managerId });
+    const socialEvents = await SOCIALEVENTDB.find({ Manager: manager?._id });
+  
+    const eventIds = socialEvents.map(event => event._id);
+
+    const matchStage: any = {
+      eventId: { $in: eventIds }
+    };
+    const pipeline: any[] = [];
+
+    // For yearly report
+    if (selectedTime === 'Yearly') {
+      pipeline.push(
+        { $match: matchStage },
+        {
+          $group: {
+            _id: { $month: '$bookingDate' },
+            value:
+              selectedType === 'Booking'
+                ? { $sum: 1 }
+                : { $sum: '$totalAmount' }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            month: '$_id',
+            value: 1
+          }
+        }
+      );
+    }
+
+    // For monthly report (weekly breakdown)
+    else if (selectedTime === 'Monthly') {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      pipeline.push(
+        {
+          $match: {
+            ...matchStage,
+            bookingDate: { $gte: startOfMonth }
+          }
+        },
+        {
+          $addFields: {
+            week: {
+              $ceil: { $divide: [{ $dayOfMonth: '$bookingDate' }, 7] }
+            }
+          }
+        },
+        {
+          $group: {
+            _id: '$week',
+            value:
+              selectedType === 'Booking'
+                ? { $sum: 1 }
+                : { $sum: '$totalAmount' }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            week: '$_id',
+            value: 1
+          }
+        }
+      );
+    }
+
+    const result = await BOOKINGDB.aggregate(pipeline);
+
+    // Format the result
+    let formattedData = result.map((item: any) => {
+      if (selectedTime === 'Yearly') {
+        return {
+          month: monthMap[item.month - 1],
+          [selectedType === 'Booking' ? 'bookings' : 'revenue']: item.value
+        };
+      } else {
+        return {
+          week: `Week ${item.week}`,
+          [selectedType === 'Booking' ? 'bookings' : 'revenue']: item.value
+        };
+      }
+    });
+
+    // Fill missing months with zeroes for yearly
+    if (selectedTime === 'Yearly') {
+      const filledData = monthMap.map((month) => {
+        const found = formattedData.find((d) => d.month === month);
+        return (
+          found || {
+            month,
+            [selectedType === 'Booking' ? 'bookings' : 'revenue']: 0
+          }
+        );
+      });
+      formattedData = filledData;
+    }
+
+    return {
+      success: true,
+      message: 'Graph data fetched successfully',
+      data: formattedData
+    };
+  } catch (error) {
+    console.error('Error fetching dashboard graph data:', error);
+    return {
+      success: false,
+      message: 'Failed to fetch graph data',
+      data: []
+    };
+  }
+}
+
+
+async fetchDashboardPieChartRepo(managerId: string) {
+  try {
+    const manager = await MANAGERDB.findById(managerId);
+    if (!manager) {
+      return { success: false, message: "Manager not found", data: null };
+    }
+
+    const socialEvents = await SOCIALEVENTDB.find({ companyName: manager.firmName });
+    const eventIdToNameMap = new Map();
+    const eventIds = socialEvents.map((event: any) => {
+      eventIdToNameMap.set(event._id.toString(), event.eventName);
+      return event._id;
+    });
+
+    const bookingData = await BOOKINGDB.find({ eventId: { $in: eventIds } });
+
+    // Count bookings per eventId
+    const bookingCounts: { [key: string]: number } = {};
+    bookingData.forEach((booking: any) => {
+      const id = booking.eventId.toString();
+      bookingCounts[id] = (bookingCounts[id] || 0) + 1;
+    });
+
+    // Map to eventName and sort descending
+    const eventBookingSummary = Object.entries(bookingCounts)
+      .map(([eventId, count]) => ({
+        eventName: eventIdToNameMap.get(eventId) || "Unknown Event",
+        noOfBookings: count,
+      }))
+      .sort((a, b) => b.noOfBookings - a.noOfBookings);
+
+    return {
+      success: true,
+      message: "Top booked events retrieved",
+      data: eventBookingSummary,
+    };
+  } catch (error) {
+    console.error("Error in fetchDashboardPieChartRepo:", error);
+    return { success: false, message: "Internal server error", data: null };
+  }
+}
+
+
+
+
 
 async getTodaysBookingRepo(managerId:string):Promise<{ success: boolean; message: string; data?: any }>{
   try {

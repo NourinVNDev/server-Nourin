@@ -15,6 +15,7 @@ export interface IadminloginService{
     fetchSelectedCategoryService(id:string,req:Request,res:Response):Promise<{result?:any}>
     editSelectedCategoryService(category:string,categoryId:string,req:Request,res:Response):Promise<{result?:any}>
     addCategoryService(formData:FormData,req:Request,res:Response):Promise<{result?:any}>
+    getUserManagerDetailsService():Promise<{ success: boolean; message: string; user: any}>
 
 
 

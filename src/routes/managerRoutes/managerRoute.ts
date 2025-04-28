@@ -52,5 +52,7 @@ ManagerRoute.get(`/fetchVerifierDetails/:verifierId`,checkIfManagerBlocked,verif
 ManagerRoute.post('/updateVerifier',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateVerifierData.bind(managerLoginRouter))
 ManagerRoute.post('/updateSeatInfo',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateSeatInformation.bind(managerLoginRouter));
 ManagerRoute.get('/fetchManagerNotification/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchManagerNotification.bind(managerLoginRouter));
-
+ManagerRoute.get('/fetchUserCount/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchManagerDashboardData.bind(managerLoginRouter));
+ManagerRoute.get('/fetchDashboardGraphData/:managerId/:selectedType/:selectedTime',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchDashboardGraph.bind(managerLoginRouter));
+ManagerRoute.get('/fetchDashboardPieChart/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchDashboardPieChart.bind(managerLoginRouter));
 export default ManagerRoute;    

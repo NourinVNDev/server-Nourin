@@ -28,7 +28,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
                         address,
                         startDate,
                         endDate,
-                       
+                       amount,
                         destination,
                       
                  
@@ -51,7 +51,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
                         address,
                         startDate,
                         endDate,
-                    
+                        amount,
                         destination,
                      
                    
@@ -130,7 +130,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
                     startDate,
                     endDate,
                     destination,
-               
+                    amount,
                     companyName} = body;
 
 
@@ -145,13 +145,15 @@ import { EventSeatDetails } from "../../config/enum/dto";
                     id, companyName, content, time, tags, eventName, title,
                     address, startDate, endDate, 
                     destination,
+                    amount,
                     images: files,
                   };
                 console.log("checking the data ",formData,formData.images);
                 
 
 
-    
+                  console.log("Body",body);
+                  
                 if (!formData.eventName || !formData.title || !formData.address || !formData.startDate ||!formData.endDate  ||!formData.destination  ||!files) {
                     throw new Error("Missing required fields: EventName, title, address,startDate, endDate,amount,destination,noOfDays,noOfPerson,Included,notIncluded,or Image.");
                 }

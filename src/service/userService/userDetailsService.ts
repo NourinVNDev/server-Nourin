@@ -91,7 +91,7 @@ export class userDetailsService{
                 if(!result.success){
                     return {success:false,message:result.message,data:result.data};
                 }
-                const actualAmount=product.Amount/product.noOfPerson;
+                const actualAmount=product.Amount||product.amount/product.noOfPerson;
         
                 const lineItem = {
                     price_data: {

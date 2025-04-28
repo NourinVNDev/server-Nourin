@@ -98,6 +98,18 @@ export class  AdminLoginServices implements IadminloginService{
             throw new Error('Failed to fetch user details');
         }
     }
+    async getUserManagerDetailsService(){
+        try {
+            const result=await this.adminRepo.getManagerUserCountRepository();
+            if(!result.success){
+                throw new Error(result.message);
+            }
+            return result;
+        } catch (error) {
+            console.error(`Error in getUserDetailsService:`, error instanceof Error ? error.message : error);
+            throw new Error('Failed to fetch user details');
+        }
+    }
     async getManagerEventService(managerId:string){
         try {
             const result=await this.adminRepo.getManagerAndBookedRepository(managerId);

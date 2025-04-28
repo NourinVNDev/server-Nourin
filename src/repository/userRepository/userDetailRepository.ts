@@ -85,16 +85,16 @@ export class userDetailsRepository {
         if (!socialEvent) {
             return { success: false, message: "Social event not found", data: null };
         }
-console.log("SocialEvents:",socialEvent,formData.ticketType);
+// console.log("SocialEvents:",socialEvent,formData.ticketType);
 
-        const ticket = socialEvent.typesOfTickets.find((ticket: any) => ticket.type.toLowerCase() === formData.ticketType);
-        console.log("Checking Tickets:",ticket);
+//         const ticket = socialEvent.typesOfTickets.find((ticket: any) => ticket.type.toLowerCase() === formData.ticketType);
+//         console.log("Checking Tickets:",ticket);
         
         
         
-        if (!ticket || typeof ticket.noOfSeats !== 'number' || ticket.noOfSeats <= 0) {
-            return { success: false, message: "No available seats for the selected ticket type", data: null };
-        }
+//         if (!ticket || typeof ticket.noOfSeats !== 'number' || ticket.noOfSeats <= 0) {
+//             return { success: false, message: "No available seats for the selected ticket type", data: null };
+//         }
 
         // Generate a unique booking ID
         const bookingId = Math.floor(100000000000 + Math.random() * 900000000000);

@@ -65,6 +65,51 @@ const initializeSocket = (server: HttpServer) => {
       
     })
 
+    socket.on('post-new-event',async(socketMessage,callback)=>{
+      const {senderId,message}=socketMessage;
+    const result = await NotificationSocketRepository.addNewEventNotification(senderId,message);
+    })
+
+    socket.on('post-videoCallLink', async (socketMessage, callback) => {
+      const { link, managerId, eventId } = socketMessage;
+      console.log("Join",link);
+      
+    
+      try {
+        const notificationResult = await NotificationSocketRepository.shareVideoCallLink(link, managerId, eventId);
+        console.log("Booked Users:", notificationResult);
+      
+        if (!notificationResult || !notificationResult.userIds || notificationResult.userIds.length === 0) {
+          console.log("No users to notify");
+          return;
+        }
+      
+        // Convert ObjectIds to strings for comparison
+        const userIdStrings = notificationResult.userIds.map(id => id.toString());
+      
+    
+        userIdStrings.forEach((userId) => {
+          const socketId = onlineUsers.get(userId);
+          console.log(`User ${userId} socket:`, socketId.socketId || 'not connected');
+          
+          if (socketId) {
+            io.to(socketId.socketId).emit('new-notification',{
+              heading: 'Join Your Virtual Event',
+              message: `Click <a href="${link}" target="_blank">here</a> to join live stream.`,
+              count: notificationResult.unreadCount,
+              link: link // Adding direct link property for easier client-side handling
+            });
+          
+          }
+        })
+    
+        callback({ success: true, message: 'Shared notification sent to all booked users.' });
+      } catch (err) {
+        console.error("Socket error:", err);
+        callback({ success: false, message: 'Error sending shared notification.' });
+      }
+    });
+
     socket.on('post-payment-success', async (newMessage, callback) => {
       const { senderId, receiverId, message } = newMessage;
       const heading = 'Payment Successfully';

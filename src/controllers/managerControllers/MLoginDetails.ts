@@ -705,11 +705,16 @@ export class managerLogin{
           }
     async fetchManagerNotification(req:Request,res:Response){
        try {
+        console.log("Black");
+        
               const managerId=req.params.managerId;
               if(!managerId) return;
              
       const savedEvent = await this.managerController.fetchNotificationOfManager(managerId);
+      console.log("SavedEvent",savedEvent);
+      
       if(savedEvent.success){
+
         res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
         return;
         }
@@ -740,6 +745,94 @@ export class managerLogin{
                 error: error instanceof Error ? error.message : error,
               });
             }
+          }
+          async fetchManagerDashboardData(req:Request,res:Response){
+            try {
+              const managerId=req.params.managerId; 
+              const result = await this.managerController.getUserCountAndRevenue(managerId);
+              console.log("SavedEvent",result);
+        
+              
+              if (!result?.success) {
+                 res.status(HTTP_statusCode.OK).json({
+                  message: result?.message ,
+                });
+                return;
+              }
+        
+           
+              res.status(HTTP_statusCode.OK).json({
+                message: result.message,
+                data: result.data,
+                
+              });
+            } catch (error) {
+              console.error("Error in getAllOffers:", error);
+              res.status(HTTP_statusCode.InternalServerError).json({
+                message: "Internal server error",
+                error: error instanceof Error ? error.message : error,
+              });
+            }
+          }
+          async fetchDashboardGraph(req:Request,res:Response){
+            try {
+              const managerId=req.params.managerId; 
+              const selectType=req.params.selectedType;
+              const selectedTime=req.params.selectedTime;
+              const result = await this.managerController.getDashboardGraph(managerId,selectType,selectedTime);
+              console.log("SavedEvent",result);
+        
+              
+              if (!result?.success) {
+                 res.status(HTTP_statusCode.OK).json({
+                  message: result?.message ,
+                });
+                return;
+              }
+        
+           
+              res.status(HTTP_statusCode.OK).json({
+                message: result.message,
+                data: result.data,
+                
+              });
+            } catch (error) {
+              console.error("Error in getAllOffers:", error);
+              res.status(HTTP_statusCode.InternalServerError).json({
+                message: "Internal server error",
+                error: error instanceof Error ? error.message : error,
+              });
+            }
+          }
+          async fetchDashboardPieChart(req:Request,res:Response){
+            try {
+              const managerId=req.params.managerId; 
+         
+              const result = await this.managerController.getDashboardPieChart(managerId);
+              console.log("SavedEvent",result);
+        
+              
+              if (!result?.success) {
+                 res.status(HTTP_statusCode.OK).json({
+                  message: result?.message ,
+                });
+                return;
+              }
+        
+           
+              res.status(HTTP_statusCode.OK).json({
+                message: result.message,
+                data: result.data,
+                
+              });
+            } catch (error) {
+              console.error("Error in getting pieChart:", error);
+              res.status(HTTP_statusCode.InternalServerError).json({
+                message: "Internal server error",
+                error: error instanceof Error ? error.message : error,
+              });
+            }
+
           }
 
 

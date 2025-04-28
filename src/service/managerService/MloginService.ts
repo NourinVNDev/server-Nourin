@@ -12,7 +12,7 @@ import { managerBookingService } from './managerBookingService';
 import { IMloginRepo } from '../../repository/managerRepository/IMloginRepo';
 import { managerVerifierService } from './managerVerifierService';
 import { getCoordinates } from '../../config/getCoordinates';
-import fs from 'fs';
+import { eventLocation } from '../../config/enum/dto';
 function generateOTP(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
@@ -175,13 +175,17 @@ export class mLoginService implements IMloginService{
           const fileName = await uploadToCloudinary(file);
           console.log("Uploaded file name", fileName);
 
-          // calling function for getting latitude and longitude
-          const location=await getCoordinates(formData.address);
-          console.log("Location",location);
+          
+          let location:eventLocation|null=null;
+          if(formData.title!='Virtual' && formData.address!=null){
+            location=await getCoordinates(formData.address);
+            console.log("Location",location);
+          }else{
+            location=null
+          }
+   
 
-          if (!location) {
-          throw new Error("Invalid Location!");
-        }
+    
           const isAllowed = await this.managerEventservice.createEventPostService(formData,location, fileName as string);
           
           if (!isAllowed.success) {
@@ -237,12 +241,12 @@ export class mLoginService implements IMloginService{
         );
 
         console.log("Uploaded file URLs:", uploadedFileUrls);
-
-
-        const location=await getCoordinates(formData.address);
-        if(!location){
-          throw new Error("Invalid location");
+        let location:eventLocation|null=null;
+        if(formData.title!='Virtual' && formData.address!=null){
+          location=await getCoordinates(formData.address);
         }
+      
+   
 
         // Use another service for extended logic
         const isAllowed = await this.managerEventservice.updateEventPostService(
@@ -611,6 +615,34 @@ async fetchNotificationOfManager(managerId:string){
   } catch (error) {
     console.error("Error in fetching Notification:", error);
     throw new Error("Failed to fetching notification of user"); 
+  }
+
+}
+async getUserCountAndRevenue(managerId:string){
+  try {
+    const savedEvent = await this.managerService.fetchUserCountAndRevenueRepo(managerId);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    console.error("Error in fetching Manager Dashboard:", error);
+    throw new Error("Failed to fetching Manager Dashboard"); 
+  }
+}
+async getDashboardGraph(managerId:string,selectedType:string,selectedTime:string){
+  try {
+    const savedEvent = await this.managerService.fetchDashboardGraphRepo(managerId,selectedType,selectedTime);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    console.error("Error in fetching Manager Dashboard:", error);
+    throw new Error("Failed to fetching Manager Dashboard"); 
+  }
+}
+async getDashboardPieChart(managerId:string){
+  try {
+    const savedEvent = await this.managerService.fetchDashboardPieChartRepo(managerId);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    console.error("Error in fetching Manager Dashboard:", error);
+    throw new Error("Failed to fetching Manager Dashboard"); 
   }
 
 }

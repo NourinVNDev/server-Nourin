@@ -5,12 +5,12 @@ interface User {
     role:string
   }
 
-// Generate Access Token
+
 export const generateAccessToken = (user:User) => {
   const payload = {
    
     email: user.email,
-    role: user.role, // Include role in the payload
+    role: user.role,
   };
   console.log("Hello from access function",process.env.ACCESS_TOKEN_SECRET,process.env.ACCESS_TOKEN_EXPIRATION);
   
@@ -19,13 +19,13 @@ export const generateAccessToken = (user:User) => {
   });
 };
 
-// Generate Refresh Token
+
 export const generateRefreshToken = (user:User) => {
   console.log('User',user.email)
   const payload = {
 
     email: user.email,
-    role: user.role, // Include role in the payload
+    role: user.role, 
   };
   console.log("Payload",payload);
   return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {

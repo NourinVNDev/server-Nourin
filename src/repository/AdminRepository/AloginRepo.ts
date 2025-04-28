@@ -11,6 +11,7 @@ import ADMINWALLETDB from '../../models/adminModels/adminWalletSchema';
 import SOCIALEVENTDB from '../../models/managerModels/socialEventSchema';
 import BOOKEDEVENTDB from '../../models/userModels/bookingSchema';
 import mongoose from 'mongoose';
+import adminWalletSchema from '../../models/adminModels/adminWalletSchema';
 export class AdminLoginRepo  implements IAloginRepo{
     private adminCategoryRepo:adminCategoryRepository;
     constructor(){
@@ -138,6 +139,34 @@ export class AdminLoginRepo  implements IAloginRepo{
             };
             
         }
+    }
+    async getManagerUserCountRepository(){
+        try {
+            const user=await USERDB.countDocuments();
+            const manager=await MANAGERDB.countDocuments();
+            const admin=await ADMINWALLETDB.find();
+            const adminAmount=admin.map((ad:any)=>ad.balance);
+
+            const totalRevenue = adminAmount.reduce((sum, val) => sum + val, 0);
+            const result={
+                user,
+                manager,
+                revenue:totalRevenue
+            }
+
+            return{success:true,message:'Manager User count fetched',user:result
+            }
+            
+        } catch (error) {
+            console.error('Error fetching user details from database:', error);
+            return {
+                success: false,
+                message: 'An error occurred while fetching user details',
+                user: null,
+            };
+            
+        }
+
     }
  async getManagerAndBookedRepository(managerId: string) {
         try {

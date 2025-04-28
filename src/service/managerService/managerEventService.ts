@@ -7,7 +7,7 @@ export class managerEventService{
     constructor(managerRepositoryInstance:IMloginRepo){
         this.managerEventService=managerRepositoryInstance;
     }
-    async createEventPostService(formData: EventData,location:eventLocation, fileName: string) {
+    async createEventPostService(formData: EventData,location:eventLocation|null, fileName: string) {
       try {
           console.log("Processing event data in another service...");
 
@@ -39,7 +39,7 @@ export class managerEventService{
         throw new Error("Failed to create event in another service layer.");
     }
   }
-  async updateEventPostService(formData: EventData, fileName: string[],eventId:string,location:eventLocation) {
+  async updateEventPostService(formData: EventData, fileName: string[],eventId:string,location:eventLocation|null) {
     try {
         console.log("Processing event data in another service...",fileName);
 

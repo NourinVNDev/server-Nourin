@@ -24,7 +24,7 @@ adminRoute.post('/admin/categoryIsBlock',verifyToken(['admin']),adminLoginRouter
 adminRoute.post('/admin/managerIsBlock',verifyToken(['admin']),adminLoginRouter.postManagerIsBlock.bind(adminLoginRouter));
 adminRoute.get('/admin/fetchAdminWallet',verifyToken(['admin']),adminLoginRouter.getAdminWalletDetails.bind(adminLoginRouter));
 adminRoute.post('/refresh-token',adminLoginRouter.reGenerateAdminAccessToken.bind(adminLoginRouter));
-
+adminRoute.get('/admin/fetchUserManagerCount',verifyToken(['admin']),adminLoginRouter.fetchAdminDashboardData.bind(adminLoginRouter));
 
 
 export default adminRoute;

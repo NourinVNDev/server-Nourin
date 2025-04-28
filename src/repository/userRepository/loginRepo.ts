@@ -630,26 +630,26 @@ async getCategoryTypeRepo(categoryName1:string){
 async checkSeatAvailable(product: PaymentData) {
   try {
     const socialEvent = await SOCIALEVENT.findOne({ eventName: product.eventName });
-
     if (!socialEvent) {
       return { success: false, message: "Event not found", data: null };
     }
+    if(socialEvent?.title!='Virtual'){
+  
+  
+      const selectedEvent = socialEvent.typesOfTickets.find(
+        (ticket: any) => ticket.type.toLowerCase() === product.type
+      );
+  
+      if (!selectedEvent) {
+        return { success: false, message: "Ticket type not found", data: null };
+      }
+  
+      if (!selectedEvent.noOfSeats || selectedEvent.noOfSeats <= 0 || selectedEvent.noOfSeats<product.noOfPerson) {
+        return { success: false, message: "No seats available", data: null };
+      }
 
-    const selectedEvent = socialEvent.typesOfTickets.find(
-      (ticket: any) => ticket.type.toLowerCase() === product.type
-    );
-
-    if (!selectedEvent) {
-      return { success: false, message: "Ticket type not found", data: null };
     }
-
-    if (!selectedEvent.noOfSeats || selectedEvent.noOfSeats <= 0 || selectedEvent.noOfSeats<product.noOfPerson) {
-      return { success: false, message: "No seats available", data: null };
-    }
-
-    
-
-    return { success: true, message: "Seats available", data: { seatsRemaining: selectedEvent.noOfSeats } };
+    return { success: true, message: "Seats available", data: { seatsRemaining:null} };
 
   } catch (error) {
     console.error("Error in checkSeatAvailable:", error);
@@ -664,7 +664,7 @@ async savePaymentData(paymentData: PaymentData) {
     console.log("Checking the bookedId", paymentData);
 
 
-    if (!paymentData.bookedId || !paymentData.paymentStatus || !paymentData.Amount || !paymentData.companyName) {
+    if (!paymentData.bookedId || !paymentData.paymentStatus  || !paymentData.companyName) {
       throw new Error("Missing required payment data.");
     }
     const existingBooking = await BOOKEDUSERDB.findById(paymentData.bookedId);
@@ -681,10 +681,11 @@ async savePaymentData(paymentData: PaymentData) {
       if (status === "Completed") return "Completed";
       throw new Error("Invalid payment status received: " + status);
     };
-
+    console.log("NoOfPerson",paymentData.noOfPerson);
+    
     existingBooking.paymentStatus = validPaymentStatus(paymentData.paymentStatus);
     existingBooking.bookingDate = new Date();
-    existingBooking.totalAmount = paymentData.Amount;
+    existingBooking.totalAmount = paymentData.Amount||paymentData.amount;
     existingBooking.NoOfPerson = paymentData.noOfPerson;
     if (!existingBooking.ticketDetails) {
       existingBooking.ticketDetails = { Included: [], notIncluded: [], type: undefined };
@@ -693,9 +694,14 @@ async savePaymentData(paymentData: PaymentData) {
     existingBooking.ticketDetails.type = paymentData.type || undefined;
     existingBooking.ticketDetails.Included = paymentData.Included || [];
     existingBooking.ticketDetails.notIncluded = paymentData.notIncluded || [];
-    paymentData.bookedMembers.forEach((member: string) => {
-      existingBooking.bookedUser .push({ user: member, isParticipated: false}); 
-  });
+    paymentData.bookedMembers?.forEach(member => {
+      existingBooking.bookedUser.push({ 
+        user: member, 
+        isParticipated: false 
+      });
+    });
+
+    
   const uniqueIncluded = new Set(existingBooking.ticketDetails.Included);
   const uniqueNotIncluded = new Set(existingBooking.ticketDetails.notIncluded);
 
@@ -705,11 +711,8 @@ async savePaymentData(paymentData: PaymentData) {
   existingBooking.ticketDetails.Included = Array.from(uniqueIncluded);
   existingBooking.ticketDetails.notIncluded = Array.from(uniqueNotIncluded);
 
-
-    // Save the updated booking
     const updatedBooking = await existingBooking.save();
 
-    // Find manager details
     const managerDetails = await MANAGERSCHEMA.findOne({ firmName: paymentData.companyName });
     console.log("Manager details found:", managerDetails);
 
@@ -717,12 +720,10 @@ async savePaymentData(paymentData: PaymentData) {
       return { success: false, message: "Manager not found", data: null };
     }
 
-    // Check if the manager has a Stripe account
-
     let adminAmount=0;
     let managerAmount=0;
     if (existingBooking.paymentStatus === "Confirmed") {
-      const totalAmount = paymentData.Amount;
+      const totalAmount = paymentData.Amount||paymentData.amount;
       managerAmount = Math.floor(totalAmount * 0.9);
       adminAmount = Math.floor(totalAmount * 0.1);
       console.log("Processing Stripe Transfer...");

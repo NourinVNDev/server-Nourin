@@ -520,7 +520,7 @@ class userlogin  {
           success: false,
           message: "Access token secret not defined in environment variables",
         });
-        return; // End the execution
+        return; 
       }
   
       const accessToken = jwt.sign(
@@ -541,14 +541,14 @@ class userlogin  {
         message: "Access token regenerated successfully",
         accessToken: accessToken,
       });
-      return; // End the execution
+      return; 
     } catch (error) {
       console.error("Error verifying refresh token:", error);
       res.status(HTTP_statusCode.Unauthorized).json({
         success: false,
         message: "Invalid or expired refresh token",
       });
-      return; // End the execution
+      return;
     }
   }
 
@@ -561,7 +561,7 @@ class userlogin  {
         const result = await this.userController.getCategoryBasedServiice(postId);
         console.log("Result",result);
 
-        // Check if the result is successful or not
+     
         if (!result.success) {
             return res.status(HTTP_statusCode.InternalServerError).json({
                 message: result.message
@@ -587,7 +587,6 @@ async getAllEventDetails(req: Request, res: Response): Promise<void|any> {
       const result = await this.userController.getAllEventServiice();
       console.log("Result",result);
 
-      // Check if the result is successful or not
       if (!result.success) {
           return res.status(HTTP_statusCode.InternalServerError).json({
               message: result.message
@@ -618,7 +617,7 @@ async getAllEventDetails(req: Request, res: Response): Promise<void|any> {
       console.log('cat',categoryName);
         const result = await this.userController.getCategoryTypeServiice(categoryName); // No res here, just the result
 
-        // Check if the result is successful or not
+       
         if (!result.success) {
             return res.status(HTTP_statusCode.InternalServerError).json({
                 message: result.message
@@ -721,7 +720,7 @@ async makePaymentStripe(req: Request, res: Response): Promise<void> {
       res.status(HTTP_statusCode.InternalServerError).json({
         message: 'Something went wrong'
       });
-      return; // Prevents further execution
+      return;
     }
 
     console.log("Checking server-side 1st", result);
@@ -780,7 +779,7 @@ async saveBillingDetails(req: Request, res: Response) {
     const result = await this.userDetailsController.saveBillingDetails2(formData);
     console.log("Nice",result.data)
 
-    res.status(HTTP_statusCode.OK).json(result); // Send response to client
+    res.status(HTTP_statusCode.OK).json(result);
   } catch (error) {
     console.error("Error in saveBillingDetails:", error);
     res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });

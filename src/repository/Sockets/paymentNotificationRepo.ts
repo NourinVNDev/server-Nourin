@@ -1,3 +1,4 @@
+import BOOKINGDB from "../../models/userModels/bookingSchema";
 import NOTIFICATIONDB from "../../models/userModels/notificationSchema";
 
 export class NotificationSocketRepository{
@@ -23,6 +24,57 @@ export class NotificationSocketRepository{
             
         }
 
+
     }
+    static async addNewEventNotification(senderId:string,message:string){
+        try {
+            const notificationSchema=await NOTIFICATIONDB.create({
+                heading:'New Event Alert!',
+                message:message,
+                isRead:false,
+                from:senderId,
+                fromModal:'Manager',
+                toModal:'User'
+
+
+            })
+            await notificationSchema.save();
+            
+        } catch (error) {
+            
+        }
+    }
+
+    static async shareVideoCallLink(joinLink: string, managerId: string, eventId: string) {
+        try {
+          const bookings = await BOOKINGDB.find({ eventId });
+
+          const userIds = bookings.map((booking: any) => booking.userId);
+          console.log("JoinLink",joinLink);
+          
+ 
+          const notification = await NOTIFICATIONDB.create({
+            heading: 'Join Your Virtual Event',
+            message: `Click <a href="${joinLink}" target="_self">${joinLink}</a> to join live stream.`,
+            isRead: false,
+            from: managerId,
+            fromModal: 'Manager',
+            toModal: 'bookedUser'
+          });
+          const unreadCount = await NOTIFICATIONDB.countDocuments({
+            from: managerId,
+            isRead: false
+        });
+
+
+
+      
+          return {userIds,unreadCount};
+        } catch (error) {
+          console.error('Error creating shared notification:', error);
+          throw error;
+        }
+      }
+      
 
 }

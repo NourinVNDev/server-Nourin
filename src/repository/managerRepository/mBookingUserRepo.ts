@@ -108,43 +108,47 @@ export class managerBookingRepository {
                           data: null
                         };
                       }
-                      const userIds: string[] = [];
-                      const lastMessages: any[] = [];
-                      
+                   
+                
+                    let result=[];
           for (const convo of conversations) {
             const userId = convo.participants.find(
               (id: any) => id.toString() !== manager._id
             );
             if (!userId) continue;
+            const user=await USERDB.findById(userId);
             
-            const unreadCount = await MESSAGEDB.countDocuments({
-                chatId: convo._id,
-                senderId: userId,
-                isRead: false
-              });
-            userIds.push(userId.toString());
+            // const unreadCount = await MESSAGEDB.countDocuments({
+            //     chatId: convo._id,
+            //     senderId: userId,
+            //     isRead: false
+            //   });
+            // userIds.push(userId.toString());
+            let lastMessage=null;
                    const message = await MESSAGEDB.findById(convo.lastMessage).lean();
                   
                         if (message) {
-                          lastMessages.push({
+                          lastMessage={
                             message: message.message,
                             time: message.createdAt,
-                            count:unreadCount
-                          });
+                            // count:unreadCount
+                          };
          }
 
-        }
+         result.push({
 
-        const users = await USERDB.find({ _id: { $in: userIds } });    
+            chatId:convo._id,
+            companyName:user?.firstName,
+
+            lastMessage
+
+         })
+        }
+   
             return {
                 success: true,
                 message: "Data retrieved",
-                data: {
-                    users,
-                    lastMessages,
-                    chatIds:conversations.map(c=>c._id.toString()),
-
-                }
+                data: result
             };
     
         } catch (error) {

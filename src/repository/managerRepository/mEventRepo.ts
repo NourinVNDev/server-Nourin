@@ -8,7 +8,7 @@ import OFFERDB from "../../models/managerModels/offerSchema";
 import { log } from "node:util";
 export class managerEventRepository {
 
-    async createEventData(formData: EventData, location: eventLocation, fileName?: string) {
+    async createEventData(formData: EventData, location: eventLocation|null, fileName?: string) {
         try {
             if (!formData.address) {
                 throw new Error("Invalid location data: Missing address.");
@@ -43,25 +43,46 @@ export class managerEventRepository {
             const offerDetails = await OFFERDB.findOne({ discount_on: formData.title });
     
             // Create event object
-            const event = new SOCIALEVENTDB({
-                Manager: manager._id,
-                title: formData.title,
-                eventName: formData.eventName,
-                companyName: formData.companyName,
-                content: formData.content || "",
-                address: formData.address.split(' ').slice(0, 4).join(' '),
-                location: { type: 'Point', coordinates: location.coordinates },
-                startDate: formattedStartDate,
-                endDate: formattedEndDate,
-                noOfDays,
-                time: formData.time || "",
-                images: fileName ? [fileName] : [],
-                tags: formData.tags || [],
-                destination: formData.destination,
-                offer: offerDetails?._id || undefined 
-            });
-    
-            await event.save();
+            let event;
+            if(formData.title!='Virtual' && location!=null){
+              event= new SOCIALEVENTDB({
+                    Manager: manager._id,
+                    title: formData.title,
+                    eventName: formData.eventName,
+                    companyName: formData.companyName,
+                    content: formData.content || "",
+                    address: formData.address.split(' ').slice(0, 4).join(' '),
+                    location: { type: 'Point', coordinates: location.coordinates },
+                    startDate: formattedStartDate,
+                    endDate: formattedEndDate,
+                    noOfDays,
+                    time: formData.time || "",
+                    images: fileName ? [fileName] : [],
+                    tags: formData.tags || [],
+                    destination: formData.destination,
+                    offer: offerDetails?._id || undefined 
+                });
+            }else{
+                 event= new SOCIALEVENTDB({
+                    Manager: manager._id,
+                    title: formData.title,
+                    eventName: formData.eventName,
+                    companyName: formData.companyName,
+                    content: formData.content || "",
+                    startDate: formattedStartDate,
+                    endDate: formattedEndDate,
+                    noOfDays,
+                    time: formData.time || "",
+                    images: fileName ? [fileName] : [],
+                    tags: formData.tags || [],
+                    offer: offerDetails?._id || undefined, 
+                    amount:formData.amount
+                });
+        
+            
+            }
+            await event.save(); 
+        
 
             const categoryData=await CATEGORYDB.findOne({categoryName:event.title});
             categoryData?.Events.push(event._id);
@@ -132,7 +153,7 @@ export class managerEventRepository {
 
 
 
-      async updateEventData(formData: EventData, location: eventLocation, fileName?: string[], eventId?: string) {
+      async updateEventData(formData: EventData, location: eventLocation|null, fileName?: string[], eventId?: string) {
         try {
             console.log("Processing event data in actual repository...", formData);
     
@@ -181,23 +202,44 @@ export class managerEventRepository {
             
     
             // Update event fields
-            existingEvent.title = formData.title;
-            existingEvent.eventName = formData.eventName;
-            existingEvent.companyName = formData.companyName;
-            existingEvent.content = formData.content || "";
-            existingEvent.address = formData.address.split(' ').slice(0, 4).join(' ') || "";
-            existingEvent.location = { type: "Point", coordinates: location.coordinates };
-            existingEvent.startDate = new Date(formData.startDate);
-            existingEvent.endDate = new Date(formData.endDate);
-            existingEvent.noOfDays = noOfDays;
-            existingEvent.time = formData.time || "";
-            existingEvent.destination = formData.destination;
-            existingEvent.offer = offer?._id || undefined;
-    
-          
-            if (Array.isArray(fileName) && fileName.length > 0) {
-                existingEvent.images = fileName;
+            if(formData.title!='Virtual' && location!=null && formData.address!=null){
+                existingEvent.title = formData.title;
+                existingEvent.eventName = formData.eventName;
+                existingEvent.companyName = formData.companyName;
+                existingEvent.content = formData.content || "";
+                existingEvent.address = formData.address.split(' ').slice(0, 4).join(' ') || "";
+                existingEvent.location = { type: "Point", coordinates: location.coordinates };
+                existingEvent.startDate = new Date(formData.startDate);
+                existingEvent.endDate = new Date(formData.endDate);
+                existingEvent.noOfDays = noOfDays;
+                existingEvent.time = formData.time || "";
+                existingEvent.destination = formData.destination;
+                existingEvent.offer = offer?._id || undefined;
+        
+              
+                if (Array.isArray(fileName) && fileName.length > 0) {
+                    existingEvent.images = fileName;
+                }
+
+            }else{
+                existingEvent.title = formData.title;
+                existingEvent.eventName = formData.eventName;
+                existingEvent.companyName = formData.companyName;
+                existingEvent.content = formData.content || "";
+  
+                existingEvent.startDate = new Date(formData.startDate);
+                existingEvent.endDate = new Date(formData.endDate);
+                existingEvent.noOfDays = noOfDays;
+                existingEvent.time = formData.time || "";
+                existingEvent.amount = Number(formData.amount);
+                existingEvent.offer = offer?._id || undefined;
+        
+              
+                if (Array.isArray(fileName) && fileName.length > 0) {
+                    existingEvent.images = fileName;
+                }
             }
+         
     
            
             const updatedEvent = await existingEvent.save();

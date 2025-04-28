@@ -1,8 +1,7 @@
 import app from "./app";
 import dotenv from 'dotenv';
-import { createServer } from 'http';
 import initializeSocket from "./config/Sockets/commentSocket";
-import http from 'http';
+
 
 dotenv.config();
 const PORT = process.env.PORT || 3001

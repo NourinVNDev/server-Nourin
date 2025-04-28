@@ -8,7 +8,7 @@ interface AuthenticatedRequest extends Request {
   user?: string | jwt.JwtPayload;
 }
 
-// Helper function to validate the environment variable
+
 const getAccessTokenSecret = (): string => {
   const secret = process.env.ACCESS_TOKEN_SECRET;
   if (!secret) {
@@ -17,7 +17,7 @@ const getAccessTokenSecret = (): string => {
   return secret;
 };
 
-// Middleware to verify token and roles
+
 export const verifyToken = (allowedRoles: string[]): (req: AuthenticatedRequest, res: Response, next: NextFunction) => void => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     const authHeader = req.headers.authorization;
@@ -25,7 +25,7 @@ export const verifyToken = (allowedRoles: string[]): (req: AuthenticatedRequest,
       console.log("hai");
       
       res.status(401).json({ message: "Access Denied: No Header provided" });
-      return; // Ensure function execution stops here
+      return; 
     }
 
     const token = authHeader.split(" ")[1];

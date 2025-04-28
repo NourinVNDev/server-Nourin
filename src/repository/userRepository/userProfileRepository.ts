@@ -170,55 +170,94 @@ export class userProfileRepository {
                     data: null
                 };
             }
-
-            const managerIds: string[] = [];
-            const companySet = new Set<string>();
-            const eventSet = new Set<string>();
-            const lastMessages: any[] = [];
-
+            const result = []
             for (const convo of conversations) {
                 const managerId = convo.participants.find(
                     (id: any) => id.toString() !== userId
                 );
-                if (!managerId) continue;
-
-                managerIds.push(managerId.toString());
-
-                // Get all events handled by this manager
-                const events = await SOCIALEVENTDB.find({ Manager: managerId })
+                const eventsData = await SOCIALEVENTDB.find({ Manager: managerId })
                     .select("eventName companyName")
                     .lean();
-
-                for (const event of events) {
-                    if (event?.companyName) companySet.add(event.companyName);
-                    if (event?.eventName) eventSet.add(event.eventName);
-                }
-                const unreadCount = await MESSAGEDB.countDocuments({
-                    chatId: convo._id,
-                    senderId: managerId,
-                    isRead: false
-                });
-
+                if (!eventsData.length) continue;
+                const companyName = eventsData[0].companyName;
+                const events = eventsData.map(ev => ev.eventName);
+                let lastMessage = null;
                 const message = await MESSAGEDB.findById(convo.lastMessage).lean();
                 if (message) {
-                    lastMessages.push({
+                    lastMessage = {
                         message: message.message,
                         time: message.createdAt,
-                        count:unreadCount
-                    });
+                        // count:unreadCount
+                    };
                 }
+                result.push({
+                    chatId: convo._id,
+                    companyName,
+                    events,
+                    lastMessage
+                })
             }
-
-            return {
-                success: true,
-                message: "Chatted manager event data retrieved",
-                data: {
-                    chatIds: conversations.map(c => c._id.toString()),
-                    companyNames: Array.from(companySet),
-                    eventNames: Array.from(eventSet),
-                    lastMessages
+                console.log(result,"resultData")
+                return {
+                    success: true,
+                    message: "Chatted manager event data retrieved",
+                    data: result
                 }
-            };
+           
+
+
+            // const managerIds: string[] = [];
+            // const companySet:{ [companyName: string]: string[] } = {};
+            // // const eventSet = new Set<string>();
+            // const lastMessages: any[] = [];
+
+            // for (const convo of conversations) {
+            //     const managerId = convo.participants.find(
+            //         (id: any) => id.toString() !== userId
+            //     );
+            //     if (!managerId) continue;
+
+            //     managerIds.push(managerId.toString());
+
+            //     // Get all events handled by this manager
+            //     const events = await SOCIALEVENTDB.find({ Manager: managerId })
+            //         .select("eventName companyName")
+            //         .lean();
+
+            //     for (const event of events) {
+            //         const {eventName,companyName}=event
+            //        if(companySet[companyName] && !companySet[companyName]?.includes(eventName)){
+            //         companySet[companyName]?.push(eventName)
+            //        }else{
+            //         companySet[companyName]=[eventName]
+            //        }
+            //     }
+            //     const unreadCount = await MESSAGEDB.countDocuments({
+            //         chatId: convo._id,
+            //         senderId: managerId,
+            //         isRead: false
+            //     });
+
+            //     const message = await MESSAGEDB.findById(convo.lastMessage).lean();
+            //     if (message) {
+            //         lastMessages.push({
+            //             message: message.message,
+            //             time: message.createdAt,
+            //             count:unreadCount
+            //         });
+            //     }
+            // }
+            // console.log(companySet,"companySet")
+            // return {
+            //     success: true,
+            //     message: "Chatted manager event data retrieved",
+            //     data: {
+            //         chatIds: conversations.map(c => c._id.toString()),
+            //         companyNames: companySet,
+            //         // eventNames: Array.from(eventSet),
+            //         lastMessages
+            //     }
+            // };
         } catch (error) {
             console.error("Error fetching chatted manager events:", error);
             return { success: false, message: "Internal server error", data: null };
