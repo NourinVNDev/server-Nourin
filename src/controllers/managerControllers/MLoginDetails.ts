@@ -11,7 +11,6 @@ import { IMloginService } from "../../service/managerService/IMloginService";
 import { loginServices } from "../../service/userService/loginService";
 import HTTP_statusCode from "../../config/enum/enum";
 import { managerVerifierDetailsControllers } from "./verifierDetailsController";
-import { log } from "node:util";
 interface ManagerPayload {
   email: string;
   role:string
@@ -261,7 +260,7 @@ export class managerLogin{
                 success: false,
                 message: "Invalid or expired refresh token",
               });
-              return; // End the execution
+              return; 
             }
           }
 
@@ -270,14 +269,11 @@ export class managerLogin{
             console.log(req.body,"Yeah",req.file);
     
             try {
-                // Ensure a file is uploaded
                 if (!req.file) {
                     console.log('Mahn')
                     res.status(HTTP_statusCode.BadRequest).json({ error: "No file uploaded. Please upload an image." });
                     return;
                 }
-    
-                // Delegate to manager-specific controller
 
                 const savedEvent = await this.eventController.createEventPost(req, res);
                 if(savedEvent.success){
@@ -724,6 +720,25 @@ export class managerLogin{
       res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
       
     }
+          }
+
+          async fetchNotificationCount(req:Request,res:Response){
+            try{
+            const managerId=req.params.managerId;
+  
+            console.log("Chech the managerId",managerId);
+        
+            const savedEvent = await this.managerController.NotificationCountOfManager(managerId);
+            if(savedEvent.success){
+              res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+              return;
+              }
+               res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+          } catch (error) {
+            console.error("Error in check User Notification:", error);
+            res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+            
+          }
           }
           async getAllEventDetails(req: Request, res: Response): Promise<void> {
             try {

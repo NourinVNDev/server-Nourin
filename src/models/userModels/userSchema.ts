@@ -4,7 +4,7 @@ const userSchema = new Schema({
   firstName: {
     type: String,
     required: true,
-    trim: true, // Removes extra whitespace
+    trim: true,
   },
   lastName: {
     type: String,
@@ -15,20 +15,19 @@ const userSchema = new Schema({
     type: String,
     required: true,
     unique: true,
-    lowercase: true, // Converts email to lowercase
+    lowercase: true,
 
   },
   password: {
     type: String,
   
-    minlength: 6, // Ensures password has at least 6 characters
+    minlength: 6, 
   },
   phoneNo: {
-    type: String,
+    type: Number,
 
-    unique: true,
     match: [
-      /^\d{10}$/, // Validates a 10-digit phone number
+      /^\d{10}$/, 
       "Please enter a valid 10-digit phone number",
     ],
   },
@@ -40,12 +39,16 @@ const userSchema = new Schema({
     type:String,
     
   },
+  location:{
+    type:{type:String,enum:['Point']},
+    coordinates:{type:[Number]}
+  },
   profilePhoto:{
     type:String,
   }
 
 }, {
-  timestamps: true, // Adds `createdAt` and `updatedAt` timestamps
+  timestamps: true,
 });
-
+userSchema.index({location:'2dsphere'});
 export default mongoose.model('User', userSchema);

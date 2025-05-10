@@ -32,6 +32,7 @@ userRoute.post('/post/handleLike',checkIfUserBlocked,verifyToken(['user']),userL
 userRoute.get('/post/handleDetails/:postId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getPostDetails.bind(userLoginRouter));
 userRoute.get('/post/getSelectEvent/:id',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getSelectedEventDetails.bind(userLoginRouter));
 userRoute.post('/post/create-checkout-session',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.makePaymentStripe.bind(userLoginRouter));
+userRoute.post('/retryPayment-checkout-session',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.makerRetryPayment.bind(userLoginRouter));
 userRoute.get('/post/getSelectedEventData/:postId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getAnEventDetails.bind(userLoginRouter));
 userRoute.get('/post/getAllEventData',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getAllEventDetails.bind(userLoginRouter));
 userRoute.get('/generateOtpForResetPassword/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.generateOtpForPassword.bind(userLoginRouter));
@@ -40,6 +41,7 @@ userRoute.post('/handleResetPassword',checkIfUserBlocked,verifyToken(['user']),u
 userRoute.get(`/getExistingReview/:eventId/:userId`,checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getExistingReviews.bind(userLoginRouter));
 userRoute.post('/review-rating',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.postReviewAndRating.bind(userLoginRouter));
 userRoute.post(`/saveBillingDetails`,checkIfUserBlocked,verifyToken(['user']),userLoginRouter.saveBillingDetails.bind(userLoginRouter));
+userRoute.post('/saveRetryBillingDetails',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.saveRetryBillingDetails.bind(userLoginRouter));
 userRoute.post(`/updatePaymentStatus/:bookedId`,checkIfUserBlocked,verifyToken(['user']),userLoginRouter.updateBookedEventPaymentStatus.bind(userLoginRouter));
 userRoute.get('/getEventHistory/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getEventHistoryDetails.bind(userLoginRouter));
 userRoute.get('/getManagerName/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.getBookedManagerDetails.bind(userLoginRouter));
@@ -50,4 +52,6 @@ userRoute.get(`/post/checkOfferAvailable/:category`,checkIfUserBlocked,verifyTok
 userRoute.get('/cancelEventBooking/:bookingId/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.cancelBookingEvent.bind(userLoginRouter));
 userRoute.get('/fetchUserWallet/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.fetchUserWallet.bind(userLoginRouter));
 userRoute.get('/fetchUserNotification/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.fetchUserNotification.bind(userLoginRouter));
+userRoute.get('/fetchNotificationCount/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.fetchNotificationCount.bind(userLoginRouter));
+userRoute.get('/getSelectedBookingData/:bookingId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.fetchSavedBookingdata.bind(userLoginRouter));
 export default userRoute;

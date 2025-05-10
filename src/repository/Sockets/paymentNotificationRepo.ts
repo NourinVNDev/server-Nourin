@@ -1,3 +1,5 @@
+import ADMINDB from "../../models/adminModels/adminSchema";
+import MANAGERDB from "../../models/managerModels/managerSchema";
 import BOOKINGDB from "../../models/userModels/bookingSchema";
 import NOTIFICATIONDB from "../../models/userModels/notificationSchema";
 
@@ -17,12 +19,44 @@ export class NotificationSocketRepository{
 
             })
             await notificationSchema.save();
-
+            const notification=await NOTIFICATIONDB.find({toModal:'Manager'});
+            const unreadCount=notification.map((note:any)=>note.isRead==false);
+            return {unreadCount}
             
             
         } catch (error) {
-            
+          console.error('Error creating shared notification:', error);
+          throw error;
         }
+
+
+    }
+    static async addCategoryNotification(categoryName:string){
+      try{
+
+      const admin= await ADMINDB.find();
+      const notificationSchema=await NOTIFICATIONDB.create({
+        heading:'New Category Created',
+        message:` Your ${categoryName} has been successfully created and added.`,
+        isRead:false,
+        from:admin[0]._id,
+        fromModal:'Admin',
+        toModal:'Manager'
+
+
+    })
+    await notificationSchema.save();
+    const notification=await NOTIFICATIONDB.find({toModal:'Manager'});
+    const unreadCount=notification.map((note:any)=>note.isRead===false);
+
+    const manager=await MANAGERDB.find();
+    const managerIds=manager.map((man:any)=>man._id)
+    return {managerIds,unreadCount};
+  }catch(error){
+    console.error('Error creating shared notification:', error);
+    throw error;
+  }
+
 
 
     }
@@ -41,6 +75,8 @@ export class NotificationSocketRepository{
             await notificationSchema.save();
             
         } catch (error) {
+          console.error('Error creating shared notification:', error);
+          throw error;
             
         }
     }
@@ -51,11 +87,12 @@ export class NotificationSocketRepository{
 
           const userIds = bookings.map((booking: any) => booking.userId);
           console.log("JoinLink",joinLink);
+          const shortLinkText = joinLink.length > 30 ? joinLink.slice(0, 30) + '...' : joinLink;
           
  
           const notification = await NOTIFICATIONDB.create({
             heading: 'Join Your Virtual Event',
-            message: `Click <a href="${joinLink}" target="_self">${joinLink}</a> to join live stream.`,
+            message: `Click <a href="${joinLink}" target="_self">${shortLinkText}</a> to join live stream.`,
             isRead: false,
             from: managerId,
             fromModal: 'Manager',

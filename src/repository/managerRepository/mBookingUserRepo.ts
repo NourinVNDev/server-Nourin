@@ -118,11 +118,11 @@ export class managerBookingRepository {
             if (!userId) continue;
             const user=await USERDB.findById(userId);
             
-            // const unreadCount = await MESSAGEDB.countDocuments({
-            //     chatId: convo._id,
-            //     senderId: userId,
-            //     isRead: false
-            //   });
+            const unreadCount = await MESSAGEDB.countDocuments({
+                chatId: convo._id,
+                senderId: userId,
+                isRead: false
+              });
             // userIds.push(userId.toString());
             let lastMessage=null;
                    const message = await MESSAGEDB.findById(convo.lastMessage).lean();
@@ -140,7 +140,8 @@ export class managerBookingRepository {
             chatId:convo._id,
             companyName:user?.firstName,
 
-            lastMessage
+            lastMessage,
+            unreadCount
 
          })
         }

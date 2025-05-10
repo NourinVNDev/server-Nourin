@@ -15,22 +15,16 @@ export class managerEventRepository {
             }
     
             console.log("Processing event data in actual repository...", formData);
-    
-            // Fetch manager details
-            const manager = await MANAGERDB.findOne({ firmName: formData.companyName });
+               const manager = await MANAGERDB.findOne({ firmName: formData.companyName });
             if (!manager) {
                 throw new Error(`Manager not found for company name: ${formData.companyName}`);
             }
     
             console.log("Manager Details:", manager);
-    
-            // Check if event name already exists
             const isEventNamePresent = await SOCIALEVENTDB.findOne({ eventName: formData.eventName });
             if (isEventNamePresent) {
                 return { success: false, message: "Event Name is already Present" };
             }
-    
-            // Format dates and calculate no. of days
             const formattedStartDate = format(new Date(formData.startDate), "MM/dd/yyyy");
             const formattedEndDate = format(new Date(formData.endDate), "MM/dd/yyyy");
     
@@ -153,119 +147,106 @@ export class managerEventRepository {
 
 
 
-      async updateEventData(formData: EventData, location: eventLocation|null, fileName?: string[], eventId?: string) {
+      async updateEventData(
+        formData: EventData,
+        location: eventLocation | null,
+        fileName?: string[],
+        eventId?: string
+      ) {
         try {
-            console.log("Processing event data in actual repository...", formData);
+          // 1. Check if event exists
+          console.log("EventId:",eventId);
+          const existingEvent = await SOCIALEVENTDB.findById(eventId);
+          console.log("Existing",existingEvent);
+          
+          if (!existingEvent) return { success: false, message: "Event not found" };
     
-            // Check if event exists
-            const existingEvent = await SOCIALEVENTDB.findById(eventId);
-            if (!existingEvent) {
-                return { success: false, message: "Event not found" };
+    
+      
+          // 3. Calculate number of days
+          const noOfDays = Math.ceil(
+            (new Date(formData.endDate).getTime() - new Date(formData.startDate).getTime()) /
+              (1000 * 60 * 60 * 24)
+          );
+      
+          // 4. Apply offer (if exists)
+          const offer = await OFFERDB.findOne({ discount_on: formData.title });
+          console.log("Offer",offer);
+          
+          if (offer) {
+            const discountValue = Number(offer.discount_value || 0);
+            if (discountValue) {
+                existingEvent.typesOfTickets.forEach((ticket: any, index: number) => {
+                    if (discountValue) {
+                      const deductionAmount = (ticket.Amount * discountValue) / 100;
+                      const offerAmount = ticket.Amount - deductionAmount;
+                  
+                      existingEvent.typesOfTickets[index].offerDetails = {
+                        offerPercentage: discountValue,
+                        deductionAmount: +deductionAmount.toFixed(2),
+                        offerAmount: +offerAmount.toFixed(2),
+                        isOfferAdded: "Offer Added",
+                      };
+                    } else {
+                      existingEvent.typesOfTickets[index].offerDetails = undefined;
+                    }
+                  });
+                  existingEvent.markModified("typesOfTickets");
+                  
             }
-    
-            // Check if the event name is already present (excluding the current event)
-            const isEventNamePresent = await SOCIALEVENTDB.findOne({
-                eventName: formData.eventName,
-                _id: { $ne: eventId }
-            });
-            if (isEventNamePresent) {
-                return { success: false, message: "Event Name is already Present" };
-            }
-    
-            // Calculate days and get offer
-            const noOfDays = Math.ceil(
-                (new Date(formData.endDate).getTime() - new Date(formData.startDate).getTime()) /
-                (1000 * 60 * 60 * 24)
-            );
-            const offer = await OFFERDB.findOne({ discount_on: formData.title });
-            const discountValue = offer?.discount_value ? Number(offer.discount_value) : 0;
-    
-            // Update ticket offers
-            existingEvent.typesOfTickets.forEach((ticket: any) => {
-                let deductionAmount = 0;
-                let offerAmount = ticket.Amount;
-                let isOfferAdded = "Not Added";
-            
-                if (discountValue) {
-                    deductionAmount = Number(((ticket.Amount * discountValue) / 100).toFixed(2));
-                    offerAmount = Number((ticket.Amount - deductionAmount).toFixed(2));
-                    isOfferAdded = "Offer Added";
-                }
-            
-                ticket.offerDetails = discountValue ? {
-                    offerPercentage: discountValue,
-                    deductionAmount,
-                    offerAmount,
-                    isOfferAdded,
-                } : undefined;
-            });
-            
-    
-            // Update event fields
-            if(formData.title!='Virtual' && location!=null && formData.address!=null){
-                existingEvent.title = formData.title;
-                existingEvent.eventName = formData.eventName;
-                existingEvent.companyName = formData.companyName;
-                existingEvent.content = formData.content || "";
-                existingEvent.address = formData.address.split(' ').slice(0, 4).join(' ') || "";
-                existingEvent.location = { type: "Point", coordinates: location.coordinates };
-                existingEvent.startDate = new Date(formData.startDate);
-                existingEvent.endDate = new Date(formData.endDate);
-                existingEvent.noOfDays = noOfDays;
-                existingEvent.time = formData.time || "";
-                existingEvent.destination = formData.destination;
-                existingEvent.offer = offer?._id || undefined;
-        
-              
-                if (Array.isArray(fileName) && fileName.length > 0) {
-                    existingEvent.images = fileName;
-                }
+          }
+      
+          // 5. Update common fields
 
-            }else{
-                existingEvent.title = formData.title;
-                existingEvent.eventName = formData.eventName;
-                existingEvent.companyName = formData.companyName;
-                existingEvent.content = formData.content || "";
-  
-                existingEvent.startDate = new Date(formData.startDate);
-                existingEvent.endDate = new Date(formData.endDate);
-                existingEvent.noOfDays = noOfDays;
-                existingEvent.time = formData.time || "";
-                existingEvent.amount = Number(formData.amount);
-                existingEvent.offer = offer?._id || undefined;
-        
-              
-                if (Array.isArray(fileName) && fileName.length > 0) {
-                    existingEvent.images = fileName;
-                }
-            }
-         
-    
-           
-            const updatedEvent = await existingEvent.save();
-            console.log("Event updated successfully:", updatedEvent);
-    
-            await CATEGORYDB.updateMany(
-                { Events: updatedEvent._id },
-                { $pull: { Events: updatedEvent._id } }
-              );
-            const category = await CATEGORYDB.findOneAndUpdate(
-                { categoryName: formData.title },
-                { $addToSet: { Events: updatedEvent._id } },
-                { new: true }
-            );
-    
-            if (!category) {
-                throw new Error(`Category not found for name: ${formData.title}`);
-            }
-    
-            console.log("Category updated successfully:", category);
-            return { success: true, data: updatedEvent };
-        } catch (error) {
-            console.error("Error in updateEventData:", error);
-            return { success: false, message: "Failed to update event data in MongoDB." };
+
+          console.log("ExistingEvents:",existingEvent);
+          Object.assign(existingEvent, {
+            title: formData.title,
+            eventName: formData.eventName,
+            companyName: formData.companyName,
+            content: formData.content || "",
+            startDate: new Date(formData.startDate),
+            endDate: new Date(formData.endDate),
+            noOfDays,
+            time: formData.time || "",
+            offer: offer?._id || undefined,
+          });
+      
+          // 6. Conditional fields (Physical vs Virtual)
+          if (formData.title !== "Virtual" && location && formData.address) {
+            existingEvent.address = formData.address.split(" ").slice(0, 4).join(" ") || "";
+            existingEvent.location = { type: "Point", coordinates: location.coordinates };
+            existingEvent.destination = formData.destination;
+          } else if (formData.amount !== undefined) {
+            existingEvent.amount = Number(formData.amount);
+          }
+      
+          // 7. Update images if provided
+          if (Array.isArray(fileName) && fileName.length > 0) {
+            existingEvent.images = fileName;
+          }
+      
+          // 8. Save updated event
+          const updatedEvent = await existingEvent.save();
+      
+          // 9. Update event category references
+          await CATEGORYDB.updateMany(
+            { Events: updatedEvent._id },
+            { $pull: { Events: updatedEvent._id } }
+          );
+      
+          await CATEGORYDB.findOneAndUpdate(
+            { categoryName: formData.title },
+            { $addToSet: { Events: updatedEvent._id } }
+          );
+      
+          return { success: true, data: updatedEvent };
+        } catch (error: any) {
+          console.error("Error in updateEventData:", error);
+          return { success: false, message: "Failed to update event data." };
         }
-    }
+      }
+      
     
 
 

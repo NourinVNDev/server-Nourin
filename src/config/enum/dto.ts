@@ -3,12 +3,8 @@ import session from "express-session";
 export type FormData={ [key: string]: string|any };
 export type FormData1={[key:string]:number};
 
-// In enums.ts
-
-
-
 export type EventData = {
-  id:string;
+  _id:string;
   companyName: string;
   eventName: string;
   title: string;
@@ -22,7 +18,7 @@ amount?:string;
   content: string;
   time: string;
   tags: string;
-  images: any;  // Adjust the type for images as needed
+  images: any; 
 };
 
 
@@ -84,9 +80,34 @@ export type verifierFormData={
     Included:[string];
     notIncluded:[string];
     bookedMembers:string[];
+    bookedEmails:string[];
     amount:number
 
   };
+
+  export type retryPayment={
+    firstName:string;
+    lastName:string;
+    email:string;
+    phoneNo:string;
+    address:string;
+    images:string[];
+    eventName:string;
+    location:string;
+    companyName:string;
+    amount:number;
+    noOfDays:string;
+    bookedMembers:string[];
+    bookedEmails:string[];
+    noOfPerson:0
+    bookedId:string,
+    title:string,
+    paymentStatus:string
+    userId:string,
+    managerId:string,
+    type:string,
+    _id:string
+  }
 
 
 
@@ -114,6 +135,15 @@ export type verifierFormData={
     phoneNo:number,
     address:string,
     ticketType:string,
+  }
+  export type retryBillingData={
+    _id:string
+    userId:string,
+    firstName:string,
+    lastName:string,
+    email:string,
+    phoneNo:number,
+    address:string,
   }
 
 

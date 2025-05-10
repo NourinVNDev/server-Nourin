@@ -9,6 +9,7 @@ import { managerOfferRepository } from './mOfferRepo';
 import { managerBookingRepository } from './mBookingUserRepo';
 import { managerVerifierRepository } from './mVerifierRepo';
 import NOTIFICATIONDB from '../../models/userModels/notificationSchema';
+import ADMINDB from '../../models/adminModels/adminSchema';
 const monthMap = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 interface User {
     email: string;
@@ -555,40 +556,100 @@ async updateSeatInformationRepo(ticketData:TicketType){
       return { success: false, message: "Internal server error" };
   }
 }
-async fetchManagerNotificationRepo(managerId:string){
+async fetchManagerNotificationRepo(managerId: string) {
   try {
-    const notificationData=await NOTIFICATIONDB.find({
-      to:managerId
-    })
+    const notificationData = await NOTIFICATIONDB.find({
+      toModal: 'Manager',
+      to: managerId
+    }).sort({ createdAt: -1 });
+
     if (!notificationData || notificationData.length === 0) {
       return {
         success: true,
-        message: "No notification in the manager-side",
+        message: "No notifications on the manager side",
         data: [],
       };
     }
 
-    // Fetch user details (assuming you want to add sender info)
+    // Mark all notifications as read
+    const notificationIds = notificationData.map((n: any) => n._id);
+    await NOTIFICATIONDB.updateMany(
+      { _id: { $in: notificationIds } },
+      { $set: { isRead: true } }
+    );
+
+    // Enrich with sender details
     const enrichedNotifications = await Promise.all(
       notificationData.map(async (notification: any) => {
-        const user = await USERDB.findById(notification.from);
+        let senderName = '';
+        let senderImage = null;
+
+        if (notification.fromModal === 'User') {
+          const user = await USERDB.findById(notification.from);
+          if (user) {
+            senderName = `${user.firstName} ${user.lastName}`;
+            senderImage = user.profilePhoto || null;
+          }
+        } else if (notification.fromModal === 'Admin') {
+          const admin = await ADMINDB.findById(notification.from);
+    
+        }
+
         return {
           ...notification._doc,
-          senderName: user ? `${user.firstName} ${user.lastName}` : "Unknown",
-          senderImage: user?.profilePhoto  || null,
+          senderName,
+          senderImage,
         };
       })
     );
+
     return {
       success: true,
-      message: "notification retrieve successfully",
-      data: {user:enrichedNotifications},
+      message: "Notifications retrieved successfully",
+      data: enrichedNotifications,
     };
+
   } catch (error) {
-      console.error("Error in updating notification:", error);
-      return { success: false, message: "Internal server error" };
+    console.error("Error fetching manager notifications:", error);
+    return {
+      success: false,
+      message: "Internal server error"
+    };
   }
 }
+
+
+async fetchManagerNotificationCountRepo(managerId: string) {
+  try {
+    const notificationCount = await NOTIFICATIONDB.countDocuments({
+      to: managerId,
+      isRead: false
+    });
+
+    const categoryNotificationCount = await NOTIFICATIONDB.countDocuments({
+      toModal: "Manager",
+      isRead: false
+    });
+
+    const totalNotificationCount=notificationCount+categoryNotificationCount;
+
+    return {
+      success: true,
+      message: "Notification counts fetched successfully",
+      data: 
+   totalNotificationCount
+      
+    };
+
+  } catch (error) {
+    console.error("Error in updating notification:", error);
+    return {
+      success: false,
+      message: "Internal server error"
+    };
+  }
+}
+
 async fetchUserCountAndRevenueRepo(managerId: string) {
   try {
     const socialEvents = await SOCIALEVENTDB.find({ Manager: managerId });

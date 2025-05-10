@@ -16,6 +16,8 @@ export interface IadminloginService{
     editSelectedCategoryService(category:string,categoryId:string,req:Request,res:Response):Promise<{result?:any}>
     addCategoryService(formData:FormData,req:Request,res:Response):Promise<{result?:any}>
     getUserManagerDetailsService():Promise<{ success: boolean; message: string; user: any}>
+    getDashboardGraph(selectedType:string,selectedTime:string):Promise<{ success: boolean; message: string; user: any}>
+    getDashboardPieChart():Promise<{ success: boolean; message: string; data: any}>
 
 
 

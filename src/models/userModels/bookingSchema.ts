@@ -55,6 +55,10 @@ const bookingSchema = new Schema({
             type: String,
             required: true
         },
+        email:{
+            type:String,
+            required:true
+        },
         isParticipated: {
             type: Boolean,
             default: false

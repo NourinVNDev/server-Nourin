@@ -19,4 +19,17 @@ async fetchNotificationOfUser(userId:string){
     }   
 
 }
+async NotificationCountOfUser(userId:string){
+    try {
+
+        const result = await this.videoNotification.fetchUserNotificationCountService(userId)
+        console.log("Fetch Notification successfully", result);
+        return {result};
+        
+    } catch (error) {
+        console.error("Error in user Notification Controllers:", error);
+        throw new Error("Failed to process user-specific notification logic.");
+    }  
+
+}
 }

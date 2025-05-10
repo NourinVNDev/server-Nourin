@@ -21,9 +21,10 @@ const getAccessTokenSecret = (): string => {
 export const verifyToken = (allowedRoles: string[]): (req: AuthenticatedRequest, res: Response, next: NextFunction) => void => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     const authHeader = req.headers.authorization;
+    console.log("Why",authHeader);
+    
     if (!authHeader) {
       console.log("hai");
-      
       res.status(401).json({ message: "Access Denied: No Header provided" });
       return; 
     }
@@ -33,30 +34,24 @@ export const verifyToken = (allowedRoles: string[]): (req: AuthenticatedRequest,
       console.log("hello");
       
       res.status(401).json({ message: "Access Denied: No token provided" });
-      return; // Ensure function execution stops here
+      return; 
     }
 
     try {
       const secret = getAccessTokenSecret();
       const decoded = jwt.verify(token, secret);
       console.log(decoded,"decoded")
-      // Validate token payload
       if (typeof decoded !== "object" || !("role" in decoded)) {
         console.log('mahn');
-        
         res.status(401).json({ message: "Invalid token payload" });
         return;
       }
-
-      // Check user role
       const userRole = (decoded as { role: string }).role;
       if (!allowedRoles.includes(userRole)) {
         console.log('task');
-        
         res.status(401).json({ message: "Insufficient permissions" });
         return;
       }
-
       req.user = decoded;
       next();
     } catch (error) {

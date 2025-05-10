@@ -1,4 +1,4 @@
-import { FormData, PaymentData } from "../../config/enum/dto";
+import { FormData, PaymentData, retryBillingData, retryPayment } from "../../config/enum/dto";
 import { billingData } from "../../config/enum/dto";
 export interface ILoginService{
     getAllEventService():Promise<{success:boolean,message:string,data:any[]}>;
@@ -22,9 +22,12 @@ export interface ILoginService{
     posthandleLikeForPost(index:string,userId:string,postId:string):Promise<{result:any}>
     handlePostDetailsService(postId:string):Promise<{result:any}>;
     getSelectedEventService(postId:string):Promise<{result:any}>;
+    getBookedEventService(bookingId:string):Promise<{result:any}>;
     makePaymentStripeService(products:PaymentData):Promise<{result:any}>;
+    makeRetryPaymentStripeService(products:retryPayment):Promise<{result:any}>;
     posthandleReviewRating(formData:FormData):Promise<{result:any}>;
     saveBillingDetailsService(formData:billingData):Promise<{success:boolean,message:string,data:any}>
+    saveRetryBillingService(formData:retryBillingData):Promise<{success:boolean,message:string,data:any}>
     updateBookedEventPaymentStatus(bookedId:string):Promise<{success:boolean,message:string}|undefined>
     getExistingReviewService(userId:string,eventId:string):Promise<{success:boolean,message:string,data: string | null | undefined | any}>
     getEventHistoryService(userId:string):Promise<{success:boolean,message:string,data: string | null | undefined | any  |number}>;
@@ -36,6 +39,6 @@ export interface ILoginService{
     cancelBookingEventService(bookingId:string,userId:string):Promise<{success:boolean,message:string,data:any}>
     fetchUserWalletService(userId:string):Promise<{success:boolean,message:string,data:any}>
     fetchUserNotificationService(userId:string):Promise<{success:boolean,message:string,data:any}>
-
+    fetchUserNotificationCountService(userId:string):Promise<{success:boolean,message:string,data:any}>
 
 }

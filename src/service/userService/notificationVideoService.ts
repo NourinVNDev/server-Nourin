@@ -21,9 +21,27 @@ export class NotificationVideoCallService{
   
             return savedEvent;
         } catch (error) {
-            console.error("Error in handleEventCreation:", error);
+            console.error("Error in handle User Notification:", error);
             throw new Error("Failed to create event in another service layer.");
         }
 
+    }
+    async fetchUserNotificationCountService2(userId:string){
+        try {
+            console.log("For getting user Notification,userId",userId);
+  
+        
+            if (!userId) {
+                throw new Error("There is no UserId.");
+            }
+  
+         
+            const savedEvent =await this.videoNotificationService.fetchUserNotificationCountRepo(userId);
+  
+            return savedEvent;
+        } catch (error) {
+            console.error("Error in handle User Notification Count:", error);
+            throw new Error("Failed to create event in another service layer.");
+        }
     }
 }

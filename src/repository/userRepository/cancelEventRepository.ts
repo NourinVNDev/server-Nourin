@@ -70,12 +70,16 @@ export class CancelEventRepository {
           userId: new mongoose.Types.ObjectId(userId),
           balance: totalAmount,
           currency: "USD",
+     
           transactionHistory: [
             {
               transaction: "Money Added",
               amount: totalAmount,
+              bookingDate:existingBooking.bookingDate,
+              bookingID:existingBooking.bookingId,
             },
           ],
+        
         });
       } else {
         await USERWALLETDB.updateOne(
@@ -86,6 +90,8 @@ export class CancelEventRepository {
               transactionHistory: {
                 transaction: "Money Added",
                 amount: totalAmount,
+                bookingID:existingBooking.bookingId,
+                bookingDate:existingBooking.bookingDate,
               },
             },
           }

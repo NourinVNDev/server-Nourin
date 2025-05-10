@@ -163,19 +163,13 @@ export class mLoginService implements IMloginService{
     async createEventPostService(formData: EventData, file: Express.Multer.File): Promise<{ success: boolean; message: string; data?: any }> {
       try {
           console.log("Validating and processing event data...");
-  
-          // Validate event name
           if (!formData.eventName) {
               return { success: false, message: "Event name is required." };
           }
   
           console.log("Checking files", file);
-  
-          // Upload file to Cloudinary
           const fileName = await uploadToCloudinary(file);
           console.log("Uploaded file name", fileName);
-
-          
           let location:eventLocation|null=null;
           if(formData.title!='Virtual' && formData.address!=null){
             location=await getCoordinates(formData.address);
@@ -617,6 +611,15 @@ async fetchNotificationOfManager(managerId:string){
     throw new Error("Failed to fetching notification of user"); 
   }
 
+}
+async NotificationCountOfManager(managerId:string){
+  try {
+    const savedEvent = await this.managerService.fetchManagerNotificationCountRepo(managerId);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    console.error("Error in fetching Notification:", error);
+    throw new Error("Failed to fetching notification of user"); 
+  }
 }
 async getUserCountAndRevenue(managerId:string){
   try {

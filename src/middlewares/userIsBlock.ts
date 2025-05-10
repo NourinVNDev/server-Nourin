@@ -8,7 +8,7 @@ async function isUserBlocked(email: string): Promise<boolean> {
   return user?.isBlock === true;
 
 }
-// Middleware to check if the user is blocked
+
 export const checkIfUserBlocked = async (
   req: Request,
   res: Response,

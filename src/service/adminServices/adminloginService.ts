@@ -110,6 +110,25 @@ export class  AdminLoginServices implements IadminloginService{
             throw new Error('Failed to fetch user details');
         }
     }
+    async getDashboardGraph(selectedType:string,selectedTime:string){
+        try {
+            const savedEvent = await this.adminRepo.fetchDashboardGraphRepo(selectedType,selectedTime);
+            return {success:savedEvent.success,message:savedEvent.message,user:savedEvent.user};
+          } catch (error) {
+            console.error("Error in fetching Manager Dashboard:", error);
+            throw new Error("Failed to fetching Manager Dashboard"); 
+          }
+    }
+    async getDashboardPieChart(){
+        try {
+            const savedEvent = await this.adminRepo.fetchDashboardPieChartRepo();
+            return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+          } catch (error) {
+            console.error("Error in fetching Manager Dashboard:", error);
+            throw new Error("Failed to fetching Manager Dashboard"); 
+          }
+
+    }
     async getManagerEventService(managerId:string){
         try {
             const result=await this.adminRepo.getManagerAndBookedRepository(managerId);

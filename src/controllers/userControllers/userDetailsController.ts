@@ -1,5 +1,5 @@
 import { loginServices } from "../../service/userService/loginService";
-import { billingData, PaymentData } from "../../config/enum/dto";
+import { billingData, PaymentData, retryBillingData, retryPayment } from "../../config/enum/dto";
 import { ILoginService } from "../../service/userService/ILoginService";
 export class userDetailsController{
     private loginServices:ILoginService;
@@ -48,6 +48,18 @@ export class userDetailsController{
             throw new Error("Failed to process manager-specific event logic.");
         } 
     }
+    async getSelectedBookingData(bookingId:string){
+        try {
+
+            const result = await this.loginServices.getBookedEventService(bookingId)
+            console.log("Event created successfully", result);
+            return result;
+            
+        } catch (error) {
+            console.error("Error in managerEventControllers:", error);
+            throw new Error("Failed to process manager-specific event logic.");
+        } 
+    }
 
     async makePaymentStripeController(products:PaymentData){
         try {
@@ -61,11 +73,23 @@ export class userDetailsController{
             throw new Error("Failed to process manager-specific event logic.");
         } 
     }
+    async makeRetryPaymentStripeController(products:retryPayment){
+        try {
+
+            const result = await this.loginServices.makeRetryPaymentStripeService(products)
+            console.log("Event created successfully", result);
+            return result;
+            
+        } catch (error) {
+            console.error("Error in managerEventControllers:", error);
+            throw new Error("Failed to process manager-specific event logic.");
+        } 
+    }
 
     async saveBillingDetails2(formData:billingData) {
         try {
           const result = await this.loginServices.saveBillingDetailsService(formData);
-          console.log("Event created successfully", result);
+          console.log(" save data  successfully", result);
           return { success: result.success, message: result.message, data: result };
         } catch (error) {
           console.error("Error saving billing details:", error);
@@ -73,6 +97,16 @@ export class userDetailsController{
         }
       }
 
+      async saveRetryBillingDetails2(formData:retryBillingData){
+           try {
+          const result = await this.loginServices.saveRetryBillingService(formData);
+          console.log("Retry saving Data successfully", result);
+          return { success: result.success, message: result.message, data: result };
+        } catch (error) {
+          console.error("Error saving billing details:", error);
+          return { success: false, message: "Failed to save billing details", data: null };
+        }
+      }
 
       async updatePaymentStatus(bookedId:string){
         try {

@@ -25,6 +25,8 @@ adminRoute.post('/admin/managerIsBlock',verifyToken(['admin']),adminLoginRouter.
 adminRoute.get('/admin/fetchAdminWallet',verifyToken(['admin']),adminLoginRouter.getAdminWalletDetails.bind(adminLoginRouter));
 adminRoute.post('/refresh-token',adminLoginRouter.reGenerateAdminAccessToken.bind(adminLoginRouter));
 adminRoute.get('/admin/fetchUserManagerCount',verifyToken(['admin']),adminLoginRouter.fetchAdminDashboardData.bind(adminLoginRouter));
+adminRoute.get(`/fetchDashboardGraphData/:selectedType/:selectedTime`,verifyToken(['admin']),adminLoginRouter.fetchDashboardGraph.bind(adminLoginRouter));
+adminRoute.get(`/fetchDashboardPieChart`,verifyToken(['admin']),adminLoginRouter.fetchDashboardPieChart.bind(adminLoginRouter))
 
 
 export default adminRoute;

@@ -1,4 +1,4 @@
-import { billingData, FormData,PaymentData } from "../../config/enum/dto";
+import { billingData, eventLocation, FormData,PaymentData, retryBillingData, retryPayment } from "../../config/enum/dto";
 export interface IloginRepo{
     isEmailPresent(email:string):Promise<{user:boolean}>;
     getEventDataRepo():Promise<{success:boolean,message:string,data:any}>;
@@ -8,7 +8,7 @@ export interface IloginRepo{
     isEmailValid(email:string):Promise<{success:boolean,message:string,user:any}>;
     resetPasswordRepo(email:string,formData:FormData):Promise<{success:boolean,message:string,user:any}>;
     fetchuserEmail(userId:string):Promise<{success:boolean,message:string,user:any}>
-    resetUserProfile(email:string,formData:FormData):Promise<{success:boolean,message:string,user:any}>
+    resetUserProfile(email:string,formData:FormData,location:eventLocation|null):Promise<{success:boolean,message:string,user:any}>
     getAllCategoryRepository():Promise<{success:boolean,message:string,category:any}>
     getUserDetailsRepository(userId:string):Promise<{success:boolean,message:string,user?:any,category?:any}>
     getCategoryBasedRepo(postId:string):Promise<{success:boolean,message:string,category:any}>
@@ -17,9 +17,13 @@ export interface IloginRepo{
     posthandleLikeForPost(index:string,userId:string,postId:string):Promise<{savedEvent:any}>
     getPostDetailsRepo(postId:string):Promise<{savedEvent:any}>
     getSelectedEventRepo(postId:string):Promise<{savedEvent:any}>
+    getCancelBookingRepo(bookingId:string):Promise<{savedEvent:any}>
     checkSeatAvailable(product:PaymentData):Promise<{success:boolean,message:string,data?:any|undefined|null}>
+    checkRetrySeatAvailable(product:retryPayment):Promise<{success:boolean,message:string,data?:any|undefined|null}>
     savePaymentData(paymentData:PaymentData):Promise<{success:boolean,message:string,data:any}>
+    saveRetryPaymentData(paymentData:retryPayment):Promise<{success:boolean,message:string,data:any}>
     saveBillingDetailsRepo(formData:billingData):Promise<{success:boolean,message:string,data:any}>
+    saveRetryBillingRepo(formData:retryBillingData):Promise<{success:boolean,message:string,data:any}>
     updatePaymentStatusRepo(bookedId:string):Promise<{success:boolean,message:string}|undefined>
     handleReviewRatingRepo(formData:FormData):Promise<{savedEvent:any}>
     getEventHistoryRepo(userId:string):Promise<{success:boolean,message:string,data:any}>
@@ -32,5 +36,6 @@ export interface IloginRepo{
     cancelBookedEventRepo(bookingId:string,userId:string):Promise<{success:boolean,message:string,data:any}>
     fetchUserWalletRepo(userId:string):Promise<{success:boolean,message:string,data:any}>
     fetchUserNotificationRepo(userId:string):Promise<{success:boolean,message:string,data:any}>
+    fetchUserNotificationCountRepo(userId:string):Promise<{success:boolean,message:string,data:any}>
 
 }

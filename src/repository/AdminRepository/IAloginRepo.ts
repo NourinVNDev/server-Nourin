@@ -7,6 +7,8 @@ export interface IAloginRepo{
       getUserDetailsRepository():Promise<{ success: boolean; message: string; user: any }>;
       getManagerDetailsRepository():Promise<{success:boolean,message:string,user:any}>
       getManagerUserCountRepository():Promise<{success:boolean,message:string,user:any}>
+      fetchDashboardGraphRepo(selectedType:string,selectedTime:string):Promise<{success:boolean,message:string,user:any}>
+      fetchDashboardPieChartRepo():Promise<{success:boolean,message:string,data:any}>
       getManagerAndBookedRepository(managerId:string):Promise<{success:boolean,message:string,user:any}>
       postToggleIsBlockRepository(userId:string,updatedStatus:boolean):Promise<{success:boolean,message:string,user:any}>
       postManagerIsBlockRepository(managerId:string,updatedStatus:boolean):Promise<{success:boolean,message:string,user:any}>

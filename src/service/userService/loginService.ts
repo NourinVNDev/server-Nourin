@@ -3,12 +3,14 @@ import GenerateOTP from '../../config/nodemailer';
 const { OAuth2Client } = require('google-auth-library');
 const refreshTokens = [];
 import { ILoginService } from './ILoginService';
-import { billingData, FormData, PaymentData } from '../../config/enum/dto';
+import { billingData, FormData, PaymentData, retryBillingData, retryPayment } from '../../config/enum/dto';
 import { userDetailsService } from './userDetailsService';
 import { userProfileService } from './userProfileService';
 import { IloginRepo } from '../../repository/userRepository/IloginRepo';
 import { cancelEventService } from './cancelEventService';
 import { NotificationVideoCallService } from './notificationVideoService';
+import { eventLocation } from '../../config/enum/dto';
+import { getCoordinates } from '../../config/getCoordinates';
 function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -292,8 +294,10 @@ async changeUserProfileService(formData: FormData,email:string){
     
     if (email && formData.firstName && formData.lastName && formData.phoneNo && formData.address) {
       console.log("bhai");
+      let location:eventLocation|null=null;
+      location=await getCoordinates(formData.address);
       
-      const result = await this.userService.resetUserProfile(email,formData);
+      const result = await this.userService.resetUserProfile(email,formData,location);
       return { success: true, message: 'Reset Password SuccessFully', user: result };
     } else {
       throw new Error('Invalid login credentials.');
@@ -459,6 +463,20 @@ return {result};
     throw new Error("Failed to create event in another service layer."); 
   }
 }
+async getBookedEventService(bookingId:string){
+  try {
+
+    const result = await this.userDetailService.getCancelBookingEventService2(bookingId);
+    console.log("from service", result);
+
+return {result};
+  } catch (error) {
+
+    console.error("Error in getAllOfferServiceDetails:", error);
+    throw new Error("Failed to create event in another service layer."); 
+  }
+  
+}
 
 
 async makePaymentStripeService(products:PaymentData){
@@ -475,9 +493,22 @@ return {result};
   }
 }
 
+async makeRetryPaymentStripeService(products:retryPayment){
+  try {
+
+    const result = await this.userDetailService.makeRetryPaymentStripeService2(products);
+    console.log("from service", result);
+
+return {result};
+  } catch (error) {
+
+    console.error("Error in getAllOfferServiceDetails:", error);
+    throw new Error("Failed to create event in another service layer."); 
+  }
+}
+
 async posthandleReviewRating(formData:FormData){
   try {
-    // Fetch data from the repository
     const result = await this.userProfileService.postReviewRating(formData);
     console.log("from service", result);
     //  return { success: result.success, message: result. message, data: result.data };
@@ -502,7 +533,19 @@ async saveBillingDetailsService(formData:billingData){
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
+}
 
+async saveRetryBillingService(formData:retryBillingData){
+    try {
+
+    const result = await this.userDetailService.saveRetryBillingService2(formData);
+    console.log("from service", result);
+    return {success:result.success,message:result.message,data:result.data};
+  } catch (error) {
+
+    console.error("Error in getAllOfferServiceDetails:", error);
+    throw new Error("Failed to create event in another service layer."); 
+  }
 }
 
 async updateBookedEventPaymentStatus(bookedId:string){
@@ -594,6 +637,16 @@ async fetchUserWalletService(userId:string){
 async  fetchUserNotificationService(userId:string){
   try {
     const savedEvent = await this.NotificationService.fetchUserNotificationService2(userId);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    console.error("Error in fetching Notification:", error);
+    throw new Error("Failed to fetching notification of user"); 
+  }
+}
+
+async fetchUserNotificationCountService(userId:string){
+  try {
+    const savedEvent = await this.NotificationService.fetchUserNotificationCountService2(userId);
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
   } catch (error) {
     console.error("Error in fetching Notification:", error);

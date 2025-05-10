@@ -18,20 +18,17 @@ import { EventSeatDetails } from "../../config/enum/dto";
                     console.log("Normal Object",body);
                
                     const {
-                        id,
+                        _id,
                         eventName,
                         title,
                         content,
                         time,
                         tags,
-
                         address,
                         startDate,
                         endDate,
                        amount,
                         destination,
-                      
-                 
                         companyName
                       } = body;
 
@@ -41,7 +38,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
 
                    
                     const formData:EventData = {
-                        id,
+                        _id,
                         companyName,
                         content,
                         time,
@@ -120,7 +117,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
                 console.log("Checking the multer  file",files);
                 
                 const {
-                    id,
+                    _id,
                     eventName,
                     title,
                     content,
@@ -142,7 +139,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
                   }
                  
                   const formData: EventData = {
-                    id, companyName, content, time, tags, eventName, title,
+                    _id, companyName, content, time, tags, eventName, title,
                     address, startDate, endDate, 
                     destination,
                     amount,
@@ -158,7 +155,7 @@ import { EventSeatDetails } from "../../config/enum/dto";
                     throw new Error("Missing required fields: EventName, title, address,startDate, endDate,amount,destination,noOfDays,noOfPerson,Included,notIncluded,or Image.");
                 }
     
-                const result = await this.managerController.updateEventPostService(formData, formData.images,formData.id);
+                const result = await this.managerController.updateEventPostService(formData, formData.images,formData._id);
                 console.log("Event created successfully", result);
     
                 return result;

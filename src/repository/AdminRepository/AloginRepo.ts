@@ -12,6 +12,9 @@ import SOCIALEVENTDB from '../../models/managerModels/socialEventSchema';
 import BOOKEDEVENTDB from '../../models/userModels/bookingSchema';
 import mongoose from 'mongoose';
 import adminWalletSchema from '../../models/adminModels/adminWalletSchema';
+const monthMap = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+import BOOKINGDB from '../../models/userModels/bookingSchema';
+
 export class AdminLoginRepo  implements IAloginRepo{
     private adminCategoryRepo:adminCategoryRepository;
     constructor(){
@@ -168,6 +171,183 @@ export class AdminLoginRepo  implements IAloginRepo{
         }
 
     }
+    async fetchDashboardGraphRepo(
+        selectedType: string,
+        selectedTime: string
+      ) {
+        try {
+          // Get all events (across all managers)
+          const socialEvents = await SOCIALEVENTDB.find({});
+          const eventIds = socialEvents.map(event => event._id);
+      
+          const matchStage: any = {
+            eventId: { $in: eventIds }
+          };
+      
+          const pipeline: any[] = [];
+      
+          if (selectedTime === 'Yearly') {
+            pipeline.push(
+              { $match: matchStage },
+              {
+                $group: {
+                  _id: { $month: '$bookingDate' },
+                  value:
+                    selectedType === 'Booking'
+                      ? { $sum: 1 }
+                      : { $sum: '$totalAmount' }
+                }
+              },
+              {
+                $project: {
+                  _id: 0,
+                  month: '$_id',
+                  value: 1
+                }
+              }
+            );
+          } else if (selectedTime === 'Monthly') {
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      
+            pipeline.push(
+              {
+                $match: {
+                  ...matchStage,
+                  bookingDate: { $gte: startOfMonth }
+                }
+              },
+              {
+                $addFields: {
+                  week: {
+                    $ceil: { $divide: [{ $dayOfMonth: '$bookingDate' }, 7] }
+                  }
+                }
+              },
+              {
+                $group: {
+                  _id: '$week',
+                  value:
+                    selectedType === 'Booking'
+                      ? { $sum: 1 }
+                      : { $sum: '$totalAmount' }
+                }
+              },
+              {
+                $project: {
+                  _id: 0,
+                  week: '$_id',
+                  value: 1
+                }
+              }
+            );
+          }
+      
+          const result = await BOOKINGDB.aggregate(pipeline);
+      
+          let formattedData = result.map((item: any) => {
+            if (selectedTime === 'Yearly') {
+              return {
+                month: monthMap[item.month - 1],
+                [selectedType === 'Booking' ? 'bookings' : 'revenue']: item.value
+              };
+            } else {
+              return {
+                week: `Week ${item.week}`,
+                [selectedType === 'Booking' ? 'bookings' : 'revenue']: item.value
+              };
+            }
+          });
+      
+          if (selectedTime === 'Yearly') {
+            const filledData = monthMap.map((month) => {
+              const found = formattedData.find((d) => d.month === month);
+              return (
+                found || {
+                  month,
+                  [selectedType === 'Booking' ? 'bookings' : 'revenue']: 0
+                }
+              );
+            });
+            formattedData = filledData;
+          }
+      
+          return {
+            success: true,
+            message: 'Graph data fetched successfully',
+            user: formattedData
+          };
+        } catch (error) {
+          console.error('Error fetching dashboard graph data:', error);
+          return {
+            success: false,
+            message: 'Failed to fetch graph data',
+            user: []
+          };
+        }
+      }
+
+
+      async fetchDashboardPieChartRepo() {
+        try {
+          const managers = await MANAGERDB.find({});
+          const allCompanyNames = managers.map(manager => manager.firmName);
+          const socialEvents = await SOCIALEVENTDB.find({});
+          const eventIdToInfoMap = new Map();
+          const companyEventCount: { [company: string]: number } = {};
+          allCompanyNames.forEach(companyName => {
+            companyEventCount[companyName] = 0;
+          });
+          const eventIds = socialEvents.map(event => {
+            eventIdToInfoMap.set(event._id.toString(), {
+              name: event.eventName,
+              company: event.companyName
+            });
+            if (companyEventCount.hasOwnProperty(event.companyName)) {
+              companyEventCount[event.companyName]++;
+            }
+      
+            return event._id;
+          });
+          const bookings = await BOOKINGDB.find({ eventId: { $in: eventIds } });
+          const bookingCounts: { [eventId: string]: number } = {};
+          bookings.forEach(booking => {
+            const id = booking.eventId.toString();
+            bookingCounts[id] = (bookingCounts[id] || 0) + 1;
+          });
+          const topEvents = Object.entries(bookingCounts)
+            .map(([eventId, count]) => ({
+              eventName: eventIdToInfoMap.get(eventId)?.name || 'Unknown Event',
+              noOfBookings: count
+            }))
+            .sort((a, b) => b.noOfBookings - a.noOfBookings);
+          const topAgencies = Object.entries(companyEventCount)
+            .map(([companyName, count]) => ({
+              agencyName: companyName,
+              noOfEvents: count
+            }))
+            .sort((a, b) => b.noOfEvents - a.noOfEvents);
+      
+          return {
+            success: true,
+            message: "Top events and top agencies retrieved",
+            data: {
+              topEvents,
+              topAgencies
+            }
+          };
+        } catch (error) {
+          console.error("Error in fetchDashboardPieChartRepo:", error);
+          return {
+            success: false,
+            message: "Internal server error",
+            data: null
+          };
+        }
+      }
+      
+      
+      
  async getManagerAndBookedRepository(managerId: string) {
         try {
           const bookedEvents = await BOOKEDEVENTDB.find()

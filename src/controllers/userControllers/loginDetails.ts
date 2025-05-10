@@ -9,6 +9,7 @@ import { userProfileController } from './userProfileController';
 import HTTP_statusCode from '../../config/enum/enum';
 import { CancelBookedEventController } from './cancelBookedEventController';
 import { NotificationVideoCallController } from './NotificationVideoCall';
+import SendBookingConfirmation from '../../config/bookingConfirmation';
 interface UserPayload {
   email: string;
   role:string
@@ -110,41 +111,41 @@ class userlogin  {
 }
 
 
-    async postUserDetails(req: Request, res: Response): Promise<void>{
-        console.log("hai");
-        
-        try {
-            const email = req.body.email;
-            console.log('hello', email);
+  async postUserDetails(req: Request, res: Response): Promise<void>{
+    console.log("hai");
+    
+    try {
+        const email = req.body.email;
+        console.log('hello', email);
 
-            const otpNumber = await this.userController.CheckingEmail(email);
-            if(otpNumber.success){
-              if (typeof otpNumber.success === 'boolean') {
-                // Handle the case where otpNumber is a boolean
-                console.error("Received a boolean value instead of a number:", otpNumber);
-                res.status(HTTP_statusCode.BadRequest).json({ error: 'Failed to generate OTP.' });
-                return;
-            } else if(typeof otpNumber.success==='number') {
-              console.log("check otp",globalOTP);
-              
-                globalOTP = otpNumber.success; // If it's already a number
-            }
-            console.log('Checking',otpNumber);
-            console.log("Hash",globalOTP);
-            
-  
-              res.status(HTTP_statusCode.OK).json({ message: 'OTP sent', otpData: otpNumber });
-
-            }else{
-              res.status(HTTP_statusCode.OK).json({error:'Email is Already Registered'})
-            }
-        
+        const otpNumber = await this.userController.CheckingEmail(email);
+        if(otpNumber.success){
+          if (typeof otpNumber.success === 'boolean') {
+            // Handle the case where otpNumber is a boolean
+            console.error("Received a boolean value instead of a number:", otpNumber);
+            res.status(HTTP_statusCode.BadRequest).json({ error: 'Failed to generate OTP.' });
+            return;
+        } else if(typeof otpNumber.success==='number') {
+          console.log("check otp",globalOTP);
           
-        } catch (error) {
-            console.error("Error saving user data:", error);
-            res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session'});
+            globalOTP = otpNumber.success; // If it's already a number
         }
+        console.log('Checking',otpNumber);
+        console.log("Hash",globalOTP);
+        
+
+          res.status(HTTP_statusCode.OK).json({ message: 'OTP sent', otpData: otpNumber });
+
+        }else{
+          res.status(HTTP_statusCode.OK).json({error:'Email is Already Registered'})
+        }
+    
+      
+    } catch (error) {
+        console.error("Error saving user data:", error);
+        res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session'});
     }
+}
     async generateOtpForPassword(req: Request, res: Response): Promise<void>{
       console.log("hai");
       
@@ -257,59 +258,7 @@ class userlogin  {
         res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
     }
     }
-     async googleAuth(req: Request, res: Response): Promise<void>{
-        const { code } = req.body;
-      
-        try {
-          const response = await axios.post(
-            'https://oauth2.googleapis.com/token',
-            {
-              code,
-              client_id:process.env.GOOGLE_CLIENT_ID,
-              client_secret: process.env.GOOGLE_CLIENT_SECRET,
-              redirect_uri: 'postmessage',
-              grant_type: 'authorization_code',
-            }
-          );
-      
-          const data = response.data as string;
-          console.log("Received Google Data:", data);
-      
-          const result=await this.userController.GoogleAuth(data);
-          if(result.user && result.user.user?.email){
-            const user={email:result.user.user?.email,role:'user'};
-            const accessToken=generateAccessToken(user);
-            const refreshToken=generateRefreshToken(user);
-
-            res.cookie('accessToken', accessToken, {
-              httpOnly: false,
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'strict',
-              path: '/',
-          });
-
-          res.cookie('refreshToken', refreshToken, {
-              httpOnly: false,
-              secure: process. env.NODE_ENV === 'production',
-              sameSite: 'strict',
-              path: '/',
-          });
-
-            res.status(HTTP_statusCode.OK).json({ message: 'Login Successful',data:result.user });
-          } else {
-            res.status(HTTP_statusCode.Unauthorized).json({
-                success: false,
-                message: 'Invalid credentials',
-            });
-        }
-      
-        
-
-      
-        } catch (error) {
-          console.error('Error saving user data:', error);
-          res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
-        }
+    async googleAuth(req: Request, res: Response): Promise<void>{
     }
     async forgotPassword(req: Request, res: Response): Promise<void> {
       console.log("Hello");
@@ -705,32 +654,66 @@ async getSelectedEventDetails(req:Request,res:Response){
       });
 
   } catch (error) {
-      console.error("Error in getCategoryDetails:", error);
+      console.error("Error in get selected event:", error);
       res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
   }
+}
+async fetchSavedBookingdata(req:Request,res:Response){
+  try {
+    const bookingId=req.params.bookingId;
+      const result = await this.userDetailsController.getSelectedBookingData(bookingId); 
+      if (!result) {
+           res.status(HTTP_statusCode.InternalServerError).json({
+              message:'Something went wrong'
+          });
+      }
 
+      res.status(HTTP_statusCode.OK).json({
+          message: "Retrive Post Data successfully",
+          data: result
+      });
 
+  } catch (error) {
+      console.error("Error in get selected event:", error);
+      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+  }
 }
 async makePaymentStripe(req: Request, res: Response): Promise<void> {
   try {
     const { products } = req.body;
     const result = await this.userDetailsController.makePaymentStripeController(products);
 
-    if (!result) {
-      res.status(HTTP_statusCode.InternalServerError).json({
-        message: 'Something went wrong'
-      });
-      return;
-    }
-
-    console.log("Checking server-side 1st", result);
     if (!result.result.success) {
       res.status(HTTP_statusCode.OK).json({
         message: result.result.message,
-        success:true
+        success: true,
       });
       return;
     }
+    
+    // If success is true, send email to each booked user
+    const bookedUsers = result.result.output.bookingData.data.bookedUser;
+    const Amount=result.result.output.bookingData.data.totalAmount/result.result.output.bookingData.data.NoOfPerson ;
+
+    console.log("BookedUser Data:",bookedUsers);
+    console.log("Amount:",Amount);
+
+    if (Array.isArray(bookedUsers)) {
+      console.log("Blank");
+      
+      bookedUsers.forEach((user: any) => {
+        SendBookingConfirmation(
+          user.email,
+          user.user,
+          result.result.output.bookingData.data.bookingId,
+          result.result.output.eventName,
+          result.result.output.bookingData.data.bookingDate,
+          1,
+          Amount,
+          
+        );
+      });
+    } 
 
     console.log("Checking server-side", result);
 
@@ -749,6 +732,64 @@ async makePaymentStripe(req: Request, res: Response): Promise<void> {
     });
     return;
   }
+}
+
+
+async makerRetryPayment(req:Request,res:Response){
+  try {
+    const { products } = req.body;
+    const result = await this.userDetailsController.makeRetryPaymentStripeController(products);
+
+    if (!result.result.success) {
+      res.status(HTTP_statusCode.OK).json({
+        message: result.result.message,
+        success: true,
+      });
+      return;
+    }
+    
+    // If success is true, send email to each booked user
+    const bookedUsers = result.result.output.bookingData.data.bookedUser;
+    const Amount=result.result.output.bookingData.data.totalAmount/result.result.output.bookingData.data.NoOfPerson ;
+
+    console.log("BookedUser Data:",bookedUsers);
+    console.log("Amount:",Amount);
+
+    if (Array.isArray(bookedUsers)) {
+      console.log("Blank");
+      
+      bookedUsers.forEach((user: any) => {
+        SendBookingConfirmation(
+          user.email,
+          user.user,
+          result.result.output.bookingData.data.bookingId,
+          result.result.output.eventName,
+          result.result.output.bookingData.data.bookingDate,
+          1,
+          Amount,
+          
+        );
+      });
+    } 
+
+    console.log("Checking server-side", result);
+
+    res.status(HTTP_statusCode.OK).json({
+      message: "Retrieve Post Data successfully",
+      sessionId: result.result.data,
+      success:true
+    });
+    return;
+
+  } catch (error) {
+    console.error("Error in getCategoryDetails:", error);
+    res.status(HTTP_statusCode.InternalServerError).json({ 
+      message: "Internal server error", 
+      error 
+    });
+    return;
+  }
+
 }
 
 
@@ -778,6 +819,20 @@ async saveBillingDetails(req: Request, res: Response) {
 
     const result = await this.userDetailsController.saveBillingDetails2(formData);
     console.log("Nice",result.data)
+
+    res.status(HTTP_statusCode.OK).json(result);
+  } catch (error) {
+    console.error("Error in saveBillingDetails:", error);
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+  }
+}
+async saveRetryBillingDetails(req:Request,res:Response){
+    try {
+    const formData = req.body;
+    console.log("Received  Retry billing details:", formData);
+
+    const result = await this.userDetailsController.saveRetryBillingDetails2(formData);
+  
 
     res.status(HTTP_statusCode.OK).json(result);
   } catch (error) {
@@ -948,10 +1003,30 @@ async cancelBookingEvent(req:Request,res:Response){
         }
          res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
     } catch (error) {
-      console.error("Error in check User Wallet:", error);
+      console.error("Error in check User Notification:", error);
       res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
       
     }
+  }
+  async fetchNotificationCount(req:Request,res:Response){
+    try {
+  
+      const userId=req.params.userId;
+  
+      console.log("Chech the userId",userId);
+  
+      const savedEvent = await this.notificationVideoCallCOntroller.NotificationCountOfUser(userId);
+      if(savedEvent.result.success){
+        res.status(HTTP_statusCode.OK).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
+        return;
+        }
+         res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
+    } catch (error) {
+      console.error("Error in check User Notification:", error);
+      res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+      
+    }
+
   }
 
 

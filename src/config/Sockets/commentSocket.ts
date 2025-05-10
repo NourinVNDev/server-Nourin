@@ -46,12 +46,14 @@ const initializeSocket = (server: HttpServer) => {
 
       if (receiverData) {
         console.log("Checking the time",result.createdAt);
-        
+        io.to(receiverData.socketId).emit('new-badge',result.chatId)
         io.to(receiverData.socketId).emit("receive-message", { senderId: sender, message, timestamp:result.createdAt,totalMessage:result.totalMessage,chatId:result.chatId});
       }
 
       callback({ success: true, message: "Message delivered successfully!",data:result });
     });
+
+
     socket.on("new-badge",async (senderId,callback)=>{
       
       console.log("SenderrrrrId:",senderId);
@@ -64,12 +66,12 @@ const initializeSocket = (server: HttpServer) => {
 
       
     })
-
+//notification for new-event hosting
     socket.on('post-new-event',async(socketMessage,callback)=>{
       const {senderId,message}=socketMessage;
     const result = await NotificationSocketRepository.addNewEventNotification(senderId,message);
     })
-
+//videoCall link notification
     socket.on('post-videoCallLink', async (socketMessage, callback) => {
       const { link, managerId, eventId } = socketMessage;
       console.log("Join",link);
@@ -90,14 +92,14 @@ const initializeSocket = (server: HttpServer) => {
     
         userIdStrings.forEach((userId) => {
           const socketId = onlineUsers.get(userId);
-          console.log(`User ${userId} socket:`, socketId.socketId || 'not connected');
+          console.log(`User ${userId} socket:`, socketId || 'not connected');
           
           if (socketId) {
             io.to(socketId.socketId).emit('new-notification',{
               heading: 'Join Your Virtual Event',
               message: `Click <a href="${link}" target="_blank">here</a> to join live stream.`,
               count: notificationResult.unreadCount,
-              link: link // Adding direct link property for easier client-side handling
+              link: link 
             });
           
           }
@@ -109,7 +111,7 @@ const initializeSocket = (server: HttpServer) => {
         callback({ success: false, message: 'Error sending shared notification.' });
       }
     });
-
+    //payment notification
     socket.on('post-payment-success', async (newMessage, callback) => {
       const { senderId, receiverId, message } = newMessage;
       const heading = 'Payment Successfully';
@@ -121,12 +123,33 @@ const initializeSocket = (server: HttpServer) => {
       
       
       if (receiverData) {
-        io.to(receiverData.socketId).emit("receive-notification-message", { senderId, message });
+        io.to(receiverData.socketId).emit("receive-notification-message", { senderId, message,count:result.unreadCount });
       }
 
       callback({ success: true, message: "Notification sent successfully!" });
     });
 
+
+    //adding new category
+    socket.on('post-new-category',async(categoryName,callback)=>{
+      const result = await NotificationSocketRepository.addCategoryNotification(categoryName);
+      if (!result || !result.managerIds || result.managerIds.length === 0) {
+        console.log("No manager to notify");
+        return;
+      }
+      const managerIdStrings = result.managerIds.map(id => id.toString());
+      managerIdStrings.forEach((managerId) => {
+        console.log("OnlineUser:",onlineUsers);
+        
+        const socketId = onlineUsers.get(managerId);
+        console.log(`Manager ${managerId} socket:`, socketId || 'not connected');
+        if (socketId) {
+          io.to(socketId.socketId).emit('new-categoryNotification',{
+            count: result.unreadCount,
+          });
+        }
+    })
+  })
 
     socket.on("disconnect", () => {
       console.log("Client disconnected:", socket.id);

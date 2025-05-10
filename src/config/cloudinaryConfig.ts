@@ -15,7 +15,7 @@ export const uploadToCloudinary = async (file: Express.Multer.File): Promise<any
     const result = await new Promise<any>((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         { resource_type: 'image' }, // Specify resource type for image files
-        (error, result) => {
+        (error, result) => {  
           if (error) {
             reject("Cloudinary upload failed: " + error.message);
           } else {

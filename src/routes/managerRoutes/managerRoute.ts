@@ -55,4 +55,5 @@ ManagerRoute.get('/fetchManagerNotification/:managerId',checkIfManagerBlocked,ve
 ManagerRoute.get('/fetchUserCount/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchManagerDashboardData.bind(managerLoginRouter));
 ManagerRoute.get('/fetchDashboardGraphData/:managerId/:selectedType/:selectedTime',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchDashboardGraph.bind(managerLoginRouter));
 ManagerRoute.get('/fetchDashboardPieChart/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchDashboardPieChart.bind(managerLoginRouter));
+ManagerRoute.get('/fetchNotificationCount/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchNotificationCount.bind(managerLoginRouter))
 export default ManagerRoute;    
