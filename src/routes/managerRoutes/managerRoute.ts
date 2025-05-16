@@ -10,7 +10,7 @@ const managerServiceInstance=new mLoginService(managerRepositoryInstance);
 const managerLoginRouter=new managerLogin(managerServiceInstance);
 // const managerLoginRouter=new managerLogin();
 
-import { verifyToken } from '../../middlewares/userMiddle';
+import verifyToken from '../../middlewares/userMiddle';
 
 
 import { checkIfManagerBlocked } from '../../middlewares/managerBlock';

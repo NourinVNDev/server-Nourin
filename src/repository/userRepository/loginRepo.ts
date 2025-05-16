@@ -623,6 +623,17 @@ async getCancelBookingRepo(bookingId:string){
     throw new Error("Failed to handle event data in main repository.");
 }
 }
+async checkUserBookingValidRepo(email:string,eventName:string){
+    try {
+
+    const savedEvent = await this.userRepositoy.checkUserBookingValidRepository(email,eventName);
+    
+    return {savedEvent};
+} catch (error) {
+    console.error("Error in postEventRepository:", error);
+    throw new Error("Failed to handle event data in main repository.");
+}
+}
 async checkSeatAvailable(product: PaymentData) {
   try {
     const socialEvent = await SOCIALEVENT.findOne({ eventName: product.eventName });
@@ -687,13 +698,13 @@ async checkRetrySeatAvailable(product: retryPayment) {
 
 async savePaymentData(paymentData: PaymentData) {
   try {
+    console.log("Normal");
+    
     console.log("Checking the bookedId", paymentData);
-
-
-    if (!paymentData.bookedId || !paymentData.paymentStatus  || !paymentData.companyName) {
+    if (!paymentData.bookedId || !paymentData.companyName) {
       throw new Error("Missing required payment data.");
     }
-    const existingBooking = await BOOKEDUSERDB.findById(paymentData.bookedId);
+    const existingBooking = await BOOKEDUSERDB.findById(paymentData.bookingId);
     console.log("Existing booking found:", existingBooking);
 
     if (!existingBooking) {
@@ -701,15 +712,15 @@ async savePaymentData(paymentData: PaymentData) {
     }
 
     // Validate payment status
-    const validPaymentStatus = (status: string): "Confirmed" | "Cancelled" | "Completed" => {
-      if (status === "Success") return "Confirmed";
-      if (status === "Cancelled") return "Cancelled";
-      if (status === "Completed") return "Completed";
-      throw new Error("Invalid payment status received: " + status);
-    };
-    console.log("NoOfPerson",paymentData.noOfPerson);
+    // const validPaymentStatus = (status: string): "Pending" | "Cancelled" | "Completed" => {
+    //   if (status === "Success") return "Pending";
+    //   if (status === "Cancelled") return "Cancelled";
+    //   if (status === "Completed") return "Completed";
+    //   throw new Error("Invalid payment status received: " + status);
+    // };
+    console.log("NoOfPerson",paymentData.noOfPerson,paymentData.paymentStatus);
     
-    existingBooking.paymentStatus = validPaymentStatus(paymentData.paymentStatus);
+    existingBooking.paymentStatus = 'Completed';
     existingBooking.bookingDate = new Date();
     existingBooking.totalAmount = paymentData.Amount||paymentData.amount;
     existingBooking.NoOfPerson = paymentData.noOfPerson;
@@ -763,7 +774,7 @@ console.log("Length:",paymentData.bookedEmails.length,paymentData.bookedMembers.
 
     let adminAmount=0;
     let managerAmount=0;
-    if (existingBooking.paymentStatus === "Confirmed") {
+    if (existingBooking.paymentStatus === "Completed") {
       const totalAmount = paymentData.Amount||paymentData.amount;
       managerAmount = Math.floor(totalAmount * 0.9);
       adminAmount = Math.floor(totalAmount * 0.1);
@@ -781,7 +792,7 @@ console.log("Length:",paymentData.bookedEmails.length,paymentData.bookedMembers.
         type: "credit",
         status: "completed",
         eventName:paymentData.eventName,
-        bookedId:paymentData.bookingId,
+        bookedId:paymentData.bookedId,
         noOfPerson:paymentData.noOfPerson
       });
       await managerWallet.save();
@@ -807,7 +818,7 @@ console.log("Length:",paymentData.bookedEmails.length,paymentData.bookedMembers.
             status: 'completed',
             createdAt: new Date(),
             eventName:paymentData.eventName,
-            bookedId:paymentData.bookingId,
+            bookedId:paymentData.bookedId,
             noOfperson:paymentData.noOfPerson,
             companyName:paymentData.companyName
       
@@ -826,7 +837,7 @@ console.log("Length:",paymentData.bookedEmails.length,paymentData.bookedMembers.
     status: 'completed',
     createdAt: new Date(),
     eventName:paymentData.eventName,
-    bookedId:paymentData.bookingId
+    bookedId:paymentData.bookedId
   });
   await adminWallet.save();
     }
@@ -870,7 +881,7 @@ async saveRetryPaymentData(paymentData: retryPayment) {
     if (!paymentData.bookedId || !paymentData.paymentStatus  || !paymentData.companyName) {
       throw new Error("Missing required payment data.");
     }
-    const existingBooking = await BOOKEDUSERDB.findById(paymentData._id);
+    const existingBooking = await BOOKEDUSERDB.findById(paymentData.bookingId);
     console.log("Existing booking found:", existingBooking);
 
     if (!existingBooking) {
@@ -878,15 +889,14 @@ async saveRetryPaymentData(paymentData: retryPayment) {
     }
 
     // Validate payment status
-    const validPaymentStatus = (status: string): "Confirmed" | "Cancelled" | "Completed" => {
-      if (status === "Success") return "Confirmed";
-      if (status === "Cancelled") return "Cancelled";
-      if (status === "Completed") return "Completed";
-      throw new Error("Invalid payment status received: " + status);
-    };
+    // const validPaymentStatus = (status: string): | "Cancelled" | "Completed" => {
+    //   if (status === "Success") return "Completed";
+    //   if (status === "Cancelled") return "Cancelled";
+    //   throw new Error("Invalid payment status received: " + status);
+    // };
     console.log("NoOfPerson",paymentData.noOfPerson);
     
-    existingBooking.paymentStatus = validPaymentStatus(paymentData.paymentStatus);
+    existingBooking.paymentStatus = "Completed";
     existingBooking.bookingDate = new Date();
     existingBooking.totalAmount = paymentData.amount;
     existingBooking.NoOfPerson = paymentData.noOfPerson;
@@ -904,19 +914,21 @@ console.log("Length:",paymentData.bookedEmails.length,paymentData.bookedMembers.
   
 if (
   Array.isArray(paymentData.bookedMembers) &&
-  Array.isArray(paymentData.bookedEmails) 
+  Array.isArray(paymentData.bookedEmails)
 ) {
 
   existingBooking.bookedUser.splice(0, existingBooking.bookedUser.length);
-  
-  paymentData.bookedMembers.forEach((member, index) => {
-    existingBooking.bookedUser.create({
-      user: member,
-      email: paymentData.bookedEmails[index],
-      isParticipated: false
+
+
+  for (let i = 0; i < paymentData.bookedMembers.length; i++) {
+    existingBooking.bookedUser.push({
+      user: paymentData.bookedMembers[i],
+      email: paymentData.bookedEmails[i],
+      isParticipated: false,
     });
-  });
+  }
 }
+
 
     
 
@@ -933,7 +945,7 @@ if (
 
     let adminAmount=0;
     let managerAmount=0;
-    if (existingBooking.paymentStatus === "Confirmed") {
+    if (existingBooking.paymentStatus ==='Completed') {
       const totalAmount = paymentData.amount;
       managerAmount = Math.floor(totalAmount * 0.9);
       adminAmount = Math.floor(totalAmount * 0.1);
@@ -1001,7 +1013,7 @@ if (
   await adminWallet.save();
     }
     
-    console.log(adminWallet);
+  
 
     const socialEvent = await SOCIALEVENT.findOne({ eventName: paymentData.eventName });
 
@@ -1029,6 +1041,29 @@ if (
     return { success: false, message: "Database error while saving payment data.", data: null };
   }
 }
+
+
+async handleCancelPayment(bookingId: string): Promise<void> {
+  console.log("What is this",bookingId);
+  
+  if (!bookingId) {
+    console.warn(" No bookingId provided to cancel payment.");
+    return;
+  }
+
+  try {
+    const result = await BOOKEDUSERDB.deleteOne({ _id: bookingId });
+
+    if (result.deletedCount === 0) {
+      console.warn(` No booking found with ID: ${bookingId}`);
+    } else {
+      console.log(` Booking with ID ${bookingId} successfully cancelled.`);
+    }
+  } catch (error) {
+    console.error(`Error cancelling booking with ID ${bookingId}:`, error);
+  }
+}
+
 
 
 

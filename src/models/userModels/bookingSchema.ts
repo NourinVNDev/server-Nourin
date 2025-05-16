@@ -18,7 +18,7 @@ const bookingSchema = new Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ['Confirmed', 'Cancelled', 'Completed'],
+        enum: ['Pending', 'Cancelled', 'Completed'],
         default: 'Confirmed'
     },
     categoryId: {

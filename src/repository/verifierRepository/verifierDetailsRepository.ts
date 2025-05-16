@@ -83,23 +83,24 @@ export class verifierDetailsRepository implements IVerifierRepo {
     }
     
     
-    async fetchAllCompanyEventRepo(email: string) {
-        const verifierDetails = await VERIFIERDB.findOne({ email });
-    
-        if (!verifierDetails || !verifierDetails.Events || verifierDetails.Events.length === 0) {
-            return { success: false, message: "No events found for this company", data: null };
-        }
-    
-        const validateEvents = verifierDetails.Events.map((event: any) => event); 
-    
-        const socialEvents = await SOCIALEVENTSDB.find({ _id: { $in: validateEvents } });
-    
-        return { 
-            success: socialEvents.length > 0, 
-            message: socialEvents.length > 0 ? "Events are hosted" : "No Events hosted in this company", 
-            data: socialEvents.length > 0 ? socialEvents : null 
-        };
+async fetchAllCompanyEventRepo(email: string) {
+    const verifierDetails = await VERIFIERDB.findOne({ email });
+
+    if (!verifierDetails || !verifierDetails.Events || verifierDetails.Events.length === 0) {
+        return { success: false, message: "No events found for this company", data: null };
     }
+    const allEvents = await SOCIALEVENTSDB.find({ _id: { $in: verifierDetails.Events } });
+    const filteredEvents = allEvents.filter(event => event.title !== "Virtual");
+
+    return { 
+        success: filteredEvents.length > 0, 
+        message: filteredEvents.length > 0 
+            ? "Events are hosted" 
+            : "No Events hosted in this company", 
+        data: filteredEvents.length > 0 ? filteredEvents : null 
+    };
+}
+
     
 
     async fetchAllBookingDetailsRepo(eventId: string) {
@@ -117,9 +118,51 @@ export class verifierDetailsRepository implements IVerifierRepo {
     
         return { success: true, message: "Confirmed booked users found", data: actualData };
     }
-    
+
+
+  async fetchSingleUserDetailsRepo(bookedId: string, userName: string) {
+  const eventDetails = await BOOKINGDB.findOne({ bookingId: bookedId });
+
+  if (!eventDetails) {
+    return { success: false, message: 'No booked user is in events', data: null };
+  }
+
+  const user = eventDetails.bookedUser.find((user: any) => user.user === userName);
+
+  const data={
+    bookingId:eventDetails.bookingId,
+    bookingDate:eventDetails.bookingDate,
+    firstName:eventDetails.billingDetails?.firstName,
+    lastName:eventDetails.billingDetails?.lastName,
+    phoneNo:eventDetails.billingDetails?.phoneNo,
+    noOfPerson:eventDetails.NoOfPerson,
+    totalAmount:eventDetails.totalAmount && eventDetails?.totalAmount/eventDetails.bookedUser.length,
+    user:user?.user,
+    isParticipated:user?.isParticipated,
+    _id:eventDetails._id,
+    eventId:eventDetails.eventId,
+    ticketDetails:{
+        Included:eventDetails.ticketDetails?.Included,
+        notIncluded:eventDetails.ticketDetails?.notIncluded,
+        type:eventDetails.ticketDetails?.type
+    }
+
+
+
+
+  }
+
+  if (user) {
+    return { success: true, message: "Fetching Single User Data", data: data };
+  }
+
+  // If user not found, return the entire event details
+  return { success: true, message: "User not found. Returning full event details.", data: eventDetails };
+}
 
     async markUserEntryRepo(bookedId: string,userName:string) {
+        console.log("Black",bookedId);
+        
         const eventDetails = await BOOKINGDB.findOne({ bookingId: bookedId });
         if (!eventDetails) {
             return { success: false, message: 'No booked user is in events', data: null };

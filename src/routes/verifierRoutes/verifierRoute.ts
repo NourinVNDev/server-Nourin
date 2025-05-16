@@ -2,7 +2,7 @@ import { Router } from "express";
 import { VerifierDetailsController } from "../../controllers/verifierControllers/verifierDetailsController";
 import { verifierDetailsService } from "../../service/verifierServices/verifierDetailsService";
 import { verifierDetailsRepository } from "../../repository/verifierRepository/verifierDetailsRepository";
-import { verifyToken } from "../../middlewares/userMiddle";
+import verifyToken from "../../middlewares/userMiddle";
 const verifierRoute=Router();
 const verifierRepositoryInstance=new verifierDetailsRepository();
 const verifierServiceInstance=new verifierDetailsService(verifierRepositoryInstance)
@@ -15,5 +15,6 @@ verifierRoute.post('/verifierLogin',verifierControllerInstance.postVerifierLogin
 verifierRoute.post('/refresh-token',verifierControllerInstance.reGenerateVerifierAccessToken.bind(verifierControllerInstance));
 verifierRoute.get('/fetchEvents/:email',verifyToken(['verifier']),verifierControllerInstance.getAllCompanyEvents.bind(verifierControllerInstance));
 verifierRoute.get('/fetchBookedDetails/:eventId',verifyToken(['verifier']),verifierControllerInstance.getBookedDetails.bind(verifierControllerInstance));
-verifierRoute.get('/markUserEntry/:bookingId/:userName',verifyToken(['verifier']),verifierControllerInstance.markUserEntry.bind(verifierControllerInstance));
+verifierRoute.get('/fetchSingleUser/:bookedId/:userName',verifyToken(['verifier']),verifierControllerInstance.getSingleUserData.bind(verifierControllerInstance));
+verifierRoute.get('/markUserEntry/:bookedId/:userName',verifyToken(['verifier']),verifierControllerInstance.markUserEntry.bind(verifierControllerInstance));
 export default verifierRoute

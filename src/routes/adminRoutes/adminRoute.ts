@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { verifyToken } from "../../middlewares/userMiddle";
+import verifyToken from "../../middlewares/userMiddle";
 
 import adminLogin from "../../controllers/adminControllers/AdminLoginDetails";
 import { AdminLoginRepo } from "../../repository/AdminRepository/AloginRepo";

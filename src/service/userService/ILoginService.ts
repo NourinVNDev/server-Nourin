@@ -23,6 +23,7 @@ export interface ILoginService{
     handlePostDetailsService(postId:string):Promise<{result:any}>;
     getSelectedEventService(postId:string):Promise<{result:any}>;
     getBookedEventService(bookingId:string):Promise<{result:any}>;
+    checkBookedUserValidService(email:string,eventName:string):Promise<{result:any}>;
     makePaymentStripeService(products:PaymentData):Promise<{result:any}>;
     makeRetryPaymentStripeService(products:retryPayment):Promise<{result:any}>;
     posthandleReviewRating(formData:FormData):Promise<{result:any}>;
@@ -40,5 +41,5 @@ export interface ILoginService{
     fetchUserWalletService(userId:string):Promise<{success:boolean,message:string,data:any}>
     fetchUserNotificationService(userId:string):Promise<{success:boolean,message:string,data:any}>
     fetchUserNotificationCountService(userId:string):Promise<{success:boolean,message:string,data:any}>
-
+    confirmPayment(rawBody:Buffer,signature:string):Promise<{success:boolean,message:string,data:any}|undefined>
 }

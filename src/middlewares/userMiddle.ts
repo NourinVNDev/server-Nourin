@@ -2,10 +2,11 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { Request, Response, NextFunction } from "express";
 
+
 dotenv.config();
 
 interface AuthenticatedRequest extends Request {
-  user?: string | jwt.JwtPayload;
+  user?: string | jwt.JwtPayload|undefined;
 }
 
 
@@ -17,53 +18,42 @@ const getAccessTokenSecret = (): string => {
   return secret;
 };
 
-
-export const verifyToken = (allowedRoles: string[]): (req: AuthenticatedRequest, res: Response, next: NextFunction) => void => {
+export default function verifyToken(allowedRoles: string[] = []) {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-    const authHeader = req.headers.authorization;
-    console.log("Why",authHeader);
-    
-    if (!authHeader) {
-      console.log("hai");
-      res.status(401).json({ message: "Access Denied: No Header provided" });
-      return; 
-    }
+    const token = req.cookies.accessToken;
 
-    const token = authHeader.split(" ")[1];
     if (!token) {
-      console.log("hello");
-      
       res.status(401).json({ message: "Access Denied: No token provided" });
-      return; 
+      return;
     }
 
     try {
       const secret = getAccessTokenSecret();
       const decoded = jwt.verify(token, secret);
-      console.log(decoded,"decoded")
+
+      console.log(decoded, "decoded");
+
       if (typeof decoded !== "object" || !("role" in decoded)) {
-        console.log('mahn');
         res.status(401).json({ message: "Invalid token payload" });
         return;
       }
+
       const userRole = (decoded as { role: string }).role;
-      if (!allowedRoles.includes(userRole)) {
-        console.log('task');
-        res.status(401).json({ message: "Insufficient permissions" });
+
+      if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+        res.status(403).json({ message: "Insufficient permissions" });
         return;
       }
-      req.user = decoded;
+
+      req.user = decoded; 
       next();
     } catch (error) {
       if (error instanceof jwt.JsonWebTokenError) {
-        console.log('issue');
-        
         res.status(401).json({ message: "Invalid or Expired Token" });
       } else {
         console.error("Token verification error:", error);
         res.status(500).json({ message: "Internal Server Error" });
       }
-      return;
     }
   };
-};
+}

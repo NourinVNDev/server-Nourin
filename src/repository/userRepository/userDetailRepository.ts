@@ -81,6 +81,32 @@ export class userDetailsRepository {
     }
   }
 
+async checkUserBookingValidRepository(email: string, eventName: string) {
+
+  const bookings = await BOOKEDUSERDB.find().populate('eventId');
+
+  const isBooked = bookings.some((booking: any) => {
+    return (
+      booking.eventId?.eventName === eventName &&
+      booking.bookedUser.some((user: any) => user.email === email)
+    );
+  });
+
+  if (isBooked) {
+    return {
+      success: true,
+      message: "User has already booked this event",
+    };
+  } else {
+    return {
+      success: false,
+      message: "User has not booked this event",
+    };
+  }
+}
+
+
+
 
   async saveUserBilingDetailsRepository(formData: billingData) {
     try {
@@ -101,6 +127,7 @@ export class userDetailsRepository {
             eventId: formData.eventId,
             userId: formData.userId,
             categoryId: category._id,
+            paymentStatus:'Pending',
             billingDetails: {
                 firstName: formData.firstName,
                 lastName: formData.lastName,
@@ -108,6 +135,7 @@ export class userDetailsRepository {
                 phoneNo: formData.phoneNo,
                 address: formData.address
             }
+
         });
 
         const savedBooking = await newBooking.save();
@@ -119,7 +147,7 @@ export class userDetailsRepository {
         return { 
             success: true, 
             message: "Event Details saved", 
-            data: { billingDetails: savedBooking.billingDetails, id: savedBooking._id, bookingId: savedBooking.bookingId }
+            data: { billingDetails: savedBooking.billingDetails, id: savedBooking._id, bookingId: savedBooking.bookingId,paymentStatus:savedBooking.paymentStatus }
         };
 
     } catch (error) {
@@ -134,7 +162,7 @@ async saveRetryBilingRepository(formData: retryBillingData) {
     
  
     const updatedBooking = await BOOKEDUSERDB.findByIdAndUpdate(
-      formData._id, 
+      formData.bookingId, 
       {
         $set: {
   
@@ -163,7 +191,9 @@ async saveRetryBilingRepository(formData: retryBillingData) {
       data: { 
         billingDetails: updatedBooking.billingDetails, 
         id: updatedBooking._id, 
-        bookingId: updatedBooking.bookingId 
+        bookingId: updatedBooking.bookingId ,
+        paymentStatus:updatedBooking.paymentStatus
+
       }
     };
 
@@ -172,35 +202,57 @@ async saveRetryBilingRepository(formData: retryBillingData) {
     throw new Error("Failed to update booking details.");
   }
 }
-async updateBookedPaymentStatusRepository(bookedId: string) {
-  const bookedEvent = await BOOKEDUSERDB.findById(bookedId);
+// async updateBookedPaymentStatusRepository(bookedId: string) {
+//   const bookedEvent = await BOOKEDUSERDB.findById(bookedId);
 
+
+
+// //   if (!bookedEvent) {
+// //     return {
+// //       success: false,
+// //       message: "Event not found",
+// //     };
+// //   }
+// //   const socialEvent=await SOCIALEVENTDB.findById(bookedEvent.eventId);
+// //   if (socialEvent) {
+// //     const ticketToUpdate = socialEvent.typesOfTickets.find(
+// //       (ticket: any) => ticket.type === bookedEvent.ticketDetails?.type
+// //     );
+
+// //     if (ticketToUpdate && typeof ticketToUpdate.noOfSeats === 'number' && bookedEvent.NoOfPerson) {
+// //       ticketToUpdate.noOfSeats += bookedEvent.NoOfPerson;
+// //       await socialEvent.save();
+// //     } 
+// //   bookedEvent.paymentStatus = "Cancelled"; 
+// //   await bookedEvent.save();
+
+// //   return {
+// //     success: true,
+// //     message: "Event details updated successfully",
+// //   };
+// // }
+
+// }
+async updateBookedPaymentStatusRepository(bookedId: string) {
+
+  console.log("Checking BookedID",bookedId);
+  
+  const bookedEvent = await BOOKEDUSERDB.findById(bookedId);
 
   if (!bookedEvent) {
     return {
       success: false,
-      message: "Event not found",
+      message: "Booking not found",
     };
   }
-  const socialEvent=await SOCIALEVENTDB.findById(bookedEvent.eventId);
-  if (socialEvent) {
-    const ticketToUpdate = socialEvent.typesOfTickets.find(
-      (ticket: any) => ticket.type === bookedEvent.ticketDetails?.type
-    );
 
-    if (ticketToUpdate && typeof ticketToUpdate.noOfSeats === 'number' && bookedEvent.NoOfPerson) {
-      ticketToUpdate.noOfSeats += bookedEvent.NoOfPerson;
-      await socialEvent.save();
-    } 
-  bookedEvent.paymentStatus = "Cancelled"; 
-  await bookedEvent.save();
+  await bookedEvent.deleteOne();
 
   return {
     success: true,
-    message: "Event details updated successfully",
+    message: "Booking deleted successfully",
   };
 }
 
-}
   
 }

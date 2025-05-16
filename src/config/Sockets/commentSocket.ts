@@ -101,10 +101,8 @@ const initializeSocket = (server: HttpServer) => {
               count: notificationResult.unreadCount,
               link: link 
             });
-          
           }
         })
-    
         callback({ success: true, message: 'Shared notification sent to all booked users.' });
       } catch (err) {
         console.error("Socket error:", err);

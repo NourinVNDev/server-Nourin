@@ -82,6 +82,23 @@ export class verifierDetailsService implements IVerifierService{
             };
         }
     }
+    async fetchSingleUserDetails(bookedId:string,userName:string){
+            const bookedDetails = await this.verifierService.fetchSingleUserDetailsRepo(bookedId,userName); 
+
+        if (bookedDetails.success) {
+            return {
+                success: bookedDetails.success,
+                message: bookedDetails.message,
+                data: bookedDetails.data
+            };
+        } else {
+            return {
+                success: false,
+                message: bookedDetails.message,
+                data: bookedDetails.data
+            };
+        }
+    }
     async markUserEntryService(bookedId:string,userName:string){
         const BookedData = await this.verifierService.markUserEntryRepo(bookedId,userName); 
         if (BookedData.success) {

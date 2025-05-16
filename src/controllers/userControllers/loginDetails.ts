@@ -10,6 +10,8 @@ import HTTP_statusCode from '../../config/enum/enum';
 import { CancelBookedEventController } from './cancelBookedEventController';
 import { NotificationVideoCallController } from './NotificationVideoCall';
 import SendBookingConfirmation from '../../config/bookingConfirmation';
+import Stripe from 'stripe';
+import { log } from 'node:console';
 interface UserPayload {
   email: string;
   role:string
@@ -259,6 +261,61 @@ class userlogin  {
     }
     }
     async googleAuth(req: Request, res: Response): Promise<void>{
+      console.log(
+        "Is working");
+             const { code } = req.body;
+      
+        try {
+          const response = await axios.post(
+            'https://oauth2.googleapis.com/token',
+            {
+              code,
+              client_id:process.env.GOOGLE_CLIENT_ID,
+              client_secret: process.env.GOOGLE_CLIENT_SECRET,
+              redirect_uri: 'postmessage',
+              grant_type: 'authorization_code',
+            }
+          );
+      
+          const data = response.data as string;
+          console.log("Received Google Data:", data);
+      
+          const result=await this.userController.GoogleAuth(data);
+          if(result.user && result.user.user?.email){
+            const user={email:result.user.user?.email,role:'user'};
+            const accessToken=generateAccessToken(user);
+            const refreshToken=generateRefreshToken(user);
+
+            res.cookie('accessToken', accessToken, {
+              httpOnly: false,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'strict',
+              path: '/',
+          });
+
+          res.cookie('refreshToken', refreshToken, {
+              httpOnly: false,
+              secure: process. env.NODE_ENV === 'production',
+              sameSite: 'strict',
+              path: '/',
+          });
+
+            res.status(HTTP_statusCode.OK).json({ message: 'Login Successful',data:result.user });
+          } else {
+            res.status(HTTP_statusCode.Unauthorized).json({
+                success: false,
+                message: 'Invalid credentials',
+            });
+        }
+      
+        
+
+      
+        } catch (error) {
+          console.error('Error saving user data:', error);
+          res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
+        }
+      
     }
     async forgotPassword(req: Request, res: Response): Promise<void> {
       console.log("Hello");
@@ -678,6 +735,28 @@ async fetchSavedBookingdata(req:Request,res:Response){
       res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
   }
 }
+async checkIfUserValid(req:Request,res:Response){
+    try {
+    const email=req.params.email;
+    const eventName=req.params.eventName;
+      const result = await this.userDetailsController.checkUserIsBooked(email,eventName); 
+      if (!result) {
+           res.status(HTTP_statusCode.InternalServerError).json({
+              message:'Something went wrong'
+          });
+      }
+
+      res.status(HTTP_statusCode.OK).json({
+          message: "Retrive Post Data successfully",
+          data: result
+      });
+
+  } catch (error) {
+      console.error("Error in get selected event:", error);
+      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+  }
+
+}
 async makePaymentStripe(req: Request, res: Response): Promise<void> {
   try {
     const { products } = req.body;
@@ -691,29 +770,7 @@ async makePaymentStripe(req: Request, res: Response): Promise<void> {
       return;
     }
     
-    // If success is true, send email to each booked user
-    const bookedUsers = result.result.output.bookingData.data.bookedUser;
-    const Amount=result.result.output.bookingData.data.totalAmount/result.result.output.bookingData.data.NoOfPerson ;
-
-    console.log("BookedUser Data:",bookedUsers);
-    console.log("Amount:",Amount);
-
-    if (Array.isArray(bookedUsers)) {
-      console.log("Blank");
-      
-      bookedUsers.forEach((user: any) => {
-        SendBookingConfirmation(
-          user.email,
-          user.user,
-          result.result.output.bookingData.data.bookingId,
-          result.result.output.eventName,
-          result.result.output.bookingData.data.bookingDate,
-          1,
-          Amount,
-          
-        );
-      });
-    } 
+ 
 
     console.log("Checking server-side", result);
 
@@ -734,10 +791,34 @@ async makePaymentStripe(req: Request, res: Response): Promise<void> {
   }
 }
 
+async handleWebhook(req:Request,res:Response){
+      try {
+        console.log("Handle");
+       const stripe = new Stripe(process.env.STRIPE_SERVER_SECRET as string, {
+      apiVersion: '2024-12-18.acacia',
+    });
+      const signature = req.headers["stripe-signature"] as string;
+
+      if (!signature) {
+        throw new Error("Missing Stripe signature");
+      }
+         const rawBody = req.body as Buffer;
+      await this.userController.confirmPayment(rawBody, signature);
+
+      res.status(HTTP_statusCode.OK).json({ received: true });
+    } catch (error: any) {
+      console.error("Webhook error:", error);
+      res.status(HTTP_statusCode.InternalServerError).send(`Webhook Error: ${error.message}`);
+
+    }
+}
+
 
 async makerRetryPayment(req:Request,res:Response){
   try {
     const { products } = req.body;
+    console.log("Logging",products.bookedEmails);
+    
     const result = await this.userDetailsController.makeRetryPaymentStripeController(products);
 
     if (!result.result.success) {
@@ -748,29 +829,8 @@ async makerRetryPayment(req:Request,res:Response){
       return;
     }
     
-    // If success is true, send email to each booked user
-    const bookedUsers = result.result.output.bookingData.data.bookedUser;
-    const Amount=result.result.output.bookingData.data.totalAmount/result.result.output.bookingData.data.NoOfPerson ;
+   
 
-    console.log("BookedUser Data:",bookedUsers);
-    console.log("Amount:",Amount);
-
-    if (Array.isArray(bookedUsers)) {
-      console.log("Blank");
-      
-      bookedUsers.forEach((user: any) => {
-        SendBookingConfirmation(
-          user.email,
-          user.user,
-          result.result.output.bookingData.data.bookingId,
-          result.result.output.eventName,
-          result.result.output.bookingData.data.bookingDate,
-          1,
-          Amount,
-          
-        );
-      });
-    } 
 
     console.log("Checking server-side", result);
 
@@ -904,9 +964,9 @@ async getEventBookedDetails(req: Request, res: Response): Promise<void> {
       res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
     return;
     }
-     res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+     res.status(HTTP_statusCode.TaskFailed).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
   } catch (error) {
-    console.error("Error in getEventHistoryDetails:", error);
+    console.error("Error in getEventHistoryD  etails:", error);
     res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
   }
 }

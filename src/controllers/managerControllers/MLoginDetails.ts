@@ -100,15 +100,15 @@ export class managerLogin{
                 const accessToken = generateAccessToken(manager);
                 const refreshToken = generateRefreshToken(manager);
                 console.log("Tokens",accessToken,refreshToken);
-                 // Set cookies securely
-            res.cookie('managerToken', accessToken, {
+             
+            res.cookie('accessToken', accessToken, {
                 httpOnly: false,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
                 path: '/',
             });
 
-            res.cookie('managerRefreshToken', refreshToken, {
+            res.cookie('refreshToken', refreshToken, {
                 httpOnly: false,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
@@ -189,14 +189,14 @@ export class managerLogin{
 
 
           async reGenerateManagerAccessToken(req: Request, res: Response): Promise<void> {
-            const refreshToken = req.cookies.managerRefreshToken; // Read refresh token from cookies
+            const refreshToken = req.cookies.refreshToken; // Read refresh token from cookies
           console.log("Refresh Token",refreshToken);
             if (!refreshToken) {
               console.log("snake");
               
               res.status(HTTP_statusCode.NotFound).json({
                 success: false,
-                message: " Manager Refresh token not provided",
+                message: "Manager Refresh token not provided",
               });
               return;
             }
@@ -240,7 +240,7 @@ export class managerLogin{
                 accessTokenSecret,
                 { expiresIn: "15m" }
               );
-              res.cookie('managerToken', managerToken, {
+              res.cookie('accessToken', managerToken, {
                 httpOnly: false,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
@@ -253,7 +253,7 @@ export class managerLogin{
                 message: "Manager Access token regenerated successfully",
                 accessToken: managerToken,
               });
-              return; // End the execution
+              return;
             } catch (error) {
               console.error("Error verifying refresh token:", error);
               res.status(HTTP_statusCode.Unauthorized).json({

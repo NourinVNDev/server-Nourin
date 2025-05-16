@@ -57,7 +57,6 @@ export type verifierFormData={
   export type PaymentData = {
     bookedId:string,
     bookingId:string,
-    paymentStatus:string,
     userId:string,
     sessionId:string,
     firstName: string;
@@ -81,33 +80,46 @@ export type verifierFormData={
     notIncluded:[string];
     bookedMembers:string[];
     bookedEmails:string[];
-    amount:number
-
+    amount:number;
+    paymentStatus:string;
+    categoryName:string
   };
 
   export type retryPayment={
-    firstName:string;
-    lastName:string;
-    email:string;
-    phoneNo:string;
-    address:string;
-    images:string[];
-    eventName:string;
-    location:string;
-    companyName:string;
-    amount:number;
-    noOfDays:string;
+     bookedId:string,
+    bookingId:string,
+    userId:string,
+    sessionId:string,
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNo: number;
+    address: string;
+    companyName: string;
+    images: string[];
+    eventName: string;
+    location: {
+      address: string;
+      city: string;
+    };
+    noOfPerson: number;
+    noOfDays: number;
+    Amount: number;
+    type:string;
+    managerId:string;
+    Included:[string];
+    notIncluded:[string];
     bookedMembers:string[];
     bookedEmails:string[];
-    noOfPerson:0
-    bookedId:string,
-    title:string,
-    paymentStatus:string
-    userId:string,
-    managerId:string,
-    type:string,
-    _id:string
+    amount:number;
+    paymentStatus:string;
+    categoryName:string
+
   }
+    
+
+
+
 
 
 
@@ -134,10 +146,10 @@ export type verifierFormData={
     email:string,
     phoneNo:number,
     address:string,
-    ticketType:string,
+    ticketType:string
   }
   export type retryBillingData={
-    _id:string
+    bookingId:string
     userId:string,
     firstName:string,
     lastName:string,

@@ -76,7 +76,7 @@ export class VerifierDetailsController {
             const verifier={email:email,role:'verifier'};
             const verifierAccessToken=generateAccessToken(verifier);
             const  verifierRefreshToken=generateRefreshToken(verifier);
-            res.cookie('verifierAccessToken', verifierAccessToken, {
+            res.cookie('accessToken', verifierAccessToken, {
                 httpOnly: false,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
@@ -84,7 +84,7 @@ export class VerifierDetailsController {
                 maxAge: 2 * 60 * 1000
             });
 
-            res.cookie('verifierRefreshToken', verifierRefreshToken, {
+            res.cookie('refreshToken', verifierRefreshToken, {
                 httpOnly: false,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
@@ -139,7 +139,7 @@ export class VerifierDetailsController {
         }
     }
     async reGenerateVerifierAccessToken(req: Request, res: Response): Promise<void> {
-        const refreshToken = req.cookies.verifierRefreshToken; // Read refresh token from cookies
+        const refreshToken = req.cookies.refreshToken; // Read refresh token from cookies
       console.log("Refresh Token",refreshToken);
         if (!refreshToken) {
           console.log("snake");
@@ -190,7 +190,7 @@ export class VerifierDetailsController {
             accessTokenSecret,
             { expiresIn: "15m" }
           );
-          res.cookie('verifierAccessToken', verifierAccessToken, {
+          res.cookie('accessToken', verifierAccessToken, {
             httpOnly: false,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
@@ -231,9 +231,26 @@ export class VerifierDetailsController {
         }
     }
 
+    async getSingleUserData(req:Request,res:Response){
+           try {
+            const bookedID= req.params.bookedId;
+            const userName=req.params.userName;
+    
+            const result = await this.verifierController.fetchSingleUserDetails(bookedID,userName);
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error while checking manager status:", error);
+            res.status(500).json({
+                success: false,
+                error: 'Something went wrong'
+            });
+        }
+
+    }
+
     async markUserEntry(req:Request,res:Response):Promise<void>{
         try {
-            const bookingId = req.params.bookingId;
+            const bookingId = req.params.bookedId;
             console.log("bookedID:", bookingId);
             const userName=req.params.userName;
     

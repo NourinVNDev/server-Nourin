@@ -7,10 +7,12 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+     "typeRoots": ["./node_modules/@types", "./types"]
   },
   "include": [
     "src/**/*",
+    "types",
     "src/Session-types/**/*.d.ts"
 , "config", "src/multerConfig.ts"  ],
   "exclude": ["node_modules"]

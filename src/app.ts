@@ -10,6 +10,7 @@ import Database from "./config/database";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
 import cookieParser from 'cookie-parser';
 import path from "path";
+import stripeRoute from "./routes/stripe";
 
 const PORT=process.env.PORT||3001
 console.log("Socket",PORT);
@@ -17,13 +18,17 @@ console.log("Socket",PORT);
 
 
 const app=express();
+
 app.use(cors({
   origin:['http://localhost:5175','http://localhost:5173'],
   credentials:true
 }));
+
+app.use('/webhook',stripeRoute);
+app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'));
-app.use(express.json());
+
 app.use(express.urlencoded({ extended: true }));
 
 const uploadsDir = path.join(__dirname, "uploads");

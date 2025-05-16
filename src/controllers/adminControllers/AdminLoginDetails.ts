@@ -63,31 +63,23 @@ export class AdminLogin {
         return res.status(HTTP_statusCode.BadRequest).json({ error: 'Invalid login credentials' });
       }
       const userData = result.user.user;
-
-      // Log and remove password
-
-      let admin = { email: userData.email, role: 'admin' };
+      let admin = { email: userData.email, role: 'admin'};
       console.log("Credentials", userData.email)
       const accessToken = generateAccessToken(admin);
       const refreshToken = generateRefreshToken(admin);
       console.log("Tokens", accessToken, refreshToken);
-      // Set cookies securely
-      res.cookie('adminToken', accessToken, {
+      res.cookie('accessToken', accessToken, {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         path: '/',
       });
-
-      res.cookie('adminRefreshToken', refreshToken, {
+      res.cookie('refreshToken', refreshToken, {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         path: '/',
       });
-
-
-
       res.status(HTTP_statusCode.OK).json({ message: 'Login Success', data: (await result).user });
 
     } catch (error) {
@@ -95,11 +87,126 @@ export class AdminLogin {
     }
   }
 
-  async reGenerateAdminAccessToken(req: Request, res: Response): Promise<void> {
-  }
-  async getUserDetails(req: Request, res: Response): Promise<void> {
-  }
+    async reGenerateAdminAccessToken(req: Request, res: Response): Promise<void> {
+                const refreshToken = req.cookies.refreshToken; 
+              console.log("Refresh Token",refreshToken);
+                if (!refreshToken) {
+                  console.log("snake");
+                  
+                  res.status(HTTP_statusCode.NotFound).json({
+                    success: false, 
+                    message: " Admin Refresh token not provided",
+                  });
+                  return;
+                }
+              
+                try {
+                  // Ensure the REFRESH_TOKEN_SECRET is available
+                  const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+                  console.log("From Process",refreshTokenSecret);
+                  if (!refreshTokenSecret) {
+                    res.status(HTTP_statusCode.InternalServerError).json({
+                      success: false,
+                      message: " Admin Refresh token secret not defined in environment variables",
+                    });
+                    return; // End the execution
+                  }
+              
+                  // Verify the refresh token and decode the payload
+                  const admin = jwt.verify(refreshToken, refreshTokenSecret) as AdminPayload;
+                  console.log("Again Checking",admin);
+                  // Ensure the email exists in the decoded token
+                  if (!admin.email) {
+                    res.status(HTTP_statusCode.NotFound).json({
+                      success: false,
+                      message: "Invalid refresh token: Admin email not found",
+                    });
+                    return; // End the execution
+                  }
+              
+                  // Generate a new access token
+                  const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+                  if (!accessTokenSecret) {
+                    res.status(HTTP_statusCode.InternalServerError).json({
+                      success: false,
+                      message: "Admin Access token secret not defined in environment variables",
+                    });
+                    return; 
+                  }
+              
+                  const adminToken = jwt.sign(
+                    { email: admin.email,role:admin.role},
+                    accessTokenSecret,
+                    { expiresIn: "15m" }
+                  );
+                  res.cookie('accessToken', adminToken, {
+                    httpOnly: false,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'strict',
+                    path: '/',
+                  
+                });
+              
+                  res.status(HTTP_statusCode.OK).json({
+                    success: true,
+                    message: "Manager Access token regenerated successfully",
+                    accessToken: adminToken,
+                  });
+                  return; // End the execution
+                } catch (error) {
+                  console.error("Error verifying refresh token:", error);
+                  res.status(HTTP_statusCode.Unauthorized).json({
+                    success: false,
+                    message: "Invalid or expired refresh token",
+                  });
+                  return; // End the execution
+                }
+              }
+    async getUserDetails(req: Request, res: Response): Promise<void> {
+        console.log("HELLO");
+        
+        try {
+            const result = await this.adminController.getUserDetailsService();
+
+            console.log("data from getUser",result);
+            res.status(HTTP_statusCode.OK).json({result:result.user}); // Send the successful result
+        } catch (error) {
+            console.error('Error fetching user details:', error instanceof Error ? error.message : error);
+            res.status(HTTP_statusCode.InternalServerError).json({
+                success: false,
+                message: 'Failed to fetch user details',
+            }); // Handle and send error response
+        }
+    }
   async fetchAdminDashboardData(req: Request, res: Response) {
+     try {
+             
+              const result = await this.adminController.getUserManagerDetailsService();
+              console.log("SavedEvent",result);
+        
+              
+              if (!result?.success) {
+                 res.status(HTTP_statusCode.OK).json({
+                  message: result?.message ,
+                });
+                return;
+              }
+        
+           
+              res.status(HTTP_statusCode.OK).json({
+                message: result.message,
+                data: result.user,
+                
+              });
+            } catch (error) {
+              console.error("Error in getAllOffers:", error);
+              res.status(HTTP_statusCode.InternalServerError).json({
+                message: "Internal server error",
+                error: error instanceof Error ? error.message : error,
+              });
+            }
+
+
   }
   async fetchDashboardGraph(req: Request, res: Response) {
     try {

@@ -60,6 +60,18 @@ export class userDetailsController{
             throw new Error("Failed to process manager-specific event logic.");
         } 
     }
+    async checkUserIsBooked(email:string,eventName:string){
+                try {
+
+            const result = await this.loginServices.checkBookedUserValidService(email,eventName)
+            console.log("Event created successfully", result);
+            return result;
+            
+        } catch (error) {
+            console.error("Error in managerEventControllers:", error);
+            throw new Error("Failed to process manager-specific event logic.");
+        } 
+    }
 
     async makePaymentStripeController(products:PaymentData){
         try {
