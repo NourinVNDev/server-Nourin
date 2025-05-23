@@ -1,4 +1,4 @@
-import { Request,Response } from "express";
+import { Request,response,Response } from "express";
 import {mLoginService} from "../../service/managerService/MloginService";
 let globalOTP: number | null = null;
 import { managerEventControllers } from "./managerEventController";
@@ -6,11 +6,10 @@ import { generateAccessToken,generateRefreshToken} from "../../config/authUtils"
 import { managerOfferControllers } from "./managerOfferController";
 import { managerBookingDetailsControllers } from "./bookingDetailsController";
 import jwt from 'jsonwebtoken';
-import FormData from "form-data";
 import { IMloginService } from "../../service/managerService/IMloginService";
-import { loginServices } from "../../service/userService/loginService";
 import HTTP_statusCode from "../../config/enum/enum";
 import { managerVerifierDetailsControllers } from "./verifierDetailsController";
+import response_message from "../../config/enum/response_message";
 interface ManagerPayload {
   email: string;
   role:string
@@ -44,7 +43,7 @@ export class managerLogin{
           } else if (typeof otpNumber === 'boolean') {
               // Handle the case where otpNumber is a boolean
               console.error("Received a boolean value instead of a number:", otpNumber);
-              res.status(HTTP_statusCode.BadRequest).json({ error: 'Failed to generate OTP.' });
+              res.status(HTTP_statusCode.BadRequest).json({ error: response_message.MANAGERREGISTER_FAILED });
               return;
           } else {
               globalOTP = otpNumber; // If it's already a number
@@ -52,10 +51,10 @@ export class managerLogin{
           console.log("Hash",globalOTP);
           
 
-            res.status(HTTP_statusCode.OK).json({ message: 'OTP sent', otpData: otpNumber });
+            res.status(HTTP_statusCode.OK).json({ message: response_message.MANAGERREGISTER_SUCCESS, otpData: otpNumber });
         } catch (error) {
             console.error("Error saving user data:", error);
-            res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
+            res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.MANAGERREGISTER_ERROR });
         }
 
     }
@@ -69,16 +68,16 @@ export class managerLogin{
             console.log("Received OTP:", otp, "Global OTP:", globalOTP);
             const result=this.managerController.MverifyService(formData,otp,globalOTP);
             if((await result).success){
-              res.status(HTTP_statusCode.OK).json({ message:'Otp is Matched' });
+              res.status(HTTP_statusCode.OK).json({ message:response_message.MANAGERVERIFYOTP_SUCCESS });
             }else{
               console.log("South");
               
-              res.status(HTTP_statusCode.BadRequest).json({message:'Otp  is not Matched'});
+              res.status(HTTP_statusCode.BadRequest).json({message:response_message.MANAGERVERIFYOTP_FAILED});
             }
            
           } catch (error) {
               console.error("Error saving user data:", error);
-              res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
+              res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.MANAGERVERIFYOTP_ERROR});
           }
 
     }
@@ -92,7 +91,7 @@ export class managerLogin{
                 console.log("Result  of Login",result);
                 
                 if (!result || !result.user) {
-                    return res.status(HTTP_statusCode.OK).json({ message: 'Invalid login credentials' });
+                    return res.status(HTTP_statusCode.OK).json({ message: response_message.CREATEADMINDATA_FAILED});
                 }
                 const userData = result.user;
         
@@ -115,11 +114,11 @@ export class managerLogin{
                 path: '/',
             });
           
-                res.status(HTTP_statusCode.OK).json({ message: 'Login Success', data: (await result).user });
+                res.status(HTTP_statusCode.OK).json({ message:response_message.ADMINLOGIN_SUCCESS, data: (await result).user });
             
             } catch (error) {
                 console.error('Login error:', error);
-                res.status(HTTP_statusCode.InternalServerError).json({ error: 'Something went wrong' });
+                res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.CREATEADMINDATA_ERROR });
             }
         }
     
@@ -140,7 +139,7 @@ export class managerLogin{
 
     
             } catch (error) {
-                res.status(HTTP_statusCode.InternalServerError).json({ error: 'Something went wrong' });
+                res.status(HTTP_statusCode.InternalServerError).json({ error:response_message.ADMINLOGIN_ERROR });
             }
         }
 
@@ -154,14 +153,14 @@ export class managerLogin{
                 console.log("Received OTP:", otp, "Global OTP:", globalOTP);
                 const result=this.managerController.verifyOtpForForgot(email,otp,globalOTP);
                 if((await result).success){
-                  res.status(HTTP_statusCode.OK).json({ message: 'OTP Matched' });
+                  res.status(HTTP_statusCode.OK).json({ message: response_message.MANAGERVERIFYOTPFORFORGOT_SUCCESS});
                 }else{
                   res.status(HTTP_statusCode.OK).json({message:(await result).message});
                 }
 
               } catch (error) {
                   console.error("Error saving user data:", error);
-                  res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
+                  res.status(HTTP_statusCode.InternalServerError).json({ error:response_message.MANAGERVERIFYOTP_ERROR });
               }
     
         }
@@ -179,10 +178,10 @@ export class managerLogin{
              console.log(email);
              
             let result= this.managerController.resetPasswordDetailsForManager(email,password,password1);
-             res.status(HTTP_statusCode.OK).json({ message: 'password Reset Success' ,data:(await result).user});
+             res.status(HTTP_statusCode.OK).json({ message: response_message.MANAGERRESETPASSWORD_SUCCESS ,data:(await result).user});
       
             } catch (error) {
-                res.status(HTTP_statusCode.InternalServerError).json({ error: 'Something went wrong' });
+                res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.ADMINLOGIN_ERROR});
             }
         }
 
@@ -196,7 +195,7 @@ export class managerLogin{
               
               res.status(HTTP_statusCode.NotFound).json({
                 success: false,
-                message: "Manager Refresh token not provided",
+                message: response_message.REGENERATEMANAGERACCESSTOKEN_FAILED,
               });
               return;
             }
@@ -230,7 +229,7 @@ export class managerLogin{
               if (!accessTokenSecret) {
                 res.status(HTTP_statusCode.InternalServerError).json({
                   success: false,
-                  message: " Manager Access token secret not defined in environment variables",
+                  message:response_message.REGENERATEMANAGERACCESSTOKEN_ERROR,
                 });
                 return; // End the execution
               }
@@ -250,7 +249,7 @@ export class managerLogin{
           
               res.status(HTTP_statusCode.OK).json({
                 success: true,
-                message: "Manager Access token regenerated successfully",
+                message:response_message.REGENERATEMANAGERACCESSTOKEN_SUCCESS,
                 accessToken: managerToken,
               });
               return;
@@ -271,25 +270,25 @@ export class managerLogin{
             try {
                 if (!req.file) {
                     console.log('Mahn')
-                    res.status(HTTP_statusCode.BadRequest).json({ error: "No file uploaded. Please upload an image." });
+                    res.status(HTTP_statusCode.BadRequest).json({ error: response_message.CREATEEVENTPOSTIMAGE_FAILED });
                     return;
                 }
 
                 const savedEvent = await this.eventController.createEventPost(req, res);
                 if(savedEvent.success){
                   res.status(HTTP_statusCode.OK).json({
-                    message: "Event data saved successfully",
+                    message:response_message.CREATEEVENTPOST_SUCCESS,
                     data: savedEvent.data,
                 });
                 }else{
-                  res.json({message:"Duplicate Event Name",data:null}
+                  res.json({message:response_message.CREATEEVENTPOST_FAILED,data:null}
                   )
                 }
     
               
             } catch (error) {
                 console.error("Error in createEventPost:", error);
-                res.status(HTTP_statusCode.InternalServerError).json({ error: "Failed to create event. Please try again." });
+                res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.CREATEEVENTPOST_ERROR });
             }
         }
         async createEventSeatDetails(req:Request,res:Response):Promise<void>{
@@ -302,18 +301,18 @@ export class managerLogin{
               const savedEvent = await this.eventController.createEventSeatTypeDetails(req, res);
               if(savedEvent.success){
                 res.status(HTTP_statusCode.OK).json({
-                  message: "Event data saved successfully",
+                  message:response_message.GETCATEGORYDETAILS_SUCCESS,
                   data: savedEvent.data,
               });
               }else{
-                res.json({message:"Duplicate Event Name",data:null}
+                res.json({message:response_message.CREATEEVENTPOST_FAILED,data:null}
                 )
               }
   
             
           } catch (error) {
               console.error("Error in createEventPost:", error);
-              res.status(HTTP_statusCode.InternalServerError).json({ error: "Failed to create event. Please try again." });
+              res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.CREATEEVENTPOST_ERROR});
           }
 
         }
@@ -327,18 +326,18 @@ export class managerLogin{
               const savedEvent = await this.eventController.updateEventPost(req, res);
               if(savedEvent.success){
                 res.status(HTTP_statusCode.OK).json({
-                  message: "Event data updated saved successfully",
+                  message: response_message.UPDATEEVENTPOST_SUCCESS,
                   data: savedEvent.data,
               });
               }else{
-                res.json({message:"Duplicate Event Name",data:null}
+                res.json({message:response_message.CREATEEVENTPOST_FAILED,data:null}
                 )
               }
   
             
           } catch (error) {
               console.error("Error in createEventPost:", error);
-              res.status(HTTP_statusCode.InternalServerError).json({ error: "Failed to create event. Please try again." });
+              res.status(HTTP_statusCode.InternalServerError).json({ error:response_message.CREATEEVENTPOST_ERROR});
           }
       }
 
@@ -358,13 +357,13 @@ export class managerLogin{
             }
     
             res.status(HTTP_statusCode.OK).json({
-                message: "Event data fetched successfully",
+                message:response_message.GETMANAGERPROFILEDETAILS_SUCCESS,
                 data: result.data
             });
     
         } catch (error) {
             console.error("Error in getCategoryDetails:", error);
-            res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+            res.status(HTTP_statusCode.InternalServerError).json({ message:response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
         }
     }
 
@@ -388,13 +387,13 @@ export class managerLogin{
           }
   
           res.status(HTTP_statusCode.OK).json({
-              message: "Event data fetched successfully",
+              message:response_message.GETMANAGERPROFILEDETAILS_SUCCESS,
               data: result.data
           });
   
       } catch (error) {
           console.error("Error in getCategoryDetails:", error);
-          res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+          res.status(HTTP_statusCode.InternalServerError).json({ message:response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
       }
   }
 
@@ -420,13 +419,13 @@ export class managerLogin{
         }
 
         res.status(HTTP_statusCode.OK).json({
-            message: "Manager Password updated successfully",
+            message:response_message.UPDATEMANAGERPASSWORD_SUCCESS,
             data: result.data
         });
 
     } catch (error) {
         console.error("Error in getCategoryDetails:", error);
-        res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+        res.status(HTTP_statusCode.InternalServerError).json({ message:response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
     }
 }
    async getEventTypeData(req: Request, res: Response): Promise<void|any> {
@@ -441,13 +440,13 @@ export class managerLogin{
                 }
         
                 res.status(HTTP_statusCode.OK).json({
-                    message: "Event data fetched successfully",
+                    message:response_message.GETMANAGERPROFILEDETAILS_SUCCESS,
                     data: result.data
                 });
         
             } catch (error) {
                 console.error("Error in getCategoryDetails:", error);
-                res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+                res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
             }
         }
 
@@ -459,19 +458,19 @@ export class managerLogin{
            
               if (!result?.success) {
                  res.status(HTTP_statusCode.InternalServerError).json({
-                  message: result?.message || "Failed to fetch offers",
+                  message: result?.message ||response_message.GETALLOFFERS_FAILED,
                 });
               }
         
           
               res.status(HTTP_statusCode.OK).json({
-                message: "Offers fetched successfully",
+                message:response_message.GETALLOFFERS_SUCCESS,
                 data: result.data,
               });
             } catch (error) {
               console.error("Error in getAllOffers:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message:response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
@@ -479,26 +478,24 @@ export class managerLogin{
 
           async getSearchOfferUserInput(req:Request,res:Response):Promise<void>{
             try {
-              // Call the controller method with only the necessary data (e.g., req.params, req.query, etc.)
+
               const result = await this.offerController.getSearchOfferInput(req,res);
         
-              // Check if the result indicates a failure
               if (!result?.success) {
                  res.status(HTTP_statusCode.InternalServerError).json({
-                  message: result?.message || "Failed to fetch offers",
+                  message: result?.message || response_message.GETALLOFFERS_FAILED,
                 });
               }
         
-              // Respond with the fetched data
               console.log("Result Data:",result);
               res.status(HTTP_statusCode.OK).json({
-                message: "Offers fetched successfully",
+                message: response_message.GETALLOFFERS_SUCCESS,
                 data: result.data,
               });
             } catch (error) {
               console.error("Error in getAllOffers:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
@@ -517,20 +514,20 @@ export class managerLogin{
                 console.log('hai');
                 
                 res.status(HTTP_statusCode.OK).json({
-                  message: result?.message || "Failed to fetch offers",
+                  message: result?.message || response_message.GETALLOFFERS_FAILED,
                 });
                 return;
               }
           
               // Respond with the fetched data
               res.status(HTTP_statusCode.OK).json({
-                message: "Offers fetched successfully",
+                message: response_message.GETALLOFFERS_SUCCESS,
                 data: result.data,
               });
             } catch (error) {
               console.error("Error in getAllOffers:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
@@ -549,20 +546,20 @@ export class managerLogin{
               // Check if the result indicates a failure
               if (!result?.success) {
                 res.status(HTTP_statusCode.InternalServerError).json({
-                  message: result?.message || "Failed to fetch offers",
+                  message: result?.message || response_message.GETALLOFFERS_FAILED,
                 });
                 return;
               }
           
               // Respond with the fetched data
               res.status(HTTP_statusCode.OK).json({
-                message: "Offers Updated successfully",
+                message: response_message.UPDATEOFFERDETAILS_SUCCESS,
                 data: result.data,
               });
             } catch (error) {
               console.error("Error in getAllOffers:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message:response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
@@ -580,19 +577,19 @@ export class managerLogin{
               // Check if the result indicates a failure
               if (!result?.success) {
                  res.status(HTTP_statusCode.InternalServerError).json({
-                  message: result?.message || "Failed to fetch offers",
+                  message: result?.message || response_message.GETALLOFFERS_FAILED,
                 });
               }
         
               // Respond with the fetched data
               res.status(HTTP_statusCode.OK).json({
-                message: "Offer fetched successfully",
+                message: response_message.GETALLOFFERS_SUCCESS,
                 data: result.data,
               });
             } catch (error) {
               console.error("Error in getAllOffers:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
@@ -609,10 +606,10 @@ export class managerLogin{
                 res.status(HTTP_statusCode.OK).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
                 return;
                 }
-                 res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
+                 res.status(HTTP_statusCode.NoChange).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
             } catch (error) {
               console.error("Error in check  Manager Wallet:", error);
-              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR});
               
             }
           }
@@ -627,7 +624,7 @@ export class managerLogin{
               console.error("Error while checking manager status:", error);
               res.status(500).json({
                   success: false,
-                  error: 'Something went wrong'
+                  error: response_message.ADMINLOGIN_ERROR
               });
           }
 
@@ -643,7 +640,7 @@ export class managerLogin{
               console.error("Error while checking manager status:", error);
               res.status(500).json({
                   success: false,
-                  error: 'Something went wrong'
+                  error:response_message.ADMINLOGIN_ERROR
               });
           }
           }
@@ -660,7 +657,7 @@ export class managerLogin{
               console.error("Error while checking manager status:", error);
               res.status(500).json({
                   success: false,
-                  error: 'Something went wrong'
+                  error: response_message.ADMINLOGIN_ERROR
               });
           }
 
@@ -678,7 +675,7 @@ export class managerLogin{
               console.error("Error while updating verifier:", error);
               res.status(500).json({
                   success: false,
-                  error: 'Something went wrong'
+                  error: response_message.ADMINLOGIN_ERROR
               });
           }
           }
@@ -695,7 +692,7 @@ export class managerLogin{
               console.error("Error while checking manager status:", error);
               res.status(500).json({
                   success: false,
-                  error: 'Something went wrong'
+                  error: response_message.ADMINLOGIN_ERROR
               });
           }
           }
@@ -714,10 +711,10 @@ export class managerLogin{
         res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
         return;
         }
-         res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+         res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
     } catch (error) {
       console.error("Error in check User Wallet:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+      res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR });
       
     }
           }
@@ -733,10 +730,28 @@ export class managerLogin{
               res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
               return;
               }
-               res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+               res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
           } catch (error) {
             console.error("Error in check User Notification:", error);
-            res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+            res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR});
+            
+          }
+          }
+          async checkDateValidation(req:Request,res:Response){
+            try{
+            
+              const eventName=req.query.name;
+              console.log("Maankind",eventName);
+            const savedEvent = await this.managerController.checkValidDate(eventName as string);
+            console.log('SavedEvent of manager video call',savedEvent);
+            if(savedEvent.success){
+              res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+              return;
+              }
+               res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+          } catch (error) {
+            console.error("Error in check User Notification:", error);
+            res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR});
             
           }
           }
@@ -746,17 +761,17 @@ export class managerLogin{
               const result = await this.eventController.getAllEventData(managerId);
               if (!result?.success) {
                  res.status(HTTP_statusCode.InternalServerError).json({
-                  message: result?.message || "Failed to fetch offers",
+                  message: result?.message || response_message.GETALLOFFERS_FAILED,
                 });
               }
               res.status(HTTP_statusCode.OK).json({
-                message: "Event fetched successfully",
+                message:response_message.GETALLEVENTDETAILS_SUCCESS,
                 data: result.data,
               });
             } catch (error) {
               console.error("Error in getAllOffers:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
@@ -784,7 +799,7 @@ export class managerLogin{
             } catch (error) {
               console.error("Error in getAllOffers:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message:response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
@@ -814,7 +829,7 @@ export class managerLogin{
             } catch (error) {
               console.error("Error in getAllOffers:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
@@ -843,7 +858,7 @@ export class managerLogin{
             } catch (error) {
               console.error("Error in getting pieChart:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
@@ -860,19 +875,19 @@ export class managerLogin{
             
               if (!result?.success) {
                  res.status(HTTP_statusCode.InternalServerError).json({
-                  message: result?.message || "Failed to fetch event",
+                  message: result?.message || response_message.GETALLOFFERS_FAILED,
                 });
               }
         
           
               res.status(HTTP_statusCode.OK).json({
-                message: "Event fetched successfully",
+                message:response_message.GETALLEVENTDETAILS_SUCCESS,
                 data: result.data,
               });
             } catch (error) {
               console.error("Error in fetching event:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
@@ -892,13 +907,13 @@ export class managerLogin{
         
           
               res.status(HTTP_statusCode.OK).json({
-                message: "Event fetched successfully",
+                message: response_message.GETALLEVENTDETAILS_SUCCESS,
                 data: result.data,
               });
             } catch (error) {
               console.error("Error in event ticket fetching:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
@@ -913,7 +928,7 @@ export class managerLogin{
               
               if (!result?.success) {
                  res.status(HTTP_statusCode.InternalServerError).json({
-                  message: result?.message || "Failed to fetch offers",
+                  message: result?.message || response_message.GETALLOFFERS_FAILED,
                 });
               }
         
@@ -925,7 +940,7 @@ export class managerLogin{
             } catch (error) {
               console.error("Error in getAllOffers:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
@@ -940,7 +955,7 @@ export class managerLogin{
         
               if (!result?.success) {
                  res.status(HTTP_statusCode.InternalServerError).json({
-                  message: result?.message || "Failed to fetch offers",
+                  message: result?.message || response_message.GETALLOFFERS_FAILED,
                 });
               }
               res.status(HTTP_statusCode.OK).json({
@@ -950,26 +965,28 @@ export class managerLogin{
             } catch (error) {
               console.error("Error in getAllOffers:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
           }
           async getBookedUserDetails(req:Request,res:Response){
             try {
-              const managerName=req.params.managerName;
+              console.log("Sad");
+              
+              const managerName=req.query.name;
               console.log("ManagerName",managerName);
-              const savedEvent = await this.bookingController.getBookedUserDetails2(managerName);
+              const savedEvent = await this.bookingController.getBookedUserDetails2(managerName as string);
               if (savedEvent.success) {
                 console.log("SavedEvent:",savedEvent);
                 
                 res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
-              return;
+                return;
               }
-               res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+               res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: null });
             } catch (error) {
               console.error("Error in getEventHistoryDetails:", error);
-              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR});
             }
 
           }
@@ -985,7 +1002,7 @@ export class managerLogin{
               res.status(HTTP_statusCode.OK).json(result); // Send response to client
             } catch (error) {
               console.error("Error in saveBillingDetails:", error);
-              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR });
             }
           }
 
@@ -1001,7 +1018,7 @@ export class managerLogin{
               res.status(HTTP_statusCode.OK).json(result); // Send response to client
             } catch (error) {
               console.error("Error in saveBillingDetails:", error);
-              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR });
             }
 
           }
@@ -1016,7 +1033,7 @@ export class managerLogin{
               res.status(HTTP_statusCode.OK).json(result); // Send response to client
             } catch (error) {
               console.error("Error in saveBillingDetails:", error);
-              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+              res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR });
             }
           }
        

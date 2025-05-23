@@ -107,7 +107,7 @@ export class userProfileService{
 
     async createChatSchemaService2(userId:string,manager:string){
         try {
-            console.log("Processing create chat Schema in another service...",);
+            console.log("Processing create chat Schema in another service...",userId,manager);
 
             const savedEvent =await this.loginRepository.createChatSchemaRepo(userId,manager);
             return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};

@@ -882,12 +882,12 @@ async createChatSchemaService(formData:FormData){
     if(!manager){
       return {success:false,message:'Manager is not Found',data:null};
     }
-    // Fetch data from the repository
+
     const savedEvent = await this.userProfileService.createChatSchemaService2(userId,manager);
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
-    // return {success:result.success,message:result.message,data:result.data};
+
   } catch (error) {
-    // Log and return a generic error response
+   
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }

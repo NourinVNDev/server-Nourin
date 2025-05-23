@@ -3,7 +3,12 @@ import SOCIALEVENTDB from "../../models/managerModels/socialEventSchema";
 import { billingData, retryBillingData } from "../../config/enum/dto";
 import BOOKEDUSERDB from "../../models/userModels/bookingSchema";
 import CATEGORYDB from "../../models/adminModels/adminCategorySchema";
-
+interface EventDetails {
+  eventName: string;
+  startDate: string;
+  endDate: string;
+  time: string;
+}
 export class userDetailsRepository {
   async postHandleLike(index:string, userId:string,postId: string) {
     try {
@@ -81,13 +86,62 @@ export class userDetailsRepository {
     }
   }
 
-async checkUserBookingValidRepository(email: string, eventName: string) {
+// async checkUserBookingValidRepository(email: string, eventName: string) {
 
+//   const bookings = await BOOKEDUSERDB.find().populate('eventId');
+
+//   const isBooked = bookings.some((booking: any) => {
+//     return (
+//       booking.eventId?.eventName === eventName &&
+//       booking.bookedUser.some((user: any) => user.email === email)
+//     );
+//   });
+
+//   if (isBooked) {
+//     return {
+//       success: true,
+//       message: "User has already booked this event",
+//     };
+//   } else {
+//     return {
+//       success: false,
+//       message: "User has not booked this event",
+//     };
+//   }
+// }
+async checkUserBookingValidRepository(email: string, eventName: string) {
   const bookings = await BOOKEDUSERDB.find().populate('eventId');
 
+  const now = new Date();
+
   const isBooked = bookings.some((booking: any) => {
+  const event = booking.eventId as unknown as EventDetails;
+
+
+    if (!event) return false;
+
+    const { startDate, endDate, time } = event;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+
+    const isTodayInRange = now >= start && now <= end;
+
+    // Construct full datetime for event start
+    const [hours, minutes] = time.split(':').map(Number);
+    const eventStartDateTime = new Date(startDate);
+    eventStartDateTime.setHours(hours, minutes, 0, 0);
+
+    // Calculate earliest allowed entry time (10 minutes before event starts)
+    const earliestEntryTime = new Date(eventStartDateTime.getTime() - 10 * 60000);
+    const isEntryTimeReached = now >= earliestEntryTime;
+
     return (
-      booking.eventId?.eventName === eventName &&
+      event.eventName === eventName &&
+      isTodayInRange &&
+      isEntryTimeReached &&
       booking.bookedUser.some((user: any) => user.email === email)
     );
   });
@@ -95,15 +149,46 @@ async checkUserBookingValidRepository(email: string, eventName: string) {
   if (isBooked) {
     return {
       success: true,
-      message: "User has already booked this event",
+      message: "User has booked this event and is allowed to enter",
     };
   } else {
+    // Extra message clarity
+    const event = bookings.find(
+      (booking: any) => booking.eventId?.eventName === eventName
+    )?.eventId as unknown as EventDetails;
+
+    if (event) {
+      const start = new Date(event.startDate);
+      const end = new Date(event.endDate);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
+
+      const [hours, minutes] = event.time.split(':').map(Number);
+      const eventStartDateTime = new Date(event.startDate);
+      eventStartDateTime.setHours(hours, minutes, 0, 0);
+
+      const earliestEntryTime = new Date(eventStartDateTime.getTime() - 10 * 60000);
+
+      if (now < start || now > end) {
+        return {
+          success: false,
+          message: "Today's date is not within the event's valid date range",
+        };
+      } else if (now < earliestEntryTime) {
+        return {
+          success: false,
+          message: "You can only enter starting from 10 minutes before the event starts",
+        };
+      }
+    }
+
     return {
       success: false,
       message: "User has not booked this event",
     };
   }
 }
+
 
 
 

@@ -30,24 +30,23 @@ export class AdminLogin {
 
       const result = await this.adminController.AdminloginDetails(formData);
 
-      // Log the result for debugging (optional)
+
       console.log("Login result:", result);
 
       if (result && result.user) {
-        // Send success response if `user` is present
         res.status(HTTP_statusCode.OK).json({
-          message: 'Login Success',
-          data: result.user // Assuming `user` is a property in the service result
+          message: response_message.CREATEADMINDATA_SUCCESS,
+          data: result.user
         });
       } else {
-        res.status(HTTP_statusCode.BadRequest).json({ message: 'Invalid login credentials' });
+        res.status(HTTP_statusCode.BadRequest).json({ message:response_message.CREATEADMINDATA_FAILED });
       }
     } catch (error) {
-      // Log the error for debugging
+
       console.error("Error during admin login:", error);
 
-      // Send error response
-      res.status(HTTP_statusCode.InternalServerError).json({ error: 'Something went wrong' });
+  
+      res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.CREATEADMINDATA_ERROR});
     }
   }
 
@@ -60,7 +59,7 @@ export class AdminLogin {
       let result = await this.adminController.Adminlogin(formData);
       console.log("Admin Data", result);
       if (!result || !result.user || !result.user.user) {
-        return res.status(HTTP_statusCode.BadRequest).json({ error: 'Invalid login credentials' });
+        return res.status(HTTP_statusCode.BadRequest).json({ error: response_message.ADMINLOGIN_FAILED});
       }
       const userData = result.user.user;
       let admin = { email: userData.email, role: 'admin'};
@@ -80,10 +79,10 @@ export class AdminLogin {
         sameSite: 'strict',
         path: '/',
       });
-      res.status(HTTP_statusCode.OK).json({ message: 'Login Success', data: (await result).user });
+      res.status(HTTP_statusCode.OK).json({ message: response_message.ADMINLOGIN_SUCCESS, data: (await result).user });
 
     } catch (error) {
-      res.status(HTTP_statusCode.InternalServerError).json({ error: 'Something went wrong' });
+      res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.ADMINLOGIN_ERROR});
     }
   }
 
@@ -95,7 +94,7 @@ export class AdminLogin {
                   
                   res.status(HTTP_statusCode.NotFound).json({
                     success: false, 
-                    message: " Admin Refresh token not provided",
+                    message: response_message.REGENERATEADMINACCESSTOKEN_FAILED,
                   });
                   return;
                 }
@@ -107,7 +106,7 @@ export class AdminLogin {
                   if (!refreshTokenSecret) {
                     res.status(HTTP_statusCode.InternalServerError).json({
                       success: false,
-                      message: " Admin Refresh token secret not defined in environment variables",
+                      message:response_message.REGENERATEADMINACCESSTOKEN_ERROR,
                     });
                     return; // End the execution
                   }
@@ -149,7 +148,7 @@ export class AdminLogin {
               
                   res.status(HTTP_statusCode.OK).json({
                     success: true,
-                    message: "Manager Access token regenerated successfully",
+                    message:response_message.REGENERATEADMINACCESSTOKEN_SUCCESS,
                     accessToken: adminToken,
                   });
                   return; // End the execution
@@ -174,7 +173,7 @@ export class AdminLogin {
             console.error('Error fetching user details:', error instanceof Error ? error.message : error);
             res.status(HTTP_statusCode.InternalServerError).json({
                 success: false,
-                message: 'Failed to fetch user details',
+                message: response_message.GETUSERDETAILS_ERROR
             }); // Handle and send error response
         }
     }
@@ -201,7 +200,7 @@ export class AdminLogin {
             } catch (error) {
               console.error("Error in getAllOffers:", error);
               res.status(HTTP_statusCode.InternalServerError).json({
-                message: "Internal server error",
+                message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
                 error: error instanceof Error ? error.message : error,
               });
             }
@@ -232,7 +231,7 @@ export class AdminLogin {
     } catch (error) {
       console.error("Error in getAllOffers:", error);
       res.status(HTTP_statusCode.InternalServerError).json({
-        message: "Internal server error",
+        message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
         error: error instanceof Error ? error.message : error,
       });
     }
@@ -263,7 +262,7 @@ export class AdminLogin {
     } catch (error) {
       console.error("Error in getting pieChart:", error);
       res.status(HTTP_statusCode.InternalServerError).json({
-        message: "Internal server error",
+        message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
         error: error instanceof Error ? error.message : error,
       });
     }
@@ -279,7 +278,7 @@ export class AdminLogin {
       if (typeof updatedStatus !== 'boolean' || !userId) {
         return res.status(HTTP_statusCode.BadRequest).json({
           success: false,
-          message: 'Invalid request data',
+          message: response_message.POSTTOGGLEISBLOCK_FAILED,
         });
       }
 
@@ -290,7 +289,7 @@ export class AdminLogin {
       console.error('Error toggling block status:', error instanceof Error ? error.message : error);
       res.status(HTTP_statusCode.InternalServerError).json({
         success: false,
-        message: 'Failed to toggle block status',
+        message:response_message.POSTTOGGLEISBLOCK_ERROR
       });
     }
   }
@@ -307,7 +306,7 @@ export class AdminLogin {
       console.error('Error fetching user details:', error instanceof Error ? error.message : error);
       res.status(HTTP_statusCode.InternalServerError).json({
         success: false,
-        message: 'Failed to fetch user details',
+        message: response_message.GETUSERDETAILS_ERROR,
       });
 
     }
@@ -325,7 +324,7 @@ export class AdminLogin {
       console.error('Error fetching user details:', error instanceof Error ? error.message : error);
       res.status(HTTP_statusCode.InternalServerError).json({
         success: false,
-        message: 'Failed to fetch user details',
+        message: response_message.GETUSERDETAILS_ERROR,
       });
 
     }
@@ -341,7 +340,7 @@ export class AdminLogin {
       if (typeof updatedStatus !== 'boolean' || !managerId) {
         return res.status(HTTP_statusCode.BadRequest).json({
           success: false,
-          message: 'Invalid request data',
+          message: response_message.POSTTOGGLEISBLOCK_FAILED,
         });
       }
 
@@ -352,7 +351,7 @@ export class AdminLogin {
       console.error('Error toggling block status:', error instanceof Error ? error.message : error);
       res.status(HTTP_statusCode.InternalServerError).json({
         success: false,
-        message: 'Failed to toggle block status',
+        message: response_message.POSTTOGGLEISBLOCK_ERROR,
       });
     }
   }
@@ -368,7 +367,7 @@ export class AdminLogin {
       console.error('Error toggling block status:', error instanceof Error ? error.message : error);
       res.status(HTTP_statusCode.InternalServerError).json({
         success: false,
-        message: 'Failed to toggle block status',
+        message: response_message.POSTTOGGLEISBLOCK_ERROR,
       });
     }
   }
@@ -378,13 +377,13 @@ export class AdminLogin {
       const result = await this.adminCategoryController.getCategoryController(req, res);
       console.log('Category', result?.result);
       res.status(HTTP_statusCode.OK).json({
-        message: "Event data saved successfully",
+        message:response_message.GETCATEGORYDETAILS_SUCCESS,
         data: result?.result,
       });
 
     } catch (error) {
       console.error("Error in getCategoryDetails:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+      res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
     }
 
   }
@@ -400,13 +399,13 @@ export class AdminLogin {
       const result = await this.adminCategoryController.fetchSelectedCategoryController(categoryId, req, res);
       console.log('Category', result?.result);
       res.status(HTTP_statusCode.OK).json({
-        message: "Selected Category fetched successfully",
+        message:response_message.FETCHSELECTEDCATEGORY_SUCCESS,
         data: result?.result,
       });
 
     } catch (error) {
       console.error("Error in getCategoryDetails:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+      res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
     }
   }
 
@@ -423,13 +422,13 @@ export class AdminLogin {
       const result = await this.adminCategoryController.editSelectedCategoryController(category, categoryId, req, res);
       console.log('Category', result?.result);
       res.status(HTTP_statusCode.OK).json({
-        message: "Category edited successfully",
+        message: response_message.EDITSELECTEDCATEGORY_SUCCESS,
         data: result?.result,
       });
 
     } catch (error) {
       console.error("Error in getCategoryDetails:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+      res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
     }
   }
   async postCategoryIsBlock(req: Request, res: Response): Promise<void | any> {
@@ -442,7 +441,7 @@ export class AdminLogin {
       if (typeof updatedStatus !== 'boolean' || !categoryId) {
         return res.status(HTTP_statusCode.BadRequest).json({
           success: false,
-          message: 'Invalid request data',
+          message: response_message.POSTTOGGLEISBLOCK_FAILED,
         });
       }
 
@@ -453,7 +452,7 @@ export class AdminLogin {
       console.error('Error toggling block status:', error instanceof Error ? error.message : error);
       res.status(HTTP_statusCode.InternalServerError).json({
         success: false,
-        message: 'Failed to toggle block status',
+        message: response_message.POSTTOGGLEISBLOCK_ERROR,
       });
     }
   }
@@ -470,7 +469,7 @@ export class AdminLogin {
 
       if (actualResult?.success === true) {
         res.status(HTTP_statusCode.OK).json({
-          message: "Category data saved successfully",
+          message: response_message.ADDEVENTCATEGORYDETAILS_SUCCESS,
           data: actualResult.data,
         });
       } else {
@@ -481,15 +480,9 @@ export class AdminLogin {
       }
     } catch (error) {
       console.error("Error in getCategoryDetails:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+      res.status(HTTP_statusCode.InternalServerError).json({ message:response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
     }
   }
-
-
-
-
-
-
 };
 
 export default AdminLogin;

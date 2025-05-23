@@ -1,6 +1,6 @@
 import { IVerifierService } from "../../service/verifierServices/IVerifierService";
 import { verifierDetailsService } from "../../service/verifierServices/verifierDetailsService";
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import HTTP_statusCode from "../../config/enum/enum";
 import GenerateOTP from "../../config/nodemailer";
 import { generateAccessToken, generateRefreshToken } from "../../config/authUtils";
@@ -9,6 +9,7 @@ interface VerifierPayload{
     role:string
 }
 import jwt from "jsonwebtoken";
+import response_message from "../../config/enum/response_message";
 export class VerifierDetailsController {
     private verifierController: IVerifierService;
 
@@ -44,7 +45,7 @@ export class VerifierDetailsController {
             console.error("Error while checking manager status:", error);
             res.status(HTTP_statusCode.InternalServerError).json({
                 success: false,
-                error: 'Something went wrong'
+                error: response_message.ADMINLOGIN_ERROR
             });
         }
     }
@@ -63,7 +64,7 @@ export class VerifierDetailsController {
             console.error("Error while checking manager status:", error);
             res.status(HTTP_statusCode.InternalServerError).json({
                 success: false,
-                error: 'Something went wrong'
+                error: response_message.ADMINLOGIN_ERROR
             });
         }
     }
@@ -91,15 +92,15 @@ export class VerifierDetailsController {
                 path: '/',
                 maxAge: 7 * 24 * 60 * 60 * 1000
             });
-                res.status(HTTP_statusCode.OK).json({ success: true, message: 'Your OTP is Correct' });
+                res.status(HTTP_statusCode.OK).json({ success: true, message: response_message.VERIFYOTP_SUCCESS });
             }else{
-                res.json({ success: false, message: 'Your OTP is not correct'});
+                res.json({ success: false, message: response_message.VERIFYOTP_FAILED});
             }
         } catch (error) {
             console.error("Error while checking manager status:", error);
             res.status(HTTP_statusCode.InternalServerError).json({
                 success: false,
-                error: 'Something went wrong'
+                error: response_message.ADMINLOGIN_ERROR
             });
         }
 
@@ -119,7 +120,7 @@ export class VerifierDetailsController {
             console.error("Error while checking manager status:", error);
             res.status(500).json({
                 success: false,
-                error: 'Something went wrong'
+                error: response_message.ADMINLOGIN_ERROR
             });
         }
     }
@@ -134,7 +135,7 @@ export class VerifierDetailsController {
             console.error("Error while checking manager status:", error);
             res.status(500).json({
                 success: false,
-                error: 'Something went wrong'
+                error:response_message.ADMINLOGIN_ERROR
             });
         }
     }
@@ -146,7 +147,7 @@ export class VerifierDetailsController {
           
           res.status(HTTP_statusCode.NotFound).json({
             success: false,
-            message: "Verifier Refresh token not provided",
+            message: response_message.REGENERATEVERIFIERACCESSTOKEN_FAILED,
           });
           return;
         }
@@ -158,7 +159,7 @@ export class VerifierDetailsController {
           if (!refreshTokenSecret) {
             res.status(HTTP_statusCode.InternalServerError).json({
               success: false,
-              message: " Manager Refresh token secret not defined in environment variables",
+              message: response_message.REGENERATEVERIFIERACCESSTOKEN_ERROR,
             });
             return;
           }
@@ -200,7 +201,7 @@ export class VerifierDetailsController {
       
           res.status(HTTP_statusCode.OK).json({
             success: true,
-            message: "Manager Access token regenerated successfully",
+            message: response_message.REGENERATEVERIFIERACCESSTOKEN_SUCCESS,
             verifierAccessToken: verifierAccessToken,
           });
           return; // End the execution
@@ -226,7 +227,7 @@ export class VerifierDetailsController {
             console.error("Error while checking manager status:", error);
             res.status(500).json({
                 success: false,
-                error: 'Something went wrong'
+                error: response_message.ADMINLOGIN_ERROR
             });
         }
     }
@@ -242,7 +243,7 @@ export class VerifierDetailsController {
             console.error("Error while checking manager status:", error);
             res.status(500).json({
                 success: false,
-                error: 'Something went wrong'
+                error: response_message.ADMINLOGIN_ERROR
             });
         }
 
@@ -260,7 +261,7 @@ export class VerifierDetailsController {
             console.error("Error while checking manager status:", error);
             res.status(500).json({
                 success: false,
-                error: 'Something went wrong'
+                error: response_message.ADMINLOGIN_ERROR
             });
         } 
     }

@@ -15,11 +15,18 @@ interface User {
     email: string;
     password: string; // Password is of type string
   }
+  interface EventDetails {
+  eventName: string;
+  startDate: string;
+  endDate: string;
+  time: string;
+}
 
 import bcrypt  from 'bcrypt';
 import SOCIALEVENTDB from '../../models/managerModels/socialEventSchema';
 import USERDB from '../../models/userModels/userSchema';
 import BOOKINGDB from '../../models/userModels/bookingSchema';
+import { log } from 'node:util';
 
 const hashPassword = async (password:string): Promise<string> => {
   try {
@@ -571,30 +578,34 @@ async fetchManagerNotificationRepo(managerId: string) {
       };
     }
 
-    // Mark all notifications as read
+  
     const notificationIds = notificationData.map((n: any) => n._id);
+     if (notificationIds.length > 0) {
     await NOTIFICATIONDB.updateMany(
       { _id: { $in: notificationIds } },
       { $set: { isRead: true } }
     );
+  }
 
-    // Enrich with sender details
+
     const enrichedNotifications = await Promise.all(
       notificationData.map(async (notification: any) => {
         let senderName = '';
         let senderImage = null;
 
-        if (notification.fromModal === 'User') {
+        if (notification.fromModal === 'bookedUser') {
           const user = await USERDB.findById(notification.from);
           if (user) {
             senderName = `${user.firstName} ${user.lastName}`;
             senderImage = user.profilePhoto || null;
           }
-        } else if (notification.fromModal === 'Admin') {
-          const admin = await ADMINDB.findById(notification.from);
-    
         }
 
+
+        console.log("Doc:",notification._doc,);
+
+        console.log("SenderName,Image",senderImage,senderName);
+        
         return {
           ...notification._doc,
           senderName,
@@ -625,22 +636,21 @@ async fetchManagerNotificationCountRepo(managerId: string) {
       to: managerId,
       isRead: false
     });
-
-    const categoryNotificationCount = await NOTIFICATIONDB.countDocuments({
-      toModal: "Manager",
-      isRead: false
-    });
-
-    const totalNotificationCount=notificationCount+categoryNotificationCount;
-
+    console.log("Notification:",notificationCount);
+    // const categoryNotificationCount = await NOTIFICATIONDB.countDocuments({
+    //   toModal: "Manager",
+    //   isRead: false
+    // });
+    // console.log('CategoryNOtificationCOunt',categoryNotificationCount);
+    const totalNotificationCount=notificationCount
+    // +categoryNotificationCount;
+    console.log("Total Count of Notificaton in manager side",totalNotificationCount);
     return {
       success: true,
       message: "Notification counts fetched successfully",
       data: 
    totalNotificationCount
-      
     };
-
   } catch (error) {
     console.error("Error in updating notification:", error);
     return {
@@ -649,6 +659,64 @@ async fetchManagerNotificationCountRepo(managerId: string) {
     };
   }
 }
+
+async  checkValidDateRepo(eventName: string) {
+  try {
+    console.log("Event Name from repo", eventName);
+
+    const event: EventDetails | null = await SOCIALEVENTDB.findOne({ eventName });
+
+    if (!event) {
+      return {
+        success: false,
+        message: "Event not found",
+      };
+    }
+
+    const now = new Date();
+
+    const start = new Date(event.startDate);
+    const end = new Date(event.endDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+
+    const isDateInRange = now >= start && now <= end;
+
+    const [hours, minutes] = event.time.split(":").map(Number);
+    const eventStartDateTime = new Date(event.startDate);
+    eventStartDateTime.setHours(hours, minutes, 0, 0);
+
+    const earliestEntryTime = new Date(eventStartDateTime.getTime() - 10 * 60000);
+    const isEntryAllowed = now >= earliestEntryTime;
+
+    if (!isDateInRange) {
+      return {
+        success: false,
+        message: "Today's date is not within the event's valid date range",
+      };
+    }
+
+    if (!isEntryAllowed) {
+      return {
+        success: false,
+        message: "You can only enter starting from 10 minutes before the event starts",
+      };
+    }
+
+    return {
+      success: true,
+      message: "Date and time are valid for entry",
+    };
+
+  } catch (error) {
+    console.error("Error in checking Date for video call:", error);
+    return {
+      success: false,
+      message: "Internal server error",
+    };
+  }
+}
+
 
 async fetchUserCountAndRevenueRepo(managerId: string) {
   try {

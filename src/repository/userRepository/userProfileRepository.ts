@@ -172,6 +172,10 @@ export class userProfileRepository {
             }
             const result = []
             for (const convo of conversations) {
+
+
+                console.log("Convo",convo);
+                
                 const managerId = convo.participants.find(
                     (id: any) => id.toString() !== userId
                 );
@@ -181,6 +185,10 @@ export class userProfileRepository {
                 if (!eventsData.length) continue;
                 const companyName = eventsData[0].companyName;
                 const events = eventsData.map(ev => ev.eventName);
+
+
+                console.log("CompanyName",companyName,events);
+                
                 let lastMessage = null;
                 const message = await MESSAGEDB.findById(convo.lastMessage).lean();
                 if (message) {
@@ -200,7 +208,8 @@ export class userProfileRepository {
                     companyName,
                     events,
                     lastMessage,
-                    unreadCount
+                    unreadCount,
+                    updatedAt: convo.updatedAt
                 })
             }
                 console.log(result,"resultData---------")
@@ -220,10 +229,10 @@ export class userProfileRepository {
 
     async createChatSchemaRepository(userId: string, manager: string) {
         try {
-            console.log("Checking", manager);
+            console.log("bank1234567", manager);
 
             const Manager = await MANAGERDB.findOne({ firmName: manager });
-            console.log("Manager Details", Manager);
+            console.log("Manager Details gggggg", Manager);
 
             if (!Manager) {
                 return { success: false, message: "Manager not found", data: null };
@@ -239,8 +248,10 @@ export class userProfileRepository {
             });
 
             if (!conversation) {
+                console.log("Nourin");
+                
                 conversation = new CONVERSATIONDB({
-                    participants: [userObjectId, managerId] // Store ObjectIds
+                    participants: [userObjectId, managerId] 
                 });
                 await conversation.save();
             }

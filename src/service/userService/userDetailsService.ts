@@ -134,7 +134,7 @@ export class userDetailsService {
                 payment_method_types: ["card"],
                 line_items: [lineItem],
                 mode: "payment",
-                success_url: `http://localhost:5173/payment-success/${product.managerId}`,
+                success_url: `http://localhost:5173/payment-success/${product.managerId}/${product.eventName}`,
                 cancel_url: `http://localhost:5173/payment-cancel/${product.bookingId}`,
                 metadata: {
                     managerId: product.managerId,
@@ -148,7 +148,7 @@ export class userDetailsService {
                     email: product.email,
                     phoneNo: product.phoneNo,
                     address: product.address,
-                    images: JSON.stringify(product.images), // if it's an array
+                    images: JSON.stringify(product.images),
                     eventName: product.eventName,
                     location_address: product.location?.address || '',
                     location_city: product.location?.city || '',
@@ -209,7 +209,7 @@ export class userDetailsService {
                 payment_method_types: ["card"],
                 line_items: [lineItem],
                 mode: "payment",
-                success_url: `http://localhost:5173/payment-success/${product.managerId}`,
+                success_url: `http://localhost:5173/payment-success/${product.managerId}/${product.eventName}`,
                 cancel_url: `http://localhost:5173/payment-cancel/${product.bookedId}`,
                  metadata: {
                     managerId: product.managerId,

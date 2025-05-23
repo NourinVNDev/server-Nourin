@@ -65,6 +65,6 @@ const bookingSchema = new Schema({
         }
     }]
 
-});
+},{timestamps:true});
 
 export default mongoose.model('BookedUser', bookingSchema);

@@ -46,6 +46,7 @@ export default function verifyToken(allowedRoles: string[] = []) {
       }
 
       req.user = decoded; 
+      console.log("nexttt")
       next();
     } catch (error) {
       if (error instanceof jwt.JsonWebTokenError) {

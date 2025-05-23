@@ -15,7 +15,7 @@ const initializeSocket = (server: HttpServer) => {
     },
   });
 
-  io.on("connection", (socket) => {
+  io.on("connection", (socket:any) => {
     console.log("New client connected:", socket.id);
     const { userId, role } = socket.handshake.query;
     console.log("User Connected:", { userId, role });
@@ -35,26 +35,50 @@ const initializeSocket = (server: HttpServer) => {
         callback(null);
       }
     });
+socket.on("post-new-message", async (newMessage: any, callback: any) => {
+  try {
+    const { sender, receiver, message, senderModel, receiverModel } = newMessage;
+    console.log("Received message:", newMessage);
 
-    // 2. Chat Message Handling
-    socket.on("post-new-message", async (newMessage, callback) => {
-      const { sender, receiver, message } = newMessage;
-      console.log("Received message:", newMessage);
+    const result = await WebSocketRepository.addNewMessage(newMessage);
 
-      const result = await WebSocketRepository.addNewMessage(newMessage);
-      const receiverData = onlineUsers.get(receiver);
+    const receiverData = onlineUsers.get(receiver);
 
-      if (receiverData) {
-        console.log("Checking the time",result.createdAt);
-        io.to(receiverData.socketId).emit('new-badge',result.chatId)
-        io.to(receiverData.socketId).emit("receive-message", { senderId: sender, message, timestamp:result.createdAt,totalMessage:result.totalMessage,chatId:result.chatId});
-      }
+    if (receiverData) {
+      console.log("Checking the time", result.createdAt);
 
-      callback({ success: true, message: "Message delivered successfully!",data:result });
+      io.to(receiverData.socketId).emit("receive-message", {
+        senderId: sender,
+        message,
+        timestamp: result.createdAt,
+        totalMessage: result.totalMessage,
+        chatId: result.chatId
+      });
+      console.log("Unread12345",result.unreadMessage);
+      
+      io.to(receiverData.socketId).emit("new-notification1", {
+        count: result.unreadMessage
+      });
+    }
+
+    callback({
+      success: true,
+      message: "Message delivered successfully!",
+      data: result
     });
+  } catch (error) {
+    console.error("Error in post-new-message:", error);
+    callback({
+      success: false,
+      message: "Failed to deliver the message.",
+      error: error
+    });
+  }
+});
 
 
-    socket.on("new-badge",async (senderId,callback)=>{
+
+    socket.on("new-badge",async (senderId:any,callback:any)=>{
       
       console.log("SenderrrrrId:",senderId);
       
@@ -67,12 +91,12 @@ const initializeSocket = (server: HttpServer) => {
       
     })
 //notification for new-event hosting
-    socket.on('post-new-event',async(socketMessage,callback)=>{
+    socket.on('post-new-event',async(socketMessage:any,callback:any)=>{
       const {senderId,message}=socketMessage;
     const result = await NotificationSocketRepository.addNewEventNotification(senderId,message);
     })
 //videoCall link notification
-    socket.on('post-videoCallLink', async (socketMessage, callback) => {
+    socket.on('post-videoCallLink', async (socketMessage:any, callback:any) => {
       const { link, managerId, eventId } = socketMessage;
       console.log("Join",link);
       
@@ -109,27 +133,43 @@ const initializeSocket = (server: HttpServer) => {
         callback({ success: false, message: 'Error sending shared notification.' });
       }
     });
-    //payment notification
-    socket.on('post-payment-success', async (newMessage, callback) => {
-      const { senderId, receiverId, message } = newMessage;
+
+    socket.on('post-payment-success', async (newMessage:any, callback:any) => {
+      const { senderId, receiverId, message,eventName} = newMessage;
       const heading = 'Payment Successfully';
 
-      const result = await NotificationSocketRepository.addNewNotification(senderId, receiverId, message, heading);
+      const result = await NotificationSocketRepository.addNewNotification(senderId, receiverId, message, heading,eventName);
       const receiverData = onlineUsers.get(receiverId);
+      const senderData=onlineUsers.get(senderId);
       console.log("OnlineUser",onlineUsers);
       console.log("RecieverId:",receiverData);
       
       
       if (receiverData) {
-        io.to(receiverData.socketId).emit("receive-notification-message", { senderId, message,count:result.unreadCount });
+        console.log("unreadCount:",result.unreadCount,result.userUnreadCount);
+        io.to(receiverData.socketId).emit("new-notification", { senderId, message,count:result.unreadCount });
+         io.to(senderData.socketId).emit("new-notification", { senderId, message,count:result.userUnreadCount });
       }
 
       callback({ success: true, message: "Notification sent successfully!" });
     });
 
 
+    //makinng change in isRead field
+    socket.on('change-isRead',async(newMessage:any,callback:any)=>{
+      const {senderId,role}=newMessage;
+      console.log("ManagerId black",senderId);
+      const result=await NotificationSocketRepository.changeIsReadStatus(senderId,role);
+      const senderData=onlineUsers.get(senderId);
+      if(senderData){
+        io.to(senderData.socketId).emit('new-notification1',{count:0})
+      }
+       callback({ success: true, message: "Notification sent successfully!" });
+    })
+
+
     //adding new category
-    socket.on('post-new-category',async(categoryName,callback)=>{
+    socket.on('post-new-category',async(categoryName:any,callback:any)=>{
       const result = await NotificationSocketRepository.addCategoryNotification(categoryName);
       if (!result || !result.managerIds || result.managerIds.length === 0) {
         console.log("No manager to notify");

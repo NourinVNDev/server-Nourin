@@ -32,7 +32,7 @@ const SendBookingConfirmation = async (
         const attachments: any[] = [];
 
         if (title === 'Virtual') {
-            const token = '007eJxTYJh2fX1CbDXHm/ke6xOSfnOsVexbdcx2nt9laVGWRplwV34FBiMLA0MLozSjZEuzVBOTpCRLI+M0IwMTU6NU09SUFFNDrcWqGQ2BjAwv1u1gYWSAQBCfkyE5P68kMTMvtYiBAQBmwR+m';
+            const token = '007eJxTYPDo7Pp++166Z+WGqb/Ymr613VhnPyl/wpK/SX0zylvOcm5UYDCyMDC0MEozSrY0SzUxSUqyNDJOMzIwMTVKNU1NSTE1XJ2jn9EQyMiwu2EnMyMDBIL4nAzJ+XkliZl5qUUMDADePCQw';
             const joinLink = `http://localhost:5173/join-stream?channelName=container&token=${encodeURIComponent(token)}&eventName=${eventName}`;
 
             htmlContent += `

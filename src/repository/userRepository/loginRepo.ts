@@ -503,22 +503,27 @@ async getUserDetailsRepository(userId:string){
 
 
 
-async getAllEventBasedRepo(): Promise<any> { // Use 'any' or a more specific type if needed
+async getAllEventBasedRepo(): Promise<any> {
   try {
     const eventData = await SOCIALEVENT.find();
 
     const updatedEvents: any[] = [];
 
+    // Get today's date with time set to 00:00:00
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     for (const event of eventData) {
-      if (new Date(event.startDate) >= new Date()) {
+      const eventStartDate = new Date(event.startDate);
+      eventStartDate.setHours(0, 0, 0, 0); // Normalize event start date
+
+      // Include events starting today or in the future
+      if (eventStartDate.getTime() >= today.getTime()) {
         const category = await CATEGORYDB.findOne({ categoryName: event.title });
-        console.log("Category",category);
+        console.log("Category:", category);
+        console.log("Event:", event);
 
-
-        console.log("Events:",event);
-        
-        
-        if (category && category.isListed) {  // assuming 'isBlocked' is the field name
+        if (category && category.isListed) {
           updatedEvents.push(event);
         }
       }
@@ -528,16 +533,17 @@ async getAllEventBasedRepo(): Promise<any> { // Use 'any' or a more specific typ
       success: true,
       message: "Event Details retrieved successfully.",
       events: updatedEvents,
-    } as const; 
+    } as const;
   } catch (error) {
     console.error("Error retrieving category details:", error);
     return {
       success: false,
       message: "An error occurred while retrieving category details.",
       categories: [],
-    } as const; 
+    } as const;
   }
 }
+
 
 
 
@@ -1263,8 +1269,9 @@ async getManagerDataRepo(userId:string){
 
 async createChatSchemaRepo(userId:string,manager:string){
   try {
+    console.log('Hai');
     const savedEvent = await this.userProfileRepository.createChatSchemaRepository(userId,manager);
-  
+    
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
 } catch (error) {
     console.error("Error in postEventRepository:", error);

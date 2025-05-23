@@ -139,9 +139,9 @@ export class managerBookingRepository {
 
             chatId:convo._id,
             companyName:user?.firstName,
-
             lastMessage,
-            unreadCount
+            unreadCount,
+            updatedAt:convo.updatedAt
 
          })
         }

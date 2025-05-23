@@ -12,6 +12,7 @@ import { NotificationVideoCallController } from './NotificationVideoCall';
 import SendBookingConfirmation from '../../config/bookingConfirmation';
 import Stripe from 'stripe';
 import { log } from 'node:console';
+import response_message from '../../config/enum/response_message';
 interface UserPayload {
   email: string;
   role:string
@@ -50,7 +51,7 @@ class userlogin  {
       console.error("Error during event fetching:", error);
       res.status(HTTP_statusCode.InternalServerError).json({
         success: false,
-        message: "An error occurred while fetching events",
+        message: response_message.GETALLEVENTDATA_ERROR,
         data: []
       });
     }
@@ -96,19 +97,19 @@ class userlogin  {
 
 
             res.status(HTTP_statusCode.OK).json({
-                message: 'Login Successful',
+                message: response_message.LOGINDETAILS_SUCCESS,
                 data: result.user, 
                 categoryNames:result.categoryName
             });
         } else {
             res.status(HTTP_statusCode.Unauthorized).json({
                 success: false,
-                message: 'Invalid credentials',
+                message: response_message.LOGINDETAILS_FAILED,
             });
         }
     } catch (error: any) {
         console.error("Error in loginDetails:", error.message || error);
-        res.status(HTTP_statusCode.InternalServerError).json({ error: 'Internal Server Error' });
+        res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.FETCHADMINDASHBOARDDATA_ERROR});
     }
 }
 
@@ -125,7 +126,7 @@ class userlogin  {
           if (typeof otpNumber.success === 'boolean') {
             // Handle the case where otpNumber is a boolean
             console.error("Received a boolean value instead of a number:", otpNumber);
-            res.status(HTTP_statusCode.BadRequest).json({ error: 'Failed to generate OTP.' });
+            res.status(HTTP_statusCode.BadRequest).json({ error: response_message.MANAGERREGISTER_FAILED });
             return;
         } else if(typeof otpNumber.success==='number') {
           console.log("check otp",globalOTP);
@@ -136,16 +137,18 @@ class userlogin  {
         console.log("Hash",globalOTP);
         
 
-          res.status(HTTP_statusCode.OK).json({ message: 'OTP sent', otpData: otpNumber });
+          res.status(HTTP_statusCode.OK).json({ message: response_message.MANAGERREGISTER_SUCCESS, otpData: otpNumber });
 
         }else{
-          res.status(HTTP_statusCode.OK).json({error:'Email is Already Registered'})
+          res.status(HTTP_statusCode.OK).json({error:response_message.POSTUSERDETAILS_FAILED})
         }
     
       
     } catch (error) {
         console.error("Error saving user data:", error);
-        res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session'});
+        res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.MANAGERREGISTER_ERROR
+
+        });
     }
 }
     async generateOtpForPassword(req: Request, res: Response): Promise<void>{
@@ -160,7 +163,7 @@ class userlogin  {
            if (typeof otpNumber.success === 'boolean') {
             // Handle the case where otpNumber is a boolean
             console.error("Received a boolean value instead of a number:", otpNumber);
-            res.status(HTTP_statusCode.BadRequest).json({ error: 'Failed to generate OTP.' });
+            res.status(HTTP_statusCode.BadRequest).json({ error: response_message.MANAGERREGISTER_FAILED });
             return;
         } else if(typeof otpNumber.success==='number') {
           console.log("check otp",globalOTP);
@@ -171,10 +174,10 @@ class userlogin  {
         console.log("Hash",globalOTP);
         
 
-          res.status(HTTP_statusCode.OK).json({ message: 'OTP sent', otpData: otpNumber });
+          res.status(HTTP_statusCode.OK).json({ message: response_message.MANAGERREGISTER_SUCCESS, otpData: otpNumber });
       } catch (error) {
           console.error("Error saving user data:", error);
-          res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
+          res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.MANAGERREGISTER_ERROR });
       }
   }
 
@@ -186,14 +189,14 @@ class userlogin  {
       console.log("Received OTP:", otp, "Global OTP:", globalOTP);
       const result=this.userController.verifyOtpCheckingService(otp,globalOTP);
       if((await result).success){
-        res.status(HTTP_statusCode.OK).json({ message: 'Otp are matched' });
+        res.status(HTTP_statusCode.OK).json({ message: response_message.VERIFYOTPFORPASSWORD_SUCCESS});
       }else{
-        res.status(HTTP_statusCode.BadRequest).json({ message: 'Otp are not matched' });
+        res.status(HTTP_statusCode.BadRequest).json({ message: response_message.VERIFYOTPFORPASSWORD_FAILED });
       }
     
     } catch (error) {
         console.error("Error saving user data:", error);
-        res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
+        res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.MANAGERREGISTER_ERROR });
     }
 
   }
@@ -217,7 +220,7 @@ class userlogin  {
                   data: result.user
               });
           }else{
-            res.status(HTTP_statusCode.NotFound).json({
+            res.status(HTTP_statusCode.OK).json({
               success: result.success,
               message: result.message,
               data: result.user
@@ -228,7 +231,7 @@ class userlogin  {
 
       } catch (error) {
           console.error("Error saving user data:", error);
-          res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
+          res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.MANAGERREGISTER_ERROR });
       }
   }
 
@@ -243,7 +246,7 @@ class userlogin  {
         if (typeof otpNumber.success === 'boolean') {
           // Handle the case where otpNumber is a boolean
           console.error("Received a boolean value instead of a number:", otpNumber);
-          res.status(HTTP_statusCode.BadRequest).json({ error: 'Failed to generate OTP.' });
+          res.status(HTTP_statusCode.BadRequest).json({ error: response_message.MANAGERREGISTER_FAILED});
           return;
       } else if(typeof otpNumber.success==='number') {
         console.log("check otp",globalOTP);
@@ -253,11 +256,11 @@ class userlogin  {
       console.log("Hashing",globalOTP);
       
 
-        res.status(HTTP_statusCode.OK).json({ message: 'OTP sent', otpData: otpNumber });
+        res.status(HTTP_statusCode.OK).json({ message: response_message.MANAGERREGISTER_SUCCESS, otpData: otpNumber });
         
       } catch (error) {
         console.error("Error saving user data:", error);
-        res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
+        res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.MANAGERREGISTER_ERROR });
     }
     }
     async googleAuth(req: Request, res: Response): Promise<void>{
@@ -300,11 +303,11 @@ class userlogin  {
               path: '/',
           });
 
-            res.status(HTTP_statusCode.OK).json({ message: 'Login Successful',data:result.user });
+            res.status(HTTP_statusCode.OK).json({ message:response_message.LOGINDETAILS_SUCCESS,data:result.user });
           } else {
             res.status(HTTP_statusCode.Unauthorized).json({
                 success: false,
-                message: 'Invalid credentials',
+                message: response_message.LOGINDETAILS_FAILED,
             });
         }
       
@@ -313,7 +316,7 @@ class userlogin  {
       
         } catch (error) {
           console.error('Error saving user data:', error);
-          res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
+          res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.MANAGERREGISTER_ERROR });
         }
       
     }
@@ -329,14 +332,14 @@ class userlogin  {
           if (result.success) {
               // Only assign to globalOTP if result.success is true
               globalOTP = Number(result.otpValue);
-              res.status(HTTP_statusCode.OK).json({ message: 'OTP Success', data: result.otpValue });
+              res.status(HTTP_statusCode.OK).json({ message:response_message.FORGOTPASSWORD_SUCCESS, data: result.otpValue });
           } else {
               // Handle the case where success is false
               res.status(HTTP_statusCode.BadRequest).json({ message: result.message });
           }
       } catch (error) {
           console.error("Error in forgotPassword:", error);
-          res.status(HTTP_statusCode.InternalServerError).json({ error: 'Something went wrong' });
+          res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.CREATEADMINDATA_ERROR });
       }
   }
   
@@ -358,10 +361,10 @@ class userlogin  {
         let result=this.userController.verifyForgotOtpService(otp,globalOTP);
         console.log("can",result);
         
-        res.status(HTTP_statusCode.OK).json({ message: 'Forgot otp is matched Perfectly',data:(await result).message});
+        res.status(HTTP_statusCode.OK).json({ message: response_message.VERIFYFORGOTOTP_SUCCESS,data:(await result).message});
       } catch (error) {
           console.error("Error saving user data:", error);
-          res.status(HTTP_statusCode.InternalServerError).json({ error: 'Failed to save user data in session' });
+          res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.MANAGERREGISTER_ERROR });
       }
 
     }
@@ -377,10 +380,10 @@ class userlogin  {
        console.log(email);
        
       let result= this.userController.resetPasswordDetails(formData,email);
-       res.status(HTTP_statusCode.OK).json({ message: 'password Reset Success' ,data:(await result).user});
+       res.status(HTTP_statusCode.OK).json({ message: response_message.MANAGERRESETPASSWORD_SUCCESS ,data:(await result).user});
 
       } catch (error) {
-          res.status(HTTP_statusCode.InternalServerError).json({ error: 'Something went wrong' });
+          res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.CREATEADMINDATA_ERROR });
       }
   }
 
@@ -397,10 +400,10 @@ class userlogin  {
      console.log(userId);
      
     let result= this.userController.resetPasswordDetails(formData,userId);
-     res.status(HTTP_statusCode.OK).json({ message: 'password Reset Success' ,data:(await result).user});
+     res.status(HTTP_statusCode.OK).json({ message:response_message.MANAGERRESETPASSWORD_SUCCESS ,data:(await result).user});
 
     } catch (error) {
-        res.status(HTTP_statusCode.InternalServerError).json({ error: 'Something went wrong' });
+        res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.CREATEADMINDATA_ERROR });
     }
 }
 
@@ -420,10 +423,10 @@ class userlogin  {
      console.log(email);
      
     let result= this.userController.changeUserProfileService(formData,email);
-     res.status(HTTP_statusCode.OK).json({ message: 'password Reset Success' ,data:(await result).user});
+     res.status(HTTP_statusCode.OK).json({ message: response_message.MANAGERRESETPASSWORD_SUCCESS ,data:(await result).user});
 
     } catch (error) {
-        res.status(HTTP_statusCode.InternalServerError).json({ error: 'Something went wrong' });
+        res.status(HTTP_statusCode.InternalServerError).json({ error:response_message.CREATEADMINDATA_ERROR});
     }
 }
 
@@ -443,13 +446,13 @@ class userlogin  {
         }
 
         res.status(HTTP_statusCode.OK).json({
-            message: "Event data fetched successfully",
+            message: response_message.GETMANAGERPROFILEDETAILS_SUCCESS,
             data: result.user.category
         });
 
     } catch (error) {
         console.error("Error in getCategoryDetails:", error);
-        res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+        res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
     }
 
   }
@@ -471,13 +474,13 @@ class userlogin  {
         }
 
         res.status(HTTP_statusCode.OK).json({
-            message: "Event data fetched successfully",
+            message:response_message.GETMANAGERPROFILEDETAILS_SUCCESS,
             data: result.user
         });
 
     } catch (error) {
         console.error("Error in getCategoryDetails:", error);
-        res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+        res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
     }
 
   }
@@ -490,7 +493,7 @@ class userlogin  {
       
       res.status(HTTP_statusCode.NotFound).json({
         success: false,
-        message: "Refresh token not provided",
+        message: response_message.REGENERATEACCESSTOKEN_FAILED,
       });
       return; // End the execution
     }
@@ -524,7 +527,7 @@ class userlogin  {
       if (!accessTokenSecret) {
         res.status(HTTP_statusCode.InternalServerError).json({
           success: false,
-          message: "Access token secret not defined in environment variables",
+          message: response_message.REGENERATEACCESSTOKEN_ERROR,
         });
         return; 
       }
@@ -575,13 +578,13 @@ class userlogin  {
         }
 
         res.status(HTTP_statusCode.OK).json({
-            message: "Event data fetched successfully",
+            message: response_message.GETMANAGERPROFILEDETAILS_SUCCESS,
             data: result  
         });
 
     } catch (error) {
         console.error("Error in getCategoryDetails:", error);
-        res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+        res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
     }
 }
 
@@ -600,13 +603,13 @@ async getAllEventDetails(req: Request, res: Response): Promise<void|any> {
       }
 
       res.status(HTTP_statusCode.OK).json({
-          message: "Event data fetched successfully",
+          message: response_message.GETMANAGERPROFILEDETAILS_SUCCESS,
           data: result  
       });
 
   } catch (error) {
       console.error("Error in getCategoryDetails:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+      res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
   }
 }
 
@@ -631,13 +634,13 @@ async getAllEventDetails(req: Request, res: Response): Promise<void|any> {
         }
 
         res.status(HTTP_statusCode.OK).json({
-            message: "Event data fetched successfully",
+            message: response_message.GETMANAGERPROFILEDETAILS_SUCCESS,
             data: result.user
         });
 
     } catch (error) {
         console.error("Error in getCategoryDetails:", error);
-        res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+        res.status(HTTP_statusCode.InternalServerError).json({ message:response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
     }
 }
 async postHandleLike(req:Request,res:Response){
@@ -653,18 +656,18 @@ async postHandleLike(req:Request,res:Response){
     
       if (!result) {
            res.status(HTTP_statusCode.InternalServerError).json({
-              message:'Something went wrong'
+              message:response_message.ADMINLOGIN_ERROR
           });
       }
 
       res.status(HTTP_statusCode.OK).json({
-          message: "User likes successfully",
-          data: {result}
+          message:response_message.POSTHANDLELIKE_SUCCESS,
+         data: {result}
       });
 
   } catch (error) {
       console.error("Error in getCategoryDetails:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+      res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
   }
 }
 
@@ -676,18 +679,18 @@ async getPostDetails(req:Request,res:Response){
     
       if (!result) {
            res.status(HTTP_statusCode.InternalServerError).json({
-              message:'Something went wrong'
+              message:response_message.ADMINLOGIN_ERROR
           });
       }
 
       res.status(HTTP_statusCode.OK).json({
-          message: "Retrive Post Data successfully",
+          message: response_message.GETPOSTDETAILS_SUCCESS,
           data: result
       });
 
   } catch (error) {
       console.error("Error in getCategoryDetails:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+      res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
   }
 
 
@@ -701,18 +704,18 @@ async getSelectedEventDetails(req:Request,res:Response){
     
       if (!result) {
            res.status(HTTP_statusCode.InternalServerError).json({
-              message:'Something went wrong'
+              message:response_message.ADMINLOGIN_ERROR
           });
       }
 
       res.status(HTTP_statusCode.OK).json({
-          message: "Retrive Post Data successfully",
+          message: response_message.GETPOSTDETAILS_SUCCESS,
           data: result
       });
 
   } catch (error) {
       console.error("Error in get selected event:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+      res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
   }
 }
 async fetchSavedBookingdata(req:Request,res:Response){
@@ -721,18 +724,18 @@ async fetchSavedBookingdata(req:Request,res:Response){
       const result = await this.userDetailsController.getSelectedBookingData(bookingId); 
       if (!result) {
            res.status(HTTP_statusCode.InternalServerError).json({
-              message:'Something went wrong'
+              message:response_message.ADMINLOGIN_ERROR
           });
       }
 
       res.status(HTTP_statusCode.OK).json({
-          message: "Retrive Post Data successfully",
+          message: response_message.GETPOSTDETAILS_SUCCESS,
           data: result
       });
 
   } catch (error) {
       console.error("Error in get selected event:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+      res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
   }
 }
 async checkIfUserValid(req:Request,res:Response){
@@ -742,18 +745,18 @@ async checkIfUserValid(req:Request,res:Response){
       const result = await this.userDetailsController.checkUserIsBooked(email,eventName); 
       if (!result) {
            res.status(HTTP_statusCode.InternalServerError).json({
-              message:'Something went wrong'
+              message:response_message.ADMINLOGIN_ERROR
           });
       }
 
       res.status(HTTP_statusCode.OK).json({
-          message: "Retrive Post Data successfully",
+          message:response_message.GETPOSTDETAILS_SUCCESS,
           data: result
       });
 
   } catch (error) {
       console.error("Error in get selected event:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+      res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
   }
 
 }
@@ -775,7 +778,7 @@ async makePaymentStripe(req: Request, res: Response): Promise<void> {
     console.log("Checking server-side", result);
 
     res.status(HTTP_statusCode.OK).json({
-      message: "Retrieve Post Data successfully",
+      message: response_message.GETPOSTDETAILS_SUCCESS,
       sessionId: result.result.data,
       success:true
     });
@@ -784,7 +787,7 @@ async makePaymentStripe(req: Request, res: Response): Promise<void> {
   } catch (error) {
     console.error("Error in getCategoryDetails:", error);
     res.status(HTTP_statusCode.InternalServerError).json({ 
-      message: "Internal server error", 
+      message: response_message.FETCHADMINDASHBOARDDATA_ERROR, 
       error 
     });
     return;
@@ -835,7 +838,7 @@ async makerRetryPayment(req:Request,res:Response){
     console.log("Checking server-side", result);
 
     res.status(HTTP_statusCode.OK).json({
-      message: "Retrieve Post Data successfully",
+      message:response_message.GETPOSTDETAILS_SUCCESS,
       sessionId: result.result.data,
       success:true
     });
@@ -844,7 +847,7 @@ async makerRetryPayment(req:Request,res:Response){
   } catch (error) {
     console.error("Error in getCategoryDetails:", error);
     res.status(HTTP_statusCode.InternalServerError).json({ 
-      message: "Internal server error", 
+      message: response_message.FETCHADMINDASHBOARDDATA_ERROR, 
       error 
     });
     return;
@@ -865,7 +868,7 @@ async postReviewAndRating(req:Request,res:Response){
     res.status(HTTP_statusCode.OK).json({result:result.result.savedEvent});
   } catch (error) {
     console.error("Error in post review and Rating", error);
-    res.status(HTTP_statusCode.InternalServerError).json({ message: "Internal server error", error });
+    res.status(HTTP_statusCode.InternalServerError).json({ message: response_message.FETCHADMINDASHBOARDDATA_ERROR, error });
 }
 
 
@@ -883,7 +886,7 @@ async saveBillingDetails(req: Request, res: Response) {
     res.status(HTTP_statusCode.OK).json(result);
   } catch (error) {
     console.error("Error in saveBillingDetails:", error);
-    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR});
   }
 }
 async saveRetryBillingDetails(req:Request,res:Response){
@@ -897,7 +900,7 @@ async saveRetryBillingDetails(req:Request,res:Response){
     res.status(HTTP_statusCode.OK).json(result);
   } catch (error) {
     console.error("Error in saveBillingDetails:", error);
-    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR});
   }
 }
 
@@ -917,7 +920,7 @@ async updateBookedEventPaymentStatus(req:Request,res:Response){
 
   } catch (error) {
     console.error("Error in saveBillingDetails:", error);
-    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR });
   }
 }
 
@@ -935,7 +938,7 @@ async getExistingReviews(req: Request, res: Response): Promise<void> {
      res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
   } catch (error) {
     console.error("Error in getEventHistoryDetails:", error);
-    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR });
   }
 }
 
@@ -952,7 +955,7 @@ async getEventHistoryDetails(req: Request, res: Response): Promise<void> {
      res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
   } catch (error) {
     console.error("Error in getEventHistoryDetails:", error);
-    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR });
   }
 }
 
@@ -967,7 +970,7 @@ async getEventBookedDetails(req: Request, res: Response): Promise<void> {
      res.status(HTTP_statusCode.TaskFailed).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
   } catch (error) {
     console.error("Error in getEventHistoryD  etails:", error);
-    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR });
   }
 }
 
@@ -978,17 +981,19 @@ async getEventBookedDetails(req: Request, res: Response): Promise<void> {
 
 async getBookedManagerDetails(req:Request,res:Response):Promise<void>{
   try {
-    const userId=req.params.userId;
+    console.log("Hello");
+    
+    const userId=req.query.name;
     console.log("Hello Moto",userId);
-    const savedEvent = await this.userProfileController.getBookedManagerDetails2(userId);
+    const savedEvent = await this.userProfileController.getBookedManagerDetails2(userId as string);
     if (savedEvent.success) {
       res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
     return;
     }
-     res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+     res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
   } catch (error) {
     console.error("Error in getEventHistoryDetails:", error);
-    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR });
   }
 }
 
@@ -1006,7 +1011,7 @@ async checkOfferAvailable(req:Request,res:Response){
        res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
   } catch (error) {
     console.error("Error in check Offer Available:", error);
-    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR });
     
   }
 }
@@ -1025,7 +1030,7 @@ async cancelBookingEvent(req:Request,res:Response){
        res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
   } catch (error) {
     console.error("Error in check cancel booking:", error);
-    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR});
     
   }
 }
@@ -1044,7 +1049,7 @@ async cancelBookingEvent(req:Request,res:Response){
          res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
     } catch (error) {
       console.error("Error in check User Wallet:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+      res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR });
       
     }
 
@@ -1064,7 +1069,7 @@ async cancelBookingEvent(req:Request,res:Response){
          res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
     } catch (error) {
       console.error("Error in check User Notification:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+      res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR});
       
     }
   }
@@ -1083,7 +1088,7 @@ async cancelBookingEvent(req:Request,res:Response){
          res.status(HTTP_statusCode.NotFound).json({ success: savedEvent.result.success, message: savedEvent.result.message, data: savedEvent.result.data });
     } catch (error) {
       console.error("Error in check User Notification:", error);
-      res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+      res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR});
       
     }
 
@@ -1103,7 +1108,7 @@ async createChatSchema(req: Request, res: Response) {
     res.status(HTTP_statusCode.OK).json(result); // Send response to client
   } catch (error) {
     console.error("Error in saveBillingDetails:", error);
-    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: "Internal Server Error" });
+    res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR});
   }
 }
 
@@ -1119,7 +1124,7 @@ async uploadUserProfilePicture(req: Request, res: Response) {
 
   if (!profilePicture) {
     console.log('Mahn');
-    res.status(HTTP_statusCode.BadRequest).json({ error: "No file uploaded. Please upload an image." });
+    res.status(HTTP_statusCode.BadRequest).json({ error: response_message.UPLOADUSERPROFILEPICTURE_FAILED });
     return;
   }
 
@@ -1127,7 +1132,7 @@ async uploadUserProfilePicture(req: Request, res: Response) {
     const result = await this.userProfileController.uploadUserProfileDetails2(userId, profilePicture);
     res.status(HTTP_statusCode.OK).json(result);
   } catch (error) {
-    res.status(HTTP_statusCode.InternalServerError).json({ error: "Failed to upload profile picture." });
+    res.status(HTTP_statusCode.InternalServerError).json({ error: response_message.UPLOADUSERPROFILEPICTURE_ERROR});
   }
 }
 

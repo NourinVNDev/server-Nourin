@@ -2,6 +2,7 @@ import socialEventSchema from "../../models/managerModels/socialEventSchema";
 import CONVERSATIONDB from "../../models/userModels/conversationSchema";
 import MESSAGEDB from "../../models/userModels/messageSchema";
 import USERDB from "../../models/userModels/userSchema";
+import NOTIFICATIONDB from "../../models/userModels/notificationSchema";
 type NewMessage = {
   userId: string;
   managerId: string;
@@ -42,52 +43,77 @@ export class WebSocketRepository {
   }
 
 
+static async addNewMessage(newMessage: NewMessage) {
+  try {
+    console.log("New Message", newMessage);
 
-  static async addNewMessage(newMessage: NewMessage) {
-    try {
-      console.log("New Message",newMessage);
-      
-      const { sender, receiver, message } = newMessage as any;
-      console.log("from Repo", sender, receiver, message);
+    const { sender, receiver, message, senderModel, receiverModel } = newMessage as any;
+    console.log("from Repo", sender, receiver, message);
 
-      const conversation = await CONVERSATIONDB.findOne({
-        participants: { $all: [sender, receiver] }
-      });
-  
-      if (!conversation) {
-        throw new Error("Conversation not found");
-      }
+    const conversation = await CONVERSATIONDB.findOne({
+      participants: { $all: [sender, receiver] }
+    });
 
-      const savedMessage = await MESSAGEDB.create({
-        chatId: conversation._id,
-        senderId: sender, 
-        receiverId: receiver, 
-        message: message,
-        isRead:false
-     
-      });
-  
-  
-      conversation.messages.push(savedMessage._id);
-      await conversation.save();
-      conversation.lastMessage=savedMessage._id;
-      await conversation.save();
-      const totalMessage=await MESSAGEDB.find({senderId:sender||receiver,receiverId:receiver||sender})
-      
-  
-   
-      return {
-        messageId: savedMessage._id,
-        content: savedMessage.message, 
-        createdAt: savedMessage.createdAt,
-        totalMessage:totalMessage.length,
-        chatId:conversation._id
-      };
-    } catch (error) {
-      console.error("Error adding new message:", error);
-      throw error; 
+    if (!conversation) {
+      throw new Error("Conversation not found");
     }
+
+    const savedMessage = await MESSAGEDB.create({
+      chatId: conversation._id,
+      senderId: sender,
+      receiverId: receiver,
+      message,
+      isRead: false
+    });
+
+    conversation.messages.push(savedMessage._id);
+    conversation.lastMessage = savedMessage._id;
+    await conversation.save();
+
+    const totalMessage = await MESSAGEDB.countDocuments({
+      $or: [
+        { senderId: sender, receiverId: receiver },
+        { senderId: receiver, receiverId: sender }
+      ]
+    });
+
+    const isSenderUser = senderModel === 'User';
+    console.log("IsSenderUser", isSenderUser);
+
+    const newNotification = new NOTIFICATIONDB({
+      heading: "New Message",
+      message: "You have received a new message.",
+      from: sender,
+      isRead: false,
+      fromModal: isSenderUser ? 'bookedUser' : 'Manager',
+      to: receiver,
+      toModal: isSenderUser ? 'Manager' : 'bookedUser',
+    });
+
+    await newNotification.save();
+
+    const unreadMessage = await NOTIFICATIONDB.countDocuments({
+      toModal: isSenderUser ? 'Manager' : 'bookedUser',
+      to: receiver,
+      isRead: false
+    });
+
+    return {
+      messageId: savedMessage._id,
+      content: savedMessage.message,
+      createdAt: savedMessage.createdAt,
+      totalMessage,
+      chatId: conversation._id,
+      unreadMessage
+    };
+
+  } catch (error) {
+    console.error("Error adding new message:", error);
+    throw error;
   }
+}
+
+
 
   static async calculateUnReadMessage(senderId: string) {
     const conversations = await CONVERSATIONDB.find({ participants: { $in: [senderId] } }).populate('messages');

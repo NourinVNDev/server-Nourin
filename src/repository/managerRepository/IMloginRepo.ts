@@ -37,6 +37,7 @@ export interface IMloginRepo{
     createChatSchemaRepo(userId:string,manager:string):Promise<{success:boolean,message:string,data:any}>
     fetchManagerNotificationRepo(managerId:string):Promise<{success:boolean,message:string,data?:any|null}>
     fetchManagerNotificationCountRepo(managerId:string):Promise<{success:boolean,message:string,data?:any|null}>
+    checkValidDateRepo(eventName:string):Promise<{success:boolean,message:string,data?:any|null}>
     fetchUserCountAndRevenueRepo(managerId:string):Promise<{success:boolean,message:string,data?:any}>
     fetchDashboardGraphRepo(managerId:string,selectedType:string,selectedTime:string):Promise<{success:boolean,message:string,data?:any}>
     fetchDashboardPieChartRepo(managerId:string):Promise<{success:boolean,message:string,data?:any}>

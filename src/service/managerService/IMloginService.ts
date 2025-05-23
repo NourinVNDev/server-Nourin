@@ -37,6 +37,7 @@ export interface IMloginService{
    postSeatInformationService(ticket:TicketType):Promise<{success:boolean,message:string,data:any}>;
    fetchNotificationOfManager(managerId:string):Promise<{success:boolean,message:string,data:any}>;
    NotificationCountOfManager(managerId:string):Promise<{success:boolean,message:string,data:any}>;
+   checkValidDate(eventName:string):Promise<{success:boolean,message:string,data:any}>;
    getUserCountAndRevenue(managerId:string):Promise<{success:boolean,message:string,data:any}>;
    getDashboardGraph(managerId:string,selectedType:string,selectedTime:string):Promise<{success:boolean,message:string,data:any}>;
    getDashboardPieChart(managerId:string):Promise<{success:boolean,message:string,data:any}>;
