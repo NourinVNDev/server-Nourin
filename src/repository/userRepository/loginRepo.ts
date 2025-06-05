@@ -8,10 +8,19 @@ import { IloginRepo } from './IloginRepo';
 import { userDetailsRepository } from './userDetailRepository';
 import { userProfileRepository } from './userProfileRepository';
 import BOOKEDUSERDB from '../../models/userModels/bookingSchema';
-import OFFERDB from '../../models/managerModels/offerSchema';
+import OFFERDB from '../../models/adminModels/offerSchema';
 import Stripe from "stripe";
 import { CancelEventRepository } from './cancelEventRepository';
-const Stripe_Secret=process.env.STRIPE_SERVER_SECRET
+const Stripe_Secret=process.env.STRIPE_SERVER_SECRET;
+interface EventData {
+  email: string[];
+  userName: string[];
+  bookingId: string;
+  eventName?: string;
+  date?: string;
+  seatNumbers: number;
+  amount: number;
+}
 if(!Stripe_Secret){
   throw new Error("Stripe Secret from .env file not found!")
   }
@@ -27,6 +36,9 @@ import MANAGERWALLETDB from '../../models/managerModels/managerWalletSchema';
 import ADMINDB from '../../models/adminModels/adminSchema';
 import ADMINWALLETSCHEMA from '../../models/adminModels/adminWalletSchema';
 import { NotificationVideoCallRepository } from './notificationVideoCallRepository';
+import SendBookingCancellation from '../../config/cancelConfirmation';
+import MANAGEROFFER from '../../models/managerModels/managerOffer';
+import ADMINOFFER from '../../models/adminModels/offerSchema';
 
 
 // Define an interface for Events (adjust fields as needed)
@@ -140,7 +152,7 @@ async checkLogin(formData:FormData){
       };
     }
 
-    // Compare password using bcrypt
+
     const isMatch = await bcrypt.compare(plainPassword, user.password);
 
     const categoryData = await CATEGORYDB.find();
@@ -151,14 +163,14 @@ async checkLogin(formData:FormData){
     const offers = await OFFERDB.find({ endDate: { $lt: new Date() } });
 
     for (const offer of offers) {
-      const socialEvents = await SOCIALEVENT.find({ offer: offer._id });
+      const socialEvents = await SOCIALEVENT.find({ adminOffer: offer._id });
     
       for (const event of socialEvents) {
         event.typesOfTickets.forEach((ticket: any) => {
           ticket.offerDetails = {};
         });
     
-        event.offer = undefined;
+        event.adminOffer = undefined;
     
         await event.save();
     
@@ -168,13 +180,6 @@ async checkLogin(formData:FormData){
         );
       }
     }
-    
-    
-    
-
-    
-
-
     if (isMatch) {
       console.log('Password matches!');
       return {
@@ -325,7 +330,7 @@ async resetPasswordRepo(email: string, formData:FormData){
 
   try {
     // Check if the user exists (ensuring the user is a Document)
-    const user = await USERDB.findById(email);
+    const user = await USERDB.findOne({email:email});
 
     if (!user) {
       console.log('User not found.');
@@ -500,54 +505,68 @@ async getUserDetailsRepository(userId:string){
       };
     }
   }
-
-
-
 async getAllEventBasedRepo(): Promise<any> {
   try {
     const eventData = await SOCIALEVENT.find();
-
     const updatedEvents: any[] = [];
 
-    // Get today's date with time set to 00:00:00
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  const now = new Date();
+const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     for (const event of eventData) {
       const eventStartDate = new Date(event.startDate);
-      eventStartDate.setHours(0, 0, 0, 0); // Normalize event start date
+      eventStartDate.setHours(0, 0, 0, 0);
 
-      // Include events starting today or in the future
-      if (eventStartDate.getTime() >= today.getTime()) {
+      if (eventStartDate >= today) {
         const category = await CATEGORYDB.findOne({ categoryName: event.title });
-        console.log("Category:", category);
-        console.log("Event:", event);
 
         if (category && category.isListed) {
-          updatedEvents.push(event);
+          console.log("Title",event.eventName,category.categoryName);
+          console.log("MaNaGeR",await MANAGEROFFER.find());
+          
+          const managerOffer = await MANAGEROFFER.findOne({
+            discount_on: event.eventName,
+            startDate: { $lte: today},
+            endDate: { $gte: today },
+          });
+          console.log("ManagerOffer",managerOffer); 
+        
+
+          console.log("AdminOffer",await ADMINOFFER.find());
+          
+          const adminOffer = await ADMINOFFER.findOne({
+        discount_on: { $regex: new RegExp(`^${category.categoryName}$`, 'i') },
+            startDate: { $lte: today },
+            endDate: { $gte: today },
+          });
+          console.log("Looking for admin offer on:", category.categoryName, "between", today);
+
+          console.log("AdminOffer",adminOffer);
+          
+
+          updatedEvents.push({
+            ...event.toObject(),
+            managerOffer1: managerOffer || null,
+            adminOffer1: adminOffer || null,
+          });
         }
       }
     }
 
     return {
       success: true,
-      message: "Event Details retrieved successfully.",
+      message: "Event Details with Offers retrieved successfully.",
       events: updatedEvents,
     } as const;
   } catch (error) {
-    console.error("Error retrieving category details:", error);
+    console.error("Error retrieving event and offer details:", error);
     return {
       success: false,
-      message: "An error occurred while retrieving category details.",
-      categories: [],
+      message: "An error occurred while retrieving event and offer data.",
+      events: [],
     } as const;
   }
 }
-
-
-
-
-
 
 async getCategoryTypeRepo(categoryName1:string){
   console.log("name of category",categoryName1)
@@ -622,6 +641,7 @@ async getCancelBookingRepo(bookingId:string){
   try {
     console.log("Delegating event data to the actual repository...");
     const savedEvent = await this.userRepositoy.getCancelBookingRepository(bookingId);
+    console.log("Results:",savedEvent);
     
     return {savedEvent};
 } catch (error) {
@@ -629,10 +649,10 @@ async getCancelBookingRepo(bookingId:string){
     throw new Error("Failed to handle event data in main repository.");
 }
 }
-async checkUserBookingValidRepo(email:string,eventName:string){
+async checkUserBookingValidRepo(email:string,eventName:string,bookedId:string){
     try {
 
-    const savedEvent = await this.userRepositoy.checkUserBookingValidRepository(email,eventName);
+    const savedEvent = await this.userRepositoy.checkUserBookingValidRepository(email,eventName,bookedId);
     
     return {savedEvent};
 } catch (error) {
@@ -670,6 +690,7 @@ async checkSeatAvailable(product: PaymentData) {
   }
 }
 
+
 async checkRetrySeatAvailable(product: retryPayment) {
   try {
     const socialEvent = await SOCIALEVENT.findOne({ eventName: product.eventName });
@@ -699,61 +720,40 @@ async checkRetrySeatAvailable(product: retryPayment) {
     throw new Error("Failed to check seat availability.");
   }
 }
-
-
-
-async savePaymentData(paymentData: PaymentData) {
-  try {
-    console.log("Normal");
-    
-    console.log("Checking the bookedId", paymentData);
-    if (!paymentData.bookedId || !paymentData.companyName) {
-      throw new Error("Missing required payment data.");
-    }
-    const existingBooking = await BOOKEDUSERDB.findById(paymentData.bookingId);
+async updateBookingData(product:PaymentData){
+   const existingBooking = await BOOKEDUSERDB.findById(product.bookingId);
     console.log("Existing booking found:", existingBooking);
 
     if (!existingBooking) {
-      return { success: false, message: "Booking not found", data: null };
+      return { success: false, message: "Booking not found"};
     }
-
-    // Validate payment status
-    // const validPaymentStatus = (status: string): "Pending" | "Cancelled" | "Completed" => {
-    //   if (status === "Success") return "Pending";
-    //   if (status === "Cancelled") return "Cancelled";
-    //   if (status === "Completed") return "Completed";
-    //   throw new Error("Invalid payment status received: " + status);
-    // };
-    console.log("NoOfPerson",paymentData.noOfPerson,paymentData.paymentStatus);
-    
-    existingBooking.paymentStatus = 'Completed';
-    existingBooking.bookingDate = new Date();
-    existingBooking.totalAmount = paymentData.Amount||paymentData.amount;
-    existingBooking.NoOfPerson = paymentData.noOfPerson;
+        existingBooking.bookingDate = new Date();
+    existingBooking.totalAmount = product.Amount||product.amount;
+    existingBooking.NoOfPerson = product.noOfPerson;
     if (!existingBooking.ticketDetails) {
       existingBooking.ticketDetails = { Included: [], notIncluded: [], type: undefined };
     }
     
-    existingBooking.ticketDetails.type = paymentData.type || undefined;
-    existingBooking.ticketDetails.Included = paymentData.Included || [];
-    existingBooking.ticketDetails.notIncluded = paymentData.notIncluded || [];
+    existingBooking.ticketDetails.type = product.type || undefined;
+    existingBooking.ticketDetails.Included = product.Included || [];
+    existingBooking.ticketDetails.notIncluded = product.notIncluded || [];
 
 
 
-console.log("Payment",paymentData.bookedEmails,paymentData.bookedMembers);
-console.log("Length:",paymentData.bookedEmails.length,paymentData.bookedMembers.length);
+console.log("Payment",product.bookedEmails,product.bookedMembers);
+console.log("Length:",product.bookedEmails.length,product.bookedMembers.length);
     if (
-      Array.isArray(paymentData.bookedMembers) &&
-      Array.isArray(paymentData.bookedEmails) &&
-      paymentData.bookedMembers.length === paymentData.bookedEmails.length
+      Array.isArray(product.bookedMembers) &&
+      Array.isArray(product.bookedEmails) &&
+      product.bookedMembers.length === product.bookedEmails.length
     ) {
       console.log("Black");
-      for (let i = 0; i < paymentData.bookedMembers.length; i++) {
-        console.log(paymentData.bookedMembers[i],paymentData.bookedEmails[i]);
+      for (let i = 0; i < product.bookedMembers.length; i++) {
+        console.log(product.bookedMembers[i],product.bookedEmails[i]);
         existingBooking.bookedUser.push({
          
-          user: paymentData.bookedMembers[i],
-          email: paymentData.bookedEmails[i],
+          user: product.bookedMembers[i],
+          email: product.bookedEmails[i],
           isParticipated: false,
         });
       }
@@ -763,119 +763,192 @@ console.log("Length:",paymentData.bookedEmails.length,paymentData.bookedMembers.
 
     
 
-    const uniqueIncluded = new Set(paymentData.Included || []);
-    const uniqueNotIncluded = new Set(paymentData.notIncluded || []);
+    const uniqueIncluded = new Set(product.Included || []);
+    const uniqueNotIncluded = new Set(product.notIncluded || []);
     
     existingBooking.ticketDetails.Included = Array.from(uniqueIncluded);
     existingBooking.ticketDetails.notIncluded = Array.from(uniqueNotIncluded);
     
     const updatedBooking = await existingBooking.save();
+    return {success:true,message:'Saved Booked User Data'};
+}
 
-    const managerDetails = await MANAGERSCHEMA.findOne({ firmName: paymentData.companyName });
-    console.log("Manager details found:", managerDetails);
 
-    if (!managerDetails) {
-      return { success: false, message: "Manager not found", data: null };
-    }
 
-    let adminAmount=0;
-    let managerAmount=0;
-    if (existingBooking.paymentStatus === "Completed") {
-      const totalAmount = paymentData.Amount||paymentData.amount;
-      managerAmount = Math.floor(totalAmount * 0.9);
-      adminAmount = Math.floor(totalAmount * 0.1);
-      console.log("Processing Stripe Transfer...");
-
-      let managerWallet = await MANAGERWALLETDB.findOne({ managerId: managerDetails._id });
-      if (!managerWallet) {
-        managerWallet = new MANAGERWALLETDB({ managerId: managerDetails._id, balance: 0, currency: 'USD', transactions: [] });
-      }
-      
-      managerWallet.balance += Math.round(managerAmount);
-      managerWallet.transactions.push({
-        userId: existingBooking.userId,
-        managerAmount,
-        type: "credit",
-        status: "completed",
-        eventName:paymentData.eventName,
-        bookedId:paymentData.bookedId,
-        noOfPerson:paymentData.noOfPerson
-      });
-      await managerWallet.save();
-    }
-    let adminDetails = await ADMINDB.findOne(); // Fetch the single admin
-    if (!adminDetails) {
-        throw new Error("Admin not found");
-    }
+// async savePaymentData(paymentData: PaymentData) {
+//   try {
+//     console.log("Normal");
     
-    let adminWallet = await ADMINWALLETSCHEMA.findOne({ adminId: adminDetails._id });
-    if(!adminWallet){
-     adminWallet = await ADMINWALLETSCHEMA.create({
-        adminId: adminDetails._id,
-        balance: adminAmount, // Assign balance directly
-        currency: 'USD',
-        transactions: [
-          {
-            totalAmount: paymentData.Amount,
-            userId: paymentData.userId,
-            managerAmount: managerAmount,
-            adminAmount:adminAmount,
-            type: 'credit',
-            status: 'completed',
-            createdAt: new Date(),
-            eventName:paymentData.eventName,
-            bookedId:paymentData.bookedId,
-            noOfperson:paymentData.noOfPerson,
-            companyName:paymentData.companyName
-      
-          }
-        ]
-      });
-      
-    }else{
-      adminWallet.balance += adminAmount;
-  adminWallet.transactions.push({
-    totalAmount: paymentData.Amount,
-    userId: paymentData.userId,
-    managerAmount: managerAmount,
-    adminAmount:adminAmount,
-    type: 'credit',
-    status: 'completed',
-    createdAt: new Date(),
-    eventName:paymentData.eventName,
-    bookedId:paymentData.bookedId
-  });
-  await adminWallet.save();
-    }
+//     console.log("Checking the bookedId", paymentData);
+//     if (!paymentData.bookedId || !paymentData.companyName) {
+//       throw new Error("Missing required payment data.");
+//     }
+//     const existingBooking = await BOOKEDUSERDB.findById(paymentData.bookingId);
+//     console.log("Existing booking found:", existingBooking);
+
+//     if (!existingBooking) {
+//       return { success: false, message: "Booking not found", data: null };
+//     }
+
+//     // Validate payment status
+//     // const validPaymentStatus = (status: string): "Pending" | "Cancelled" | "Completed" => {
+//     //   if (status === "Success") return "Pending";
+//     //   if (status === "Cancelled") return "Cancelled";
+//     //   if (status === "Completed") return "Completed";
+//     //   throw new Error("Invalid payment status received: " + status);
+//     // };
+//     console.log("NoOfPerson",paymentData.noOfPerson,paymentData.paymentStatus);
     
-    console.log(adminWallet);
+//     existingBooking.paymentStatus = 'Completed';
+//     existingBooking.bookingDate = new Date();
+//     existingBooking.totalAmount = paymentData.Amount||paymentData.amount;
+//     existingBooking.NoOfPerson = paymentData.noOfPerson;
+//     if (!existingBooking.ticketDetails) {
+//       existingBooking.ticketDetails = { Included: [], notIncluded: [], type: undefined };
+//     }
+    
+//     existingBooking.ticketDetails.type = paymentData.type || undefined;
+//     existingBooking.ticketDetails.Included = paymentData.Included || [];
+//     existingBooking.ticketDetails.notIncluded = paymentData.notIncluded || [];
 
-    const socialEvent = await SOCIALEVENT.findOne({ eventName: paymentData.eventName });
 
-    if (socialEvent) {
-      console.log("No of Person:",paymentData.noOfPerson);
-      socialEvent.typesOfTickets.forEach((ticket: any) => {
-        if (ticket.type.toLowerCase() === paymentData.type) {
-          console.log("Hellom");
+
+// console.log("Payment",paymentData.bookedEmails,paymentData.bookedMembers);
+// console.log("Length:",paymentData.bookedEmails.length,paymentData.bookedMembers.length);
+//     if (
+//       Array.isArray(paymentData.bookedMembers) &&
+//       Array.isArray(paymentData.bookedEmails) &&
+//       paymentData.bookedMembers.length === paymentData.bookedEmails.length
+//     ) {
+//       console.log("Black");
+//       for (let i = 0; i < paymentData.bookedMembers.length; i++) {
+//         console.log(paymentData.bookedMembers[i],paymentData.bookedEmails[i]);
+//         existingBooking.bookedUser.push({
+         
+//           user: paymentData.bookedMembers[i],
+//           email: paymentData.bookedEmails[i],
+//           isParticipated: false,
+//         });
+//       }
+//     }
+    
+
+
+    
+
+//     const uniqueIncluded = new Set(paymentData.Included || []);
+//     const uniqueNotIncluded = new Set(paymentData.notIncluded || []);
+    
+//     existingBooking.ticketDetails.Included = Array.from(uniqueIncluded);
+//     existingBooking.ticketDetails.notIncluded = Array.from(uniqueNotIncluded);
+    
+//     const updatedBooking = await existingBooking.save();
+
+//     const managerDetails = await MANAGERSCHEMA.findOne({ firmName: paymentData.companyName });
+//     console.log("Manager details found:", managerDetails);
+
+//     if (!managerDetails) {
+//       return { success: false, message: "Manager not found", data: null };
+//     }
+
+//     let adminAmount=0;
+//     let managerAmount=0;
+//     if (existingBooking.paymentStatus === "Completed") {
+//       const totalAmount = paymentData.Amount||paymentData.amount;
+//       managerAmount = Math.floor(totalAmount * 0.9);
+//       adminAmount = Math.floor(totalAmount * 0.1);
+//       console.log("Processing Stripe Transfer...");
+
+//       let managerWallet = await MANAGERWALLETDB.findOne({ managerId: managerDetails._id });
+//       if (!managerWallet) {
+//         managerWallet = new MANAGERWALLETDB({ managerId: managerDetails._id, balance: 0, currency: 'USD', transactions: [] });
+//       }
+      
+//       managerWallet.balance += Math.round(managerAmount);
+//       managerWallet.transactions.push({
+//         userId: existingBooking.userId,
+//         managerAmount,
+//         type: "credit",
+//         status: "completed",
+//         eventName:paymentData.eventName,
+//         bookedId:paymentData.bookedId,
+//         noOfPerson:paymentData.noOfPerson
+//       });
+//       await managerWallet.save();
+//     }
+//     let adminDetails = await ADMINDB.findOne(); // Fetch the single admin
+//     if (!adminDetails) {
+//         throw new Error("Admin not found");
+//     }
+    
+//     let adminWallet = await ADMINWALLETSCHEMA.findOne({ adminId: adminDetails._id });
+//     if(!adminWallet){
+//      adminWallet = await ADMINWALLETSCHEMA.create({
+//         adminId: adminDetails._id,
+//         balance: adminAmount, // Assign balance directly
+//         currency: 'USD',
+//         transactions: [
+//           {
+//             totalAmount: paymentData.Amount,
+//             userId: paymentData.userId,
+//             managerAmount: managerAmount,
+//             adminAmount:adminAmount,
+//             type: 'credit',
+//             status: 'completed',
+//             createdAt: new Date(),
+//             eventName:paymentData.eventName,
+//             bookedId:paymentData.bookedId,
+//             noOfperson:paymentData.noOfPerson,
+//             companyName:paymentData.companyName
+      
+//           }
+//         ]
+//       });
+      
+//     }else{
+//       adminWallet.balance += adminAmount;
+//   adminWallet.transactions.push({
+//     totalAmount: paymentData.Amount,
+//     userId: paymentData.userId,
+//     managerAmount: managerAmount,
+//     adminAmount:adminAmount,
+//     type: 'credit',
+//     status: 'completed',
+//     createdAt: new Date(),
+//     eventName:paymentData.eventName,
+//     bookedId:paymentData.bookedId
+//   });
+//   await adminWallet.save();
+//     }
+    
+//     console.log(adminWallet);
+
+//     const socialEvent = await SOCIALEVENT.findOne({ eventName: paymentData.eventName });
+
+//     if (socialEvent) {
+//       console.log("No of Person:",paymentData.noOfPerson);
+//       socialEvent.typesOfTickets.forEach((ticket: any) => {
+//         if (ticket.type.toLowerCase() === paymentData.type) {
+//           console.log("Hellom");
           
-          ticket.noOfSeats -= paymentData.noOfPerson;
-        }
-      });
+//           ticket.noOfSeats -= paymentData.noOfPerson;
+//         }
+//       });
      
     
-      await socialEvent.save();
-    }
-    return {
-      success: true,
-      message: "Payment data saved successfully",
-      data: updatedBooking,
-    };
+//       await socialEvent.save();
+//     }
+//     return {
+//       success: true,
+//       message: "Payment data saved successfully",
+//       data: updatedBooking,
+//     };
 
-  } catch (error) {
-    console.error("Error saving payment data:", error || error);
-    return { success: false, message: "Database error while saving payment data.", data: null };
-  }
-}
+//   } catch (error) {
+//     console.error("Error saving payment data:", error || error);
+//     return { success: false, message: "Database error while saving payment data.", data: null };
+//   }
+// }
 
 
 
@@ -894,12 +967,7 @@ async saveRetryPaymentData(paymentData: retryPayment) {
       return { success: false, message: "Booking not found", data: null };
     }
 
-    // Validate payment status
-    // const validPaymentStatus = (status: string): | "Cancelled" | "Completed" => {
-    //   if (status === "Success") return "Completed";
-    //   if (status === "Cancelled") return "Cancelled";
-    //   throw new Error("Invalid payment status received: " + status);
-    // };
+
     console.log("NoOfPerson",paymentData.noOfPerson);
     
     existingBooking.paymentStatus = "Completed";
@@ -1112,8 +1180,6 @@ async saveRetryBillingRepo(formData:retryBillingData){
 
 async updatePaymentStatusRepo(bookedId:string){
   try {
-
-    // Pass the data to the actual repository for database operations
     const savedEvent = await this.userRepositoy.updateBookedPaymentStatusRepository(bookedId);
   if(savedEvent){
     return {success:savedEvent.success,message:savedEvent.message};
@@ -1201,6 +1267,11 @@ async cancelBookedEventRepo(bookingId:string,userId:string):Promise<{success:boo
   try {
 
     const savedEvent = await this.cancelEventRepository.cancelBookedEventRepository(bookingId,userId);
+    if(savedEvent.success && savedEvent.data){
+      const eventData:EventData=savedEvent.data;
+      
+      await SendBookingCancellation(eventData.email,eventData.userName,eventData.bookingId,eventData.eventName ?? "Cancelled Event",eventData?.date??'',eventData.seatNumbers,eventData.amount)
+    }
   
     return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
 } catch (error) {

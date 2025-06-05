@@ -28,7 +28,7 @@ ManagerRoute.post('/createEventSeatDetails/:eventId',checkIfManagerBlocked,verif
 ManagerRoute.get('/manager/getEventType',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getEventTypeData.bind(managerLoginRouter));
 ManagerRoute.get('/getOffers/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getAllOffers.bind(managerLoginRouter));
 ManagerRoute.post('/addNewOffer',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.createNewOffer.bind(managerLoginRouter));
-ManagerRoute.get('/getSelectedOffer/:offerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getSelectedOfferDetails.bind(managerLoginRouter));
+ManagerRoute.get('/getSelectedOffer/:offerId/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getSelectedOfferDetails.bind(managerLoginRouter));
 ManagerRoute.post('/updateOffer',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.updateOfferDetails.bind(managerLoginRouter));
 ManagerRoute.get('/Manager/getAllEventData/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.getAllEventDetails.bind(managerLoginRouter));
 ManagerRoute.post('/refresh-token',managerLoginRouter.reGenerateManagerAccessToken.bind(managerLoginRouter));
@@ -55,6 +55,8 @@ ManagerRoute.get('/fetchManagerNotification/:managerId',checkIfManagerBlocked,ve
 ManagerRoute.get('/fetchUserCount/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchManagerDashboardData.bind(managerLoginRouter));
 ManagerRoute.get('/fetchDashboardGraphData/:managerId/:selectedType/:selectedTime',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchDashboardGraph.bind(managerLoginRouter));
 ManagerRoute.get('/fetchDashboardPieChart/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchDashboardPieChart.bind(managerLoginRouter));
+ManagerRoute.get(`/fetchDashboardBarChart/:selectedEvent`,checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchDashboardBarChart.bind(managerLoginRouter));
 ManagerRoute.get('/fetchNotificationCount/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchNotificationCount.bind(managerLoginRouter));
 ManagerRoute.get('/checkIfDateValid',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.checkDateValidation.bind(managerLoginRouter));
+ManagerRoute.get('/fetchEventNames/:managerId',checkIfManagerBlocked,verifyToken(['manager']),managerLoginRouter.fetchEventNames.bind(managerLoginRouter));
 export default ManagerRoute;    

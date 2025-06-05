@@ -499,10 +499,10 @@ return {result};
   
 }
 
-async checkBookedUserValidService(email:string,eventName:string){
+async checkBookedUserValidService(email:string,eventName:string,bookedId:string){
   try {
 
-    const result = await this.userDetailService. checkUserBookingEventService2(email,eventName);
+    const result = await this.userDetailService. checkUserBookingEventService2(email,eventName,bookedId);
     console.log("from service", result);
 
 return {result};
@@ -785,12 +785,9 @@ async confirmPayment(rawBody:Buffer,signature:string){
           categoryName
         }
         let bookingData: BookingData;
-        if(paymentStatus==='Pending'){
-              bookingData=await this.userService.savePaymentData(paymentData);
-
-        }else{
-                 bookingData=await this.userService.saveRetryPaymentData(paymentData);
-        }
+    
+          bookingData=await this.userService.saveRetryPaymentData(paymentData);
+        
         
           
               console.log("Data");

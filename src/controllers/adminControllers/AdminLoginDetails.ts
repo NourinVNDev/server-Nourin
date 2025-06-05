@@ -6,6 +6,8 @@ import { IadminloginService } from "../../service/adminServices/IadminloginServi
 import jwt from 'jsonwebtoken';
 import HTTP_statusCode from "../../config/enum/enum";
 import response_message from "../../config/enum/response_message";
+import { adminOfferControllers } from "./adminOfferControllers";
+
 
 interface AdminPayload {
   email: string;
@@ -15,9 +17,11 @@ interface AdminPayload {
 export class AdminLogin {
   private adminController: IadminloginService;
   private adminCategoryController: adminCategory;
+  private adminOfferController:adminOfferControllers;
   constructor(adminServiceInstance: IadminloginService) {
     this.adminController = adminServiceInstance;
     this.adminCategoryController = new adminCategory(adminServiceInstance);
+    this.adminOfferController=new adminOfferControllers(adminServiceInstance);
   }
 
   async createAdminData(req: Request, res: Response): Promise<void> {
@@ -268,6 +272,147 @@ export class AdminLogin {
     }
 
   }
+
+  async fetchDashboardBarChart(req:Request,res:Response){
+    try {
+
+      const selectedEvent=req.params.selectedEvent;
+      const result = await this.adminController.getDashboardBarChart(selectedEvent);
+      console.log("SavedEvent", result);
+
+
+      if (!result?.success) {
+        res.status(HTTP_statusCode.OK).json({
+          message: result?.message,
+        });
+        return;
+      }
+
+
+      res.status(HTTP_statusCode.OK).json({
+        message: result.message,
+        data: result.data,
+
+      });
+    } catch (error) {
+      console.error("Error in getting pieChart:", error);
+      res.status(HTTP_statusCode.InternalServerError).json({
+        message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
+        error: error instanceof Error ? error.message : error,
+      });
+    }
+
+  }
+     async createNewOffer(req: Request, res: Response){
+              try {
+              
+                console.log(req.body);
+                const  formData  = req.body;
+                console.log("FormData from Offer", formData);
+                const result = await this.adminOfferController.createNewOfferController(formData);
+                if (!result?.success) {
+                  console.log('hai');
+                  
+                  res.status(HTTP_statusCode.OK).json({
+                    message: result?.message || response_message.GETALLOFFERS_FAILED,
+                  });
+                  return;
+                }
+                res.status(HTTP_statusCode.OK).json({
+                  message: response_message.GETALLOFFERS_SUCCESS,
+                  data: result.data,
+                });
+              } catch (error) {
+                console.error("Error in getAllOffers:", error);
+                res.status(HTTP_statusCode.InternalServerError).json({
+                  message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
+                  error: error instanceof Error ? error.message : error,
+                });
+              }
+            }
+
+              async getAllOffers(req: Request, res: Response): Promise<void> {
+                        try {
+                       
+                          const result = await this.adminOfferController.getAllOffers();
+                    
+                       
+                          if (!result?.success) {
+                             res.status(HTTP_statusCode.InternalServerError).json({
+                              message: result?.message ||response_message.GETALLOFFERS_FAILED,
+                            });
+                          }
+                    
+                      
+                          res.status(HTTP_statusCode.OK).json({
+                            message:response_message.GETALLOFFERS_SUCCESS,
+                            data: result.data,
+                          });
+                        } catch (error) {
+                          console.error("Error in getAllOffers:", error);
+                          res.status(HTTP_statusCode.InternalServerError).json({
+                            message:response_message.FETCHADMINDASHBOARDDATA_ERROR,
+                            error: error instanceof Error ? error.message : error,
+                          });
+                        }
+                      }
+            async getSelectedOfferDetails(req: Request, res: Response): Promise<void> {
+            try {
+
+              const {offerId}=req.params;
+              const result = await this.adminOfferController.getSelectedOfferDataService(offerId);
+        
+      
+              if (!result?.success) {
+                 res.status(HTTP_statusCode.InternalServerError).json({
+                  message: result?.message || response_message.GETALLOFFERS_FAILED,
+                });
+              }
+        
+      
+              res.status(HTTP_statusCode.OK).json({
+                message: response_message.GETALLOFFERS_SUCCESS,
+                data: result.data,
+              });
+            } catch (error) {
+              console.error("Error in getAllOffers:", error);
+              res.status(HTTP_statusCode.InternalServerError).json({
+                message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
+                error: error instanceof Error ? error.message : error,
+              });
+            }
+          }
+              async updateOfferDetails(req: Request, res: Response): Promise<void> {
+                      try {
+                        console.log("Finding....")
+                        console.log(req.body);
+                        const formData= req.body;
+                        console.log("FormData from Offer", formData);
+                        const result = await this.adminOfferController.updateOfferController(formData);
+                    
+                        // Check if the result indicates a failure
+                        if (!result?.success) {
+                          res.status(HTTP_statusCode.InternalServerError).json({
+                            message: result?.message || response_message.GETALLOFFERS_FAILED,
+                          });
+                          return;
+                        }
+                    
+                        // Respond with the fetched data
+                        res.status(HTTP_statusCode.OK).json({
+                          message: response_message.UPDATEOFFERDETAILS_SUCCESS,
+                          data: result.data,
+                        });
+                      } catch (error) {
+                        console.error("Error in getAllOffers:", error);
+                        res.status(HTTP_statusCode.InternalServerError).json({
+                          message:response_message.FETCHADMINDASHBOARDDATA_ERROR,
+                          error: error instanceof Error ? error.message : error,
+                        });
+                      }
+                    }
+
+
   async postToggleIsBlock(req: Request, res: Response): Promise<void | any> {
     console.log('try');
     try {

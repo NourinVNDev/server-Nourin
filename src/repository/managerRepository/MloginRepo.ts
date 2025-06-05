@@ -4,12 +4,12 @@ import { EventData, eventLocation, EventSeatDetails, OfferData, TicketType, veri
 import { managerEventRepository } from './mEventRepo';
 import { Request,Response } from 'express';
 import CATEGORYDB from '../../models/adminModels/adminCategorySchema';
-import OFFERDB from '../../models/managerModels/offerSchema';
+import OFFERDB from '../../models/adminModels/offerSchema';
 import { managerOfferRepository } from './mOfferRepo';
 import { managerBookingRepository } from './mBookingUserRepo';
 import { managerVerifierRepository } from './mVerifierRepo';
 import NOTIFICATIONDB from '../../models/userModels/notificationSchema';
-import ADMINDB from '../../models/adminModels/adminSchema';
+import MANAGEROFFERDB from '../../models/managerModels/managerOffer';
 const monthMap = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 interface User {
     email: string;
@@ -27,6 +27,8 @@ import SOCIALEVENTDB from '../../models/managerModels/socialEventSchema';
 import USERDB from '../../models/userModels/userSchema';
 import BOOKINGDB from '../../models/userModels/bookingSchema';
 import { log } from 'node:util';
+import managerOffer from '../../models/managerModels/managerOffer';
+import bookingSchema from '../../models/userModels/bookingSchema';
 
 const hashPassword = async (password:string): Promise<string> => {
   try {
@@ -317,7 +319,7 @@ export class mLoginRepo implements IMloginRepo{
 
   async getAllOfferDetails(managerId:string): Promise<{ success: boolean; message: string; data?: any }> {
     try {
-        const result = await OFFERDB.find({managerId:managerId}); // Fetch data from the database
+        const result = await MANAGEROFFERDB.find({managerId:managerId});
         console.log("DB data", result);
         return { success: true, message: "Event data retrieved successfully", data: result };
     } catch (error) {
@@ -483,10 +485,10 @@ async getSelectedEventTicketRepo(id:string){
   }
 }
 
-async getSelectedOfferRepo(offerId:string): Promise<{ success: boolean; message: string; data?: any }> {
+async getSelectedOfferRepo(offerId:string,managerId:string) {
   try {
 
-    const savedEvent =await this.managerOfferRepository.getSelectedOfferRepository(offerId);
+    const savedEvent =await this.managerOfferRepository.getSelectedOfferRepository(offerId,managerId);
 
       return { success: true, message: "Event data retrieved successfully", data: savedEvent };
   } catch (error) {
@@ -717,6 +719,29 @@ async  checkValidDateRepo(eventName: string) {
   }
 }
 
+async fetchEventNamesRepo(managerId: string) {
+  try {
+    const socialEvents = await SOCIALEVENTDB.find({ Manager: managerId });
+    const eventNames = socialEvents.map((event: any) => event.eventName);
+    console.log("EventNames103",eventNames);
+    
+
+    return {
+      success: true,
+      message: "Fetched event names successfully",
+      data: eventNames,
+    };
+  } catch (error) {
+    console.error("Error fetching event names:", error);
+    return {
+      success: false,
+      message: "Failed to fetch event names",
+      error,
+    };
+  }
+}
+
+
 
 async fetchUserCountAndRevenueRepo(managerId: string) {
   try {
@@ -926,6 +951,90 @@ async fetchDashboardPieChartRepo(managerId: string) {
     return { success: false, message: "Internal server error", data: null };
   }
 }
+
+
+async fetchDashboardBarChartRepo(selectedEvent: string) {
+  try {
+    const socialEvent = await SOCIALEVENTDB.findOne({ eventName: selectedEvent });
+
+    if (!socialEvent) {
+      return {
+        success: false,
+        message: "Event not found",
+        data: [],
+      };
+    }
+
+    // Set date range: today to 6 days ago
+    const today = new Date();
+ today.setHours(23, 59, 59, 999);
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(today.getDate() - 6);
+sevenDaysAgo.setUTCHours(0, 0, 0, 0);
+    const raw = await BOOKINGDB.find({
+  eventId: socialEvent._id.toString(),
+  bookingDate: { $gte: sevenDaysAgo, $lte: today }
+});
+console.log("Raw bookings in 7-day range:", raw);
+
+    const bookings = await BOOKINGDB.aggregate([
+      {
+        $match: {
+          eventId: socialEvent._id,
+          bookingDate: {
+            $gte: sevenDaysAgo,
+            $lte: today,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$bookingDate" },
+          },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Map of date => count
+    const bookingMap: { [key: string]: number } = {};
+    bookings.forEach((b) => {
+      bookingMap[b._id] = b.count;
+    });
+
+    // Build final result
+    const result: { label: string; value: number }[] = [];
+for (let i = 0; i < 7; i++) {
+  const currentDate = new Date(); 
+  currentDate.setUTCHours(0, 0, 0, 0);
+  currentDate.setUTCDate(today.getUTCDate() - i);
+
+  const key = currentDate.toISOString().split("T")[0]; // stays in UTC
+  result.push({ label: `Day ${i + 1}`, value: bookingMap[key] || 0 });
+}
+
+
+    return {
+      success: true,
+      message: "7-day booking count (starting today) fetched successfully",
+      data: result,
+    };
+  } catch (error) {
+    console.error("Error fetching bar chart data:", error);
+    return {
+      success: false,
+      message: "Failed to fetch booking details",
+      data: [],
+    };
+  }
+}
+
+
+
+
+
 
 
 

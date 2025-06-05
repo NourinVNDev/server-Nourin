@@ -1,16 +1,16 @@
-import OFFERDB from "../../models/managerModels/offerSchema";
+import OFFERDB from "../../models/adminModels/offerSchema";
 import CATEGORYDB from "../../models/adminModels/adminCategorySchema";
 import { OfferData } from "../../config/enum/dto";
 import SOCIALEVENTDB from "../../models/managerModels/socialEventSchema";
 import MANAGERWALLETDB from "../../models/managerModels/managerWalletSchema";
-
+import MANAGEROFFERDB from "../../models/managerModels/managerOffer";
 export class managerOfferRepository{
-    async getSelectedOfferRepository(offerId:string){
+    async getSelectedOfferRepository(offerId:string,managerId:string){
           try {
-                 const result = await OFFERDB.findById(offerId); // Fetch data from the database
-                 const category=await CATEGORYDB.find();
+                 const result = await MANAGEROFFERDB.findById(offerId);
+                 const eventNames=await SOCIALEVENTDB.find({Manager:managerId});
                  console.log("DB data", result);
-                 return { success: true, message: "Event data retrieved successfully", data: {result,category} };
+                 return { success: true, message: "Event data retrieved successfully", data: {result,eventNames} };
              } catch (error) {
                  console.error("Error in getEventTypeDataService:", error);
                  return { success: false, message: "Internal server error" };
@@ -22,7 +22,7 @@ export class managerOfferRepository{
         try {
             const { offerName, discount_on, discount_value, startDate, endDate, item_description,managerId } = formData;
     
-            const activeOffer = await OFFERDB.findOne({
+            const activeOffer = await MANAGEROFFERDB.findOne({
                 discount_on,
                 endDate: { $gt: new Date() },
             });
@@ -36,7 +36,7 @@ export class managerOfferRepository{
             }
     
             // Create new offer
-            const newOffer = await OFFERDB.create({
+            const newOffer = await MANAGEROFFERDB.create({
                 offerName,
                 discount_on,
                 discount_value,
@@ -50,35 +50,35 @@ export class managerOfferRepository{
             const socialEvents = await SOCIALEVENTDB.find({Manager:managerId});
 
             const actualEvents = socialEvents.filter(event => event.title === newOffer.discount_on);
-            console.log("Actual",actualEvents);
+            // console.log("Actual",actualEvents);
             if (actualEvents.length > 0) {
                 for (const event of actualEvents) {
-                    console.log("Event:", event);
-                    const offerPercentage = Number(discount_value);
-                    event.typesOfTickets.forEach((ticket) => {
-                        if (ticket.Amount != null) {
-                            const deductionAmount = (ticket.Amount * offerPercentage) / 100;
-                            const offerAmount = ticket.Amount - deductionAmount;
+            //         console.log("Event:", event);
+            //         const offerPercentage = Number(discount_value);
+            //         event.typesOfTickets.forEach((ticket) => {
+            //             if (ticket.Amount != null) {
+            //                 const deductionAmount = (ticket.Amount * offerPercentage) / 100;
+            //                 const offerAmount = ticket.Amount - deductionAmount;
                             
     
                             
-                            ticket.offerDetails = {
-                                offerPercentage,
-                                offerAmount,
-                                deductionAmount,
-                                isOfferAdded: "Offer Added",
-                            };
-                        }
-                    });
+            //                 ticket.offerDetails = {
+            //                     offerPercentage,
+            //                     offerAmount,
+            //                     deductionAmount,
+            //                     isOfferAdded: "Offer Added",
+            //                 };
+            //             }
+            //         });
     
-                    event.offer = newOffer._id;
+                    event.managerOffer = newOffer._id;
     
                  
                     await event.save();
                 }
             }
 
-            const allOffers = await OFFERDB.find();
+            const allOffers = await MANAGEROFFERDB.find();
             console.log("All offers:", allOffers);
     
             return {
@@ -106,8 +106,8 @@ export class managerOfferRepository{
                 item_description,
             } = formData;
     
-            // Check if the offer exists
-            const existingOffer = await OFFERDB.findOne({ discount_on });
+        
+            const existingOffer = await MANAGEROFFERDB.findOne({ discount_on });
             console.log("Checking from Repo", existingOffer);
     
             if (!existingOffer) {
@@ -117,7 +117,6 @@ export class managerOfferRepository{
                 };
             }
     
-            // Ensure discount_value is a number
             const discountValueAsNumber = Number(discount_value);
     
             if (isNaN(discountValueAsNumber)) {
@@ -136,9 +135,8 @@ export class managerOfferRepository{
                     message: "Invalid date format.",
                 };
             }
-    
-            // Update the existing offer
-            const updatedOffer = await OFFERDB.findOneAndUpdate(
+
+            const updatedOffer = await MANAGEROFFERDB.findOneAndUpdate(
                 { discount_on },
                 {
                     $set: {
@@ -149,7 +147,7 @@ export class managerOfferRepository{
                         item_description,
                     },
                 },
-                { new: true } // Return updated document
+                { new: true } 
             );
     
             if (!updatedOffer) {
@@ -159,41 +157,39 @@ export class managerOfferRepository{
                 };
             }
     
-            // Fetch all related SocialEvents
-            const socialEvents = await SOCIALEVENTDB.find({ title: discount_on });
-            const actualEvents=await socialEvents.filter((event)=>event.title===updatedOffer.discount_on);
+            const socialEvents = await SOCIALEVENTDB.find({ eventName: discount_on });
+            const actualEvents=await socialEvents.filter((event)=>event.eventName===updatedOffer.discount_on);
     
             if (actualEvents.length > 0) {
                 for (const event of actualEvents) {
                     console.log("Event:", event);
     
-                    const offerPercentage = discountValueAsNumber;
-                    event.typesOfTickets.forEach((ticket) => {
-                        if (ticket.Amount != null) {
-                            const deductionAmount = (ticket.Amount * offerPercentage) / 100;
-                            const offerAmount = ticket.Amount - deductionAmount;
+            //         const offerPercentage = discountValueAsNumber;
+            //         event.typesOfTickets.forEach((ticket) => {
+            //             if (ticket.Amount != null) {
+            //                 const deductionAmount = (ticket.Amount * offerPercentage) / 100;
+            //                 const offerAmount = ticket.Amount - deductionAmount;
     
-                            // Update each ticket with offer details
-                            ticket.offerDetails = {
-                                offerPercentage,
-                                offerAmount,
-                                deductionAmount,
-                                isOfferAdded: "Offer Added",
-                            };
-                        }
-                    });
+                         
+            //                 ticket.offerDetails = {
+            //                     offerPercentage,
+            //                     offerAmount,
+            //                     deductionAmount,
+            //                     isOfferAdded: "Offer Added",
+            //                 };
+            //             }
+            //         });
     
-                    event.offer = updatedOffer._id;
+                    event.managerOffer = updatedOffer._id;
     
-                    // Save the updated event
+             
                     await event.save();
                 }
             }
     
             console.log("Updated Offer:", updatedOffer);
     
-            // Fetch all updated offers from the database
-            const result = await OFFERDB.find();
+            const result = await MANAGEROFFERDB.find();
             console.log("All offers from DB:", result);
     
             return {

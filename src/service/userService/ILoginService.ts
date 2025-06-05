@@ -23,7 +23,7 @@ export interface ILoginService{
     handlePostDetailsService(postId:string):Promise<{result:any}>;
     getSelectedEventService(postId:string):Promise<{result:any}>;
     getBookedEventService(bookingId:string):Promise<{result:any}>;
-    checkBookedUserValidService(email:string,eventName:string):Promise<{result:any}>;
+    checkBookedUserValidService(email:string,eventName:string,bookedId:string):Promise<{result:any}>;
     makePaymentStripeService(products:PaymentData):Promise<{result:any}>;
     makeRetryPaymentStripeService(products:retryPayment):Promise<{result:any}>;
     posthandleReviewRating(formData:FormData):Promise<{result:any}>;

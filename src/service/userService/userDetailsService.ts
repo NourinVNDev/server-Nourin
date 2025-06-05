@@ -44,12 +44,10 @@ export class userDetailsService {
         try {
             console.log("Processing event data in another service...", postId);
 
-            // Perform additional validations if needed
+            
             if (!postId) {
                 throw new Error("There is no postId.");
             }
-
-            // Call repository to save the data
             const savedEvent = await this.loginRepository.getPostDetailsRepo(postId);
 
             return savedEvent;
@@ -90,10 +88,10 @@ export class userDetailsService {
             throw new Error("Failed to create event in another service layer.");
         }
     }
-    async checkUserBookingEventService2(email:string,eventName:string){
+    async checkUserBookingEventService2(email:string,eventName:string,bookedId:string){
                try {
         
-            const savedEvent = await this.loginRepository.checkUserBookingValidRepo(email,eventName);
+            const savedEvent = await this.loginRepository.checkUserBookingValidRepo(email,eventName,bookedId);
 
             return savedEvent;
         } catch (error) {
@@ -111,12 +109,16 @@ export class userDetailsService {
             if (!product) {
                 throw new Error("Invalid product provided.");
             }
-            const result = await this.loginRepository.checkSeatAvailable(product)
+            const result = await this.loginRepository.checkSeatAvailable(product);
+
+
             if (!result.success) {
                 return { success: false, message: result.message, data: result.data };
             }
-            const actualAmount = product.Amount || product.amount / product.noOfPerson;
-
+            await this.loginRepository.updateBookingData(product);
+            const actualAmount = (product.Amount || product.amount) / product.noOfPerson;
+            console.log("Waas",actualAmount);
+            console.log("Amm",Math.round(actualAmount * 100));
             const lineItem = {
                 price_data: {
                     currency: "inr",
@@ -190,7 +192,9 @@ export class userDetailsService {
             if (!result.success) {
                 return { success: false, message: result.message, data: result.data };
             }
-            const actualAmount = product.amount / product.noOfPerson;
+            const actualAmount = (product.amount ||product.Amount)/ product.noOfPerson;
+            console.log("Actual Amount:",actualAmount);
+            
 
             const lineItem = {
                 price_data: {

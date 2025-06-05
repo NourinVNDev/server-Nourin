@@ -32,8 +32,8 @@ const SendBookingConfirmation = async (
         const attachments: any[] = [];
 
         if (title === 'Virtual') {
-            const token = '007eJxTYPDo7Pp++166Z+WGqb/Ymr613VhnPyl/wpK/SX0zylvOcm5UYDCyMDC0MEozSrY0SzUxSUqyNDJOMzIwMTVKNU1NSTE1XJ2jn9EQyMiwu2EnMyMDBIL4nAzJ+XkliZl5qUUMDADePCQw';
-            const joinLink = `http://localhost:5173/join-stream?channelName=container&token=${encodeURIComponent(token)}&eventName=${eventName}`;
+            const token = '007eJxTYFj574xCWo1js/zLPMWIRBPxU8Y/mmfsOPvCrn3GpC9HbKoUGIwsDAwtjNKMki3NUk1MkpIsjYzTjAxMTI1STVNTUkwNnS1tMxoCGRlmftzOwsgAgSA+J0Nyfl5JYmZeahEDAwAk9SIn';
+            const joinLink = `http://localhost:5173/join-stream?channelName=container&token=${encodeURIComponent(token)}&eventName=${eventName}&bookedId=${bookingId}`;
 
             htmlContent += `
             <p>This is a virtual event. Click the link below to join the stream at the scheduled time:</p>

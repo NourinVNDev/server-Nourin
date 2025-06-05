@@ -1,4 +1,4 @@
-import { FormData } from "../../config/enum/dto";
+import { FormData, OfferData } from "../../config/enum/dto";
 import { Request,Response } from "express-serve-static-core";
 
 export interface IadminloginService{
@@ -18,6 +18,12 @@ export interface IadminloginService{
     getUserManagerDetailsService():Promise<{ success: boolean; message: string; user: any}>
     getDashboardGraph(selectedType:string,selectedTime:string):Promise<{ success: boolean; message: string; user: any}>
     getDashboardPieChart():Promise<{ success: boolean; message: string; data: any}>
+    getDashboardBarChart(selectedEvent:string):Promise<{ success: boolean; message: string; data: any}>
+    postNewOfferServiceDetails(formData:OfferData):Promise<{success:boolean,message:string,data?:any}>
+    getAllOfferServiceDetails():Promise<{success:boolean,message:string,data?:any}>
+     getSelectedOfferService(offerId:string):Promise<{success:boolean,message:string,data?:any}>
+     updateOfferServiceDetails(formData:FormData):Promise<{success:boolean,message:string,data?:any}>
+     
 
 
 

@@ -52,7 +52,9 @@ socket.on("post-new-message", async (newMessage: any, callback: any) => {
         message,
         timestamp: result.createdAt,
         totalMessage: result.totalMessage,
-        chatId: result.chatId
+        chatId: result.chatId,
+        receiverId:receiver,
+        unreadCount:result.unreadCount
       });
       console.log("Unread12345",result.unreadMessage);
       

@@ -7,9 +7,13 @@ const socialEventSchema = new mongoose.Schema(
         ref: 'Manager',
         required: true,
       },
-      offer:{
+      adminOffer:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"offerSchema",
+      },
+      managerOffer:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"managerOfferSchema"
       },
       title: {
         type: String,

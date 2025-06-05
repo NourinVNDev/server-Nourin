@@ -26,7 +26,13 @@ adminRoute.get('/admin/fetchAdminWallet',verifyToken(['admin']),adminLoginRouter
 adminRoute.post('/refresh-token',adminLoginRouter.reGenerateAdminAccessToken.bind(adminLoginRouter));
 adminRoute.get('/admin/fetchUserManagerCount',verifyToken(['admin']),adminLoginRouter.fetchAdminDashboardData.bind(adminLoginRouter));
 adminRoute.get(`/fetchDashboardGraphData/:selectedType/:selectedTime`,verifyToken(['admin']),adminLoginRouter.fetchDashboardGraph.bind(adminLoginRouter));
-adminRoute.get(`/fetchDashboardPieChart`,verifyToken(['admin']),adminLoginRouter.fetchDashboardPieChart.bind(adminLoginRouter))
+adminRoute.get(`/fetchDashboardPieChart`,verifyToken(['admin']),adminLoginRouter.fetchDashboardPieChart.bind(adminLoginRouter));
+adminRoute.get(`/fetchDashboardBarChart/:selectedEvent`,verifyToken(['admin']),adminLoginRouter.fetchDashboardBarChart.bind(adminLoginRouter));
+//from manageroffer
+adminRoute.post('/addNewOffer',verifyToken(['admin']),adminLoginRouter.createNewOffer.bind(adminLoginRouter));
+adminRoute.get('/getOffers',verifyToken(['admin']),adminLoginRouter.getAllOffers.bind(adminLoginRouter));
+adminRoute.get('/getSelectedOffer/:offerId',verifyToken(['admin']),adminLoginRouter.getSelectedOfferDetails.bind(adminLoginRouter));
+adminRoute.post('/updateOffer',verifyToken(['admin']),adminLoginRouter.updateOfferDetails.bind(adminLoginRouter));
 
 
 export default adminRoute;

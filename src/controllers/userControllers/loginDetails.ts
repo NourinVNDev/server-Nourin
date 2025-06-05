@@ -13,6 +13,7 @@ import SendBookingConfirmation from '../../config/bookingConfirmation';
 import Stripe from 'stripe';
 import { log } from 'node:console';
 import response_message from '../../config/enum/response_message';
+import e from 'cors';
 interface UserPayload {
   email: string;
   role:string
@@ -739,10 +740,16 @@ async fetchSavedBookingdata(req:Request,res:Response){
   }
 }
 async checkIfUserValid(req:Request,res:Response){
+  console.log("aaa",req.params);
+  
     try {
+      console.log("Yeah",req.params);
+      
     const email=req.params.email;
     const eventName=req.params.eventName;
-      const result = await this.userDetailsController.checkUserIsBooked(email,eventName); 
+    const bookedId=req.params.bookedId;
+    console.log("Email,EventName",email,eventName);
+      const result = await this.userDetailsController.checkUserIsBooked(email,eventName,bookedId); 
       if (!result) {
            res.status(HTTP_statusCode.InternalServerError).json({
               message:response_message.ADMINLOGIN_ERROR

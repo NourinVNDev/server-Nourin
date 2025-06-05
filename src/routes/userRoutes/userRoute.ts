@@ -54,5 +54,5 @@ userRoute.get('/fetchUserWallet/:userId',checkIfUserBlocked,verifyToken(['user']
 userRoute.get('/fetchUserNotification/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.fetchUserNotification.bind(userLoginRouter));
 userRoute.get('/fetchNotificationCount/:userId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.fetchNotificationCount.bind(userLoginRouter));
 userRoute.get('/getSelectedBookingData/:bookingId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.fetchSavedBookingdata.bind(userLoginRouter));
-userRoute.get('/checkIfUserValid/:email/:eventName',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.checkIfUserValid.bind(userLoginRouter));
+userRoute.get('/checkIfUserValid/:email/:eventName/:bookedId',checkIfUserBlocked,verifyToken(['user']),userLoginRouter.checkIfUserValid.bind(userLoginRouter));
 export default userRoute;

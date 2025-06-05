@@ -18,10 +18,11 @@ export interface IloginRepo{
     getPostDetailsRepo(postId:string):Promise<{savedEvent:any}>
     getSelectedEventRepo(postId:string):Promise<{savedEvent:any}>
     getCancelBookingRepo(bookingId:string):Promise<{savedEvent:any}>
-    checkUserBookingValidRepo(email:string,eventName:string):Promise<{savedEvent:any}>
+    checkUserBookingValidRepo(email:string,eventName:string,bookedId:string):Promise<{savedEvent:any}>
     checkSeatAvailable(product:PaymentData):Promise<{success:boolean,message:string,data?:any|undefined|null}>
+    updateBookingData(product:PaymentData):Promise<{success:boolean,message:string}>
     checkRetrySeatAvailable(product:retryPayment):Promise<{success:boolean,message:string,data?:any|undefined|null}>
-    savePaymentData(paymentData:PaymentData):Promise<{success:boolean,message:string,data:any}>
+    // savePaymentData(paymentData:PaymentData):Promise<{success:boolean,message:string,data:any}>
     saveRetryPaymentData(paymentData:retryPayment):Promise<{success:boolean,message:string,data:any}>
     handleCancelPayment(bookingId:string):Promise<void>
     saveBillingDetailsRepo(formData:billingData):Promise<{success:boolean,message:string,data:any}>

@@ -18,7 +18,7 @@ export interface IMloginService{
    updateOfferServiceDetails(formData:OfferData):Promise<{success:boolean,message:string,data?:any}>
    fetchManagerWalletService(managerId:string):Promise<{success:boolean,message:string,data:any}>
    fetchAllEventService(companyName:string):Promise<{success:boolean,message:string,data:any}>
-   getSelectedOfferService(offerId:string):Promise<{success:boolean,message:string,data?:any}>
+   getSelectedOfferService(offerId:string,managerId:string):Promise<{success:boolean,message:string,data?:any}>
    createEventPostService(formData:EventData,file:Express.Multer.File):Promise<{success:boolean,message:string,data?:any}>
    createEventSeatService(formData:EventSeatDetails,eventId:string):Promise<{success:boolean,message:string,data?:any}>
    updateEventPostService(formData:EventData,fileNames:Express.Multer.File[],eventId:string):Promise<{success:boolean,message:string,data?:any}>
@@ -38,7 +38,9 @@ export interface IMloginService{
    fetchNotificationOfManager(managerId:string):Promise<{success:boolean,message:string,data:any}>;
    NotificationCountOfManager(managerId:string):Promise<{success:boolean,message:string,data:any}>;
    checkValidDate(eventName:string):Promise<{success:boolean,message:string,data:any}>;
+   fetchEventNameService(managerId:string):Promise<{success:boolean,message:string,data:any}>;
    getUserCountAndRevenue(managerId:string):Promise<{success:boolean,message:string,data:any}>;
    getDashboardGraph(managerId:string,selectedType:string,selectedTime:string):Promise<{success:boolean,message:string,data:any}>;
    getDashboardPieChart(managerId:string):Promise<{success:boolean,message:string,data:any}>;
+   getDashboardBarChart(selectedEvent:string):Promise<{success:boolean,message:string,data:any}>;
 }

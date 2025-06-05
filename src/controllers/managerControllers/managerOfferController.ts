@@ -67,12 +67,12 @@ async updateOfferController(formData:OfferData):Promise<any>{
 }
 
 
-async getSelectedOfferDataService(offerId:string): Promise<any> {
+async getSelectedOfferDataService(offerId:string,managerId:string) {
     console.log('hai');
     
     try {
         console.log("Processing manager-specific event logic");
-        const result = await this.managerController.getSelectedOfferService(offerId);
+        const result = await this.managerController.getSelectedOfferService(offerId,managerId);
         console.log("Event created successfully", result);
 
         return result;

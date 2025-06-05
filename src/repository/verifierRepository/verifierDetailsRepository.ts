@@ -145,11 +145,8 @@ async fetchAllCompanyEventRepo(email: string) {
         Included:eventDetails.ticketDetails?.Included,
         notIncluded:eventDetails.ticketDetails?.notIncluded,
         type:eventDetails.ticketDetails?.type
-    }
-
-
-
-
+    },
+    paymentStatus:eventDetails.paymentStatus
   }
 
   if (user) {

@@ -45,37 +45,47 @@ export class userDetailsRepository {
 
 
 
-  async getPostDetailsRepository(postId: string) {
-    try {
+async getPostDetailsRepository(postId: string) {
+  try {
+    console.log('Post Id:', postId);
+    const singleEvent = await SOCIALEVENTDB.findOne({ _id: postId })
+      .populate('managerOffer')
+      .populate('adminOffer');
 
-      console.log('Post Id:',postId);
-      const singleEvent = await SOCIALEVENTDB.findOne({_id:postId}).populate('offer');
-      if (!singleEvent) {
-        throw new Error(`Social Event not found for ID: ${postId}`);
-      }
-      return singleEvent; 
-    } catch (error) {
-      console.error("Error in postHandleLike:", error);
-      throw new Error("Failed to handle like functionality.");
+    if (!singleEvent) {
+      throw new Error(`Social Event not found for ID: ${postId}`);
     }
+
+    return singleEvent;
+  } catch (error) {
+    console.error("Error in getPostDetailsRepository:", error);
+    throw new Error("Failed to fetch post details.");
   }
-  async getSelectedEventRepository(postId: string) {
-    try {
-      console.log('Post Id:',postId);
-      const singleEvent = await SOCIALEVENTDB.findOne({_id:postId});
-      if (!singleEvent) {
-        throw new Error(`Social Event not found for ID: ${postId}`);
-      }
-      return singleEvent;
-    } catch (error) {
-      console.error("Error in postHandleLike:", error);
-      throw new Error("Failed to handle like functionality.");
+}
+
+async getSelectedEventRepository(postId: string) {
+  try {
+    console.log('Post Id:', postId);
+
+    const singleEvent = await SOCIALEVENTDB.findOne({ _id: postId })
+      .populate('adminOffer')
+      .populate('managerOffer');
+
+    if (!singleEvent) {
+      throw new Error(`Social Event not found for ID: ${postId}`);
     }
+
+    return singleEvent;
+  } catch (error) {
+    console.error("Error in getSelectedEventRepository:", error);
+    throw new Error("Failed to fetch the selected event.");
   }
+}
+
   async  getCancelBookingRepository(bookingId:string){
     try {
       console.log('Booking Id:',bookingId);
-      const singleEvent = await BOOKEDUSERDB.findOne({_id:bookingId,paymentStatus:'Cancelled'}).populate('eventId');
+      const singleEvent = await BOOKEDUSERDB.findOne({_id:bookingId,paymentStatus:'Pending'}).populate('eventId');
       if (!singleEvent) {
         throw new Error(`Social Event not found for ID: ${bookingId}`);
       }
@@ -87,12 +97,38 @@ export class userDetailsRepository {
   }
 
 // async checkUserBookingValidRepository(email: string, eventName: string) {
-
 //   const bookings = await BOOKEDUSERDB.find().populate('eventId');
 
+//   const now = new Date();
+
 //   const isBooked = bookings.some((booking: any) => {
+//   const event = booking.eventId as unknown as EventDetails;
+
+
+//     if (!event) return false;
+
+//     const { startDate, endDate, time } = event;
+
+//     const start = new Date(startDate);
+//     const end = new Date(endDate);
+//     start.setHours(0, 0, 0, 0);
+//     end.setHours(23, 59, 59, 999);
+
+//     const isTodayInRange = now >= start && now <= end;
+
+//     // Construct full datetime for event start
+//     const [hours, minutes] = time.split(':').map(Number);
+//     const eventStartDateTime = new Date(startDate);
+//     eventStartDateTime.setHours(hours, minutes, 0, 0);
+
+//     // Calculate earliest allowed entry time (10 minutes before event starts)
+//     const earliestEntryTime = new Date(eventStartDateTime.getTime() - 10 * 60000);
+//     const isEntryTimeReached = now >= earliestEntryTime;
+
 //     return (
-//       booking.eventId?.eventName === eventName &&
+//       event.eventName === eventName &&
+//       isTodayInRange &&
+//       isEntryTimeReached &&
 //       booking.bookedUser.some((user: any) => user.email === email)
 //     );
 //   });
@@ -100,98 +136,124 @@ export class userDetailsRepository {
 //   if (isBooked) {
 //     return {
 //       success: true,
-//       message: "User has already booked this event",
+//       message: "User has booked this event and is allowed to enter",
 //     };
 //   } else {
+//     // Extra message clarity
+//     const event = bookings.find(
+//       (booking: any) => booking.eventId?.eventName === eventName
+//     )?.eventId as unknown as EventDetails;
+
+//     if (event) {
+//       const start = new Date(event.startDate);
+//       const end = new Date(event.endDate);
+//       start.setHours(0, 0, 0, 0);
+//       end.setHours(23, 59, 59, 999);
+
+//       const [hours, minutes] = event.time.split(':').map(Number);
+//       const eventStartDateTime = new Date(event.startDate);
+//       eventStartDateTime.setHours(hours, minutes, 0, 0);
+
+//       const earliestEntryTime = new Date(eventStartDateTime.getTime() - 10 * 60000);
+
+//       if (now < start || now > end) {
+//         return {
+//           success: false,
+//           message: "Today's date is not within the event's valid date range",
+//         };
+//       } else if (now < earliestEntryTime) {
+//         return {
+//           success: false,
+//           message: "You can only enter starting from 10 minutes before the event starts",
+//         };
+//       }
+//     }
+
 //     return {
 //       success: false,
 //       message: "User has not booked this event",
 //     };
 //   }
 // }
-async checkUserBookingValidRepository(email: string, eventName: string) {
-  const bookings = await BOOKEDUSERDB.find().populate('eventId');
 
-  const now = new Date();
+async checkUserBookingValidRepository(email: string, eventName: string, bookedId: string) {
+  console.log('Matching bookedId:', bookedId);
 
-  const isBooked = bookings.some((booking: any) => {
-  const event = booking.eventId as unknown as EventDetails;
+  const booking = await BOOKEDUSERDB.findOne({ bookingId: bookedId }).populate("eventId");
 
-
-    if (!event) return false;
-
-    const { startDate, endDate, time } = event;
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
-
-    const isTodayInRange = now >= start && now <= end;
-
-    // Construct full datetime for event start
-    const [hours, minutes] = time.split(':').map(Number);
-    const eventStartDateTime = new Date(startDate);
-    eventStartDateTime.setHours(hours, minutes, 0, 0);
-
-    // Calculate earliest allowed entry time (10 minutes before event starts)
-    const earliestEntryTime = new Date(eventStartDateTime.getTime() - 10 * 60000);
-    const isEntryTimeReached = now >= earliestEntryTime;
-
-    return (
-      event.eventName === eventName &&
-      isTodayInRange &&
-      isEntryTimeReached &&
-      booking.bookedUser.some((user: any) => user.email === email)
-    );
-  });
-
-  if (isBooked) {
-    return {
-      success: true,
-      message: "User has booked this event and is allowed to enter",
-    };
-  } else {
-    // Extra message clarity
-    const event = bookings.find(
-      (booking: any) => booking.eventId?.eventName === eventName
-    )?.eventId as unknown as EventDetails;
-
-    if (event) {
-      const start = new Date(event.startDate);
-      const end = new Date(event.endDate);
-      start.setHours(0, 0, 0, 0);
-      end.setHours(23, 59, 59, 999);
-
-      const [hours, minutes] = event.time.split(':').map(Number);
-      const eventStartDateTime = new Date(event.startDate);
-      eventStartDateTime.setHours(hours, minutes, 0, 0);
-
-      const earliestEntryTime = new Date(eventStartDateTime.getTime() - 10 * 60000);
-
-      if (now < start || now > end) {
-        return {
-          success: false,
-          message: "Today's date is not within the event's valid date range",
-        };
-      } else if (now < earliestEntryTime) {
-        return {
-          success: false,
-          message: "You can only enter starting from 10 minutes before the event starts",
-        };
-      }
-    }
-
+  if (!booking) {
     return {
       success: false,
       message: "User has not booked this event",
     };
   }
+
+  const event = booking.eventId as unknown as EventDetails;
+  const user = booking.bookedUser.find((u: any) => u.email === email);
+  const now = new Date();
+
+  if (!event || !user) {
+    return {
+      success: false,
+      message: "User has not booked this event",
+    };
+  }
+
+  const { startDate, endDate, time, eventName: eName } = event;
+
+  // Check event name match
+  if (eName !== eventName) {
+    return {
+      success: false,
+      message: "User has not booked this event",
+    };
+  }
+
+  // Convert to Date objects with range
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+
+  // Check if today's date is within event range
+  const isTodayInRange = now >= start && now <= end;
+
+  // Calculate earliest entry time (10 mins before start time)
+  const [hours, minutes] = time.split(":").map(Number);
+  const eventStartDateTime = new Date(startDate);
+  eventStartDateTime.setHours(hours, minutes, 0, 0);
+  const earliestEntryTime = new Date(eventStartDateTime.getTime() - 10 * 60000);
+
+  // Handle Cancelled status
+  if (booking.paymentStatus === "Cancelled") {
+    return {
+      success: false,
+      message: "Your booking was cancelled. You cannot enter the event",
+    };
+  }
+
+  // Handle out-of-date range
+  if (!isTodayInRange) {
+    return {
+      success: false,
+      message: "Today's date is not within the event's valid date range",
+    };
+  }
+
+  // Handle early entry
+  if (now < earliestEntryTime) {
+    return {
+      success: false,
+      message: "You can only enter starting from 10 minutes before the event starts",
+    };
+  }
+
+  // All checks passed
+  return {
+    success: true,
+    message: "User has booked this event and is allowed to enter",
+  };
 }
-
-
-
-
 
   async saveUserBilingDetailsRepository(formData: billingData) {
     try {
@@ -213,6 +275,7 @@ async checkUserBookingValidRepository(email: string, eventName: string) {
             userId: formData.userId,
             categoryId: category._id,
             paymentStatus:'Pending',
+            NoOfPerson:0,
             billingDetails: {
                 firstName: formData.firstName,
                 lastName: formData.lastName,
@@ -331,7 +394,8 @@ async updateBookedPaymentStatusRepository(bookedId: string) {
     };
   }
 
-  await bookedEvent.deleteOne();
+
+  // await bookedEvent.deleteOne();
 
   return {
     success: true,

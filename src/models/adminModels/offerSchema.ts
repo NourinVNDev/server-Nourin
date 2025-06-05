@@ -26,10 +26,6 @@ const offerSchema=new mongoose.Schema({
             type:String,
             required:true
         },
-        managerId:{
-            type:Schema.Types.ObjectId,
-            ref:'socialEvent'
-        }
     })
 
     export  default mongoose.model("offerSchema",offerSchema);

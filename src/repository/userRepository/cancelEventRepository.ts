@@ -5,6 +5,16 @@ import USERWALLETDB from "../../models/userModels/userWalletSchema";
 import mongoose from "mongoose";
 import userWalletSchema from "../../models/userModels/userWalletSchema";
 import SOCIALEVENTDB from "../../models/managerModels/socialEventSchema";
+interface EventData {
+  email: string[];
+  userName: string[];
+  bookingId: string;
+  eventName?: string;
+  date?: string;
+  seatNumbers: number;
+  amount: number;
+}
+
 export class CancelEventRepository {
   async cancelBookedEventRepository(bookingId: string, userId: string) {
     try {
@@ -92,6 +102,7 @@ export class CancelEventRepository {
                 amount: totalAmount,
                 bookingID:existingBooking.bookingId,
                 bookingDate:existingBooking.bookingDate,
+
               },
             },
           }
@@ -113,11 +124,21 @@ export class CancelEventRepository {
           console.warn("Ticket type not found or noOfSeats is not a number.");
         }
       }
+
+      const eventData:EventData={
+        email:existingBooking.bookedUser.map((user:any)=>user.email),
+        userName:existingBooking.bookedUser.map((user:any)=>user.user),
+        bookingId:bookingId,
+        eventName:socialEvent?.eventName,
+        date: socialEvent?.startDate ? new Date(socialEvent.startDate).toISOString() : undefined,
+        seatNumbers:1,
+        amount:existingBooking.totalAmount/ existingBooking.NoOfPerson
+      }
             
       return {
         success: true,
         message: "Booking canceled successfully",
-        data: existingBooking,
+        data: eventData,
       };
     } catch (error) {
       console.error("Error canceling event:", error);

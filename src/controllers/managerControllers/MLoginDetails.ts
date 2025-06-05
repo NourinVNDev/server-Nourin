@@ -518,8 +518,6 @@ export class managerLogin{
                 });
                 return;
               }
-          
-              // Respond with the fetched data
               res.status(HTTP_statusCode.OK).json({
                 message: response_message.GETALLOFFERS_SUCCESS,
                 data: result.data,
@@ -536,14 +534,12 @@ export class managerLogin{
 
           async updateOfferDetails(req: Request, res: Response): Promise<void> {
             try {
-              // Extract formData from req.body
+           
               console.log("Finding....")
               console.log(req.body);
               const formData= req.body;
               console.log("FormData from Offer", formData);
               const result = await this.offerController.updateOfferController(formData);
-          
-              // Check if the result indicates a failure
               if (!result?.success) {
                 res.status(HTTP_statusCode.InternalServerError).json({
                   message: result?.message || response_message.GETALLOFFERS_FAILED,
@@ -570,18 +566,18 @@ export class managerLogin{
 
           async getSelectedOfferDetails(req: Request, res: Response): Promise<void> {
             try {
-              // Call the controller method with only the necessary data (e.g., req.params, req.query, etc.)
-              const {offerId}=req.params;
-              const result = await this.offerController.getSelectedOfferDataService(offerId);
+
+              const {offerId,managerId}=req.params;
+              const result = await this.offerController.getSelectedOfferDataService(offerId,managerId);
         
-              // Check if the result indicates a failure
+      
               if (!result?.success) {
                  res.status(HTTP_statusCode.InternalServerError).json({
                   message: result?.message || response_message.GETALLOFFERS_FAILED,
                 });
               }
         
-              // Respond with the fetched data
+      
               res.status(HTTP_statusCode.OK).json({
                 message: response_message.GETALLOFFERS_SUCCESS,
                 data: result.data,
@@ -755,6 +751,24 @@ export class managerLogin{
             
           }
           }
+          async fetchEventNames(req:Request,res:Response){
+                try{
+            
+              const managerId=req.params.managerId;
+              console.log("ManagerId",managerId);
+            const savedEvent = await this.managerController.fetchEventNameService(managerId);
+            console.log('SavedEvent of manager video call',savedEvent);
+            if(savedEvent.success){
+              res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+              return;
+              }
+               res.status(HTTP_statusCode.OK).json({ success: savedEvent.success, message: savedEvent.message, data: savedEvent.data });
+          } catch (error) {
+            console.error("Error in check User Notification:", error);
+            res.status(HTTP_statusCode.InternalServerError).json({ success: false, message: response_message.FETCHADMINDASHBOARDDATA_ERROR});
+            
+          }
+          }
           async getAllEventDetails(req: Request, res: Response): Promise<void> {
             try {
               const managerId=req.params.managerId;
@@ -863,6 +877,35 @@ export class managerLogin{
               });
             }
 
+          }
+          async fetchDashboardBarChart(req:Request,res:Response){
+                  try {
+              const selectedEvent=req.params.selectedEvent; 
+         
+              const result = await this.managerController.getDashboardBarChart(selectedEvent);
+              console.log("SavedEvent",result);
+        
+              
+              if (!result?.success) {
+                 res.status(HTTP_statusCode.OK).json({
+                  message: result?.message ,
+                });
+                return;
+              }
+        
+           
+              res.status(HTTP_statusCode.OK).json({
+                message: result.message,
+                data: result.data,
+                
+              });
+            } catch (error) {
+              console.error("Error in getting BarChart:", error);
+              res.status(HTTP_statusCode.InternalServerError).json({
+                message: response_message.FETCHADMINDASHBOARDDATA_ERROR,
+                error: error instanceof Error ? error.message : error,
+              });
+            }
           }
 
 

@@ -48,7 +48,7 @@ const bookingSchema = new Schema({
     },
     NoOfPerson: {
         type: Number,
-     
+        required:true     
     },
     bookedUser: [{
         user: {

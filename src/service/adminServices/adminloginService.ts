@@ -1,10 +1,12 @@
 import {AdminLoginRepo} from '../../repository/AdminRepository/AloginRepo';
 import bcrypt  from 'bcrypt';
-import { FormData } from '../../config/enum/dto';
+import { FormData, OfferData } from '../../config/enum/dto';
 import { IadminloginService } from './IadminloginService';
 import { adminCategoryService } from './adminCategoryService';
 import { IAloginRepo } from '../../repository/AdminRepository/IAloginRepo';
 import { Request,Response } from 'express';
+
+import { adminOfferService } from './adminOfferService';
 const hashPassword = async (password:string) => {
     try {
         const salt = await bcrypt.genSalt(10);
@@ -20,9 +22,11 @@ const hashPassword = async (password:string) => {
 export class  AdminLoginServices implements IadminloginService{
     private adminRepo:IAloginRepo;
     private adminCategory:adminCategoryService;
+    private adminOffer:adminOfferService;
     constructor(adminRepositoryInstance:IAloginRepo){
         this.adminRepo=adminRepositoryInstance;
         this.adminCategory=new adminCategoryService(adminRepositoryInstance);
+        this.adminOffer=new adminOfferService(adminRepositoryInstance);
     }
     async AdminloginDetails(formData:FormData){
         try {
@@ -129,6 +133,65 @@ export class  AdminLoginServices implements IadminloginService{
           }
 
     }
+    async getDashboardBarChart(selectedEvent:string){
+           try {
+            const savedEvent = await this.adminRepo.fetchDashboardBarChartRepo(selectedEvent);
+            return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+          } catch (error) {
+            console.error("Error in fetching Manager Dashboard:", error);
+            throw new Error("Failed to fetching Manager Dashboard"); 
+          }
+    }
+    async postNewOfferServiceDetails(formData:OfferData) {
+      try {
+    
+        console.log('checking the formData',formData);
+        const result = await this.adminOffer.postOfferService(formData);
+        console.log("from service", result);
+        return { success: result.success, message: result.message, data: result.data };
+      } catch (error) {
+        console.error("Error in postNewOfferServiceDetails:", error);
+        throw new Error("Failed to create event in another service layer.");
+      }
+    }
+    async getAllOfferServiceDetails(
+    
+    ): Promise<{ success: boolean; message: string; data?: any }> {
+      try {
+        const result = await this.adminOffer.getOfferService();
+        console.log("from service", result);
+         return { success: result.success, message: result. message, data: result.data };
+    
+      } catch (error) {
+        console.error("Error in getAllOfferServiceDetails:", error);
+        throw new Error("Failed to create event in another service layer."); 
+      }
+    }
+async updateOfferServiceDetails(formData:OfferData): Promise<{ success: boolean; message: string; data?: any }> {
+  try {
+ 
+    console.log('checking the formData',formData)
+    const result = await this.adminOffer.updateOfferService(formData);
+    console.log("from service", result);
+    return { success: result.success, message: result.message, data: result.data };
+  } catch (error) {
+    console.error("Error in postNewOfferServiceDetails:", error);
+    throw new Error("Failed to create event in another service layer.");
+  }
+}
+    async getSelectedOfferService(offerId:string): Promise<{ success: boolean; message: string; data?: any }> {
+        try {
+          // Fetch data from the repository
+          const result = await this.adminOffer.getSelectedOfferService2(offerId);
+          console.log("from service", result);
+           return { success: result.success, message: result. message, data: result.data };
+      
+        } catch (error) {
+          // Log and return a generic error response
+          console.error("Error in getAllOfferServiceDetails:", error);
+          throw new Error("Failed to create event in another service layer."); 
+        }
+      }
     async getManagerEventService(managerId:string){
         try {
             const result=await this.adminRepo.getManagerAndBookedRepository(managerId);

@@ -60,10 +60,10 @@ export class userDetailsController{
             throw new Error("Failed to process manager-specific event logic.");
         } 
     }
-    async checkUserIsBooked(email:string,eventName:string){
+    async checkUserIsBooked(email:string,eventName:string,bookedId:string){
                 try {
 
-            const result = await this.loginServices.checkBookedUserValidService(email,eventName)
+            const result = await this.loginServices.checkBookedUserValidService(email,eventName,bookedId)
             console.log("Event created successfully", result);
             return result;
             

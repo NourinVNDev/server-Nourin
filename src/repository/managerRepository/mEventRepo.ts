@@ -4,7 +4,7 @@ import CATEGORYDB from '../../models/adminModels/adminCategorySchema';
 import SOCIALEVENTDB from "../../models/managerModels/socialEventSchema";
 import { Request, Response } from "express";
 import { format } from "date-fns";
-import OFFERDB from "../../models/managerModels/offerSchema";
+import OFFERDB from "../../models/adminModels/offerSchema";
 import { log } from "node:util";
 export class managerEventRepository {
 
@@ -95,8 +95,8 @@ export class managerEventRepository {
           const eventData = await SOCIALEVENTDB.findById(eventId);
           if (!eventData) throw new Error("Event not found");
       
-          const eventWithOffer = await eventData.populate('offer');
-          const offerDetails = eventWithOffer.offer as any;
+          const eventWithOffer = await eventData.populate('adminOffer');
+          const offerDetails = eventWithOffer.adminOffer as any;
       
           const discountValue = offerDetails?.discount_value
             ? Number(offerDetails.discount_value)

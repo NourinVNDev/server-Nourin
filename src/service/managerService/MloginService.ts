@@ -334,13 +334,11 @@ async getAllOfferServiceDetails(
 managerId:string
 ): Promise<{ success: boolean; message: string; data?: any }> {
   try {
-    // Fetch data from the repository
     const result = await this.managerOfferService.getOfferService(managerId);
     console.log("from service", result);
      return { success: result.success, message: result. message, data: result.data };
 
   } catch (error) {
-    // Log and return a generic error response
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
@@ -361,13 +359,12 @@ async postNewOfferServiceDetails(formData:OfferData): Promise<{ success: boolean
 }
 async updateOfferServiceDetails(formData:OfferData): Promise<{ success: boolean; message: string; data?: any }> {
   try {
-    // Fetch data from the repository
+ 
     console.log('checking the formData',formData)
     const result = await this.managerOfferService.updateOfferService(formData);
     console.log("from service", result);
     return { success: result.success, message: result.message, data: result.data };
   } catch (error) {
-    // Log and return a generic error response
     console.error("Error in postNewOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer.");
   }
@@ -453,10 +450,9 @@ async getSelectedEventTicketService(id:string){
   }
 }
 
-async getSelectedOfferService(offerId:string): Promise<{ success: boolean; message: string; data?: any }> {
+async getSelectedOfferService(offerId:string,managerId:string) {
     try {
-      // Fetch data from the repository
-      const result = await this.managerOfferService.getSelectedOfferService2(offerId);
+      const result = await this.managerOfferService.getSelectedOfferService2(offerId,managerId);
       console.log("from service", result);
        return { success: result.success, message: result. message, data: result.data };
   
@@ -630,6 +626,15 @@ async checkValidDate(eventName:string){
     throw new Error("Failed to fetching notification of user"); 
   }
 }
+async fetchEventNameService(managerId:string){
+      try {
+    const savedEvent = await this.managerService.fetchEventNamesRepo(managerId);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    console.error("Error in fetching Notification:", error);
+    throw new Error("Failed to fetching notification of user"); 
+  }
+}
 async getUserCountAndRevenue(managerId:string){
   try {
     const savedEvent = await this.managerService.fetchUserCountAndRevenueRepo(managerId);
@@ -657,6 +662,15 @@ async getDashboardPieChart(managerId:string){
     throw new Error("Failed to fetching Manager Dashboard"); 
   }
 
+}
+async getDashboardBarChart(selectedEvent:string){
+    try {
+    const savedEvent = await this.managerService.fetchDashboardBarChartRepo(selectedEvent);
+    return {success:savedEvent.success,message:savedEvent.message,data:savedEvent.data};
+  } catch (error) {
+    console.error("Error in fetching Manager Dashboard:", error);
+    throw new Error("Failed to fetching Manager Dashboard"); 
+  }
 }
 
 

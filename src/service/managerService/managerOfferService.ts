@@ -43,7 +43,7 @@ export class managerOfferService{
 
  
 
-    async postOfferService(formData:OfferData):Promise<{ success: boolean; message: string; data?: any }>{
+    async postOfferService(formData:OfferData){
         try {
             const savedEvent =await this.managerOfferService.postOfferDetails(formData); 
             console.log("Saved Data",savedEvent);
@@ -58,7 +58,7 @@ export class managerOfferService{
             throw new Error("Failed to create event in another service layer."); 
         }
     }
-    async updateOfferService(formData:OfferData):Promise<{ success: boolean; message: string; data?: any }>{
+    async updateOfferService(formData:OfferData){
         try {
             const savedEvent =await this.managerOfferService.updateOfferDetailsRepo(formData); 
             console.log("Saved Data",savedEvent);
@@ -99,14 +99,10 @@ export class managerOfferService{
     
 
 
-    async getSelectedOfferService2(offerId:string) {
+    async getSelectedOfferService2(offerId:string,managerId:string) {
         try {
             console.log("Processing event data in another service...");
-    
-    
-    
-            // Call repository to save the data
-            const savedEvent =await this.managerOfferService.getSelectedOfferRepo(offerId);
+            const savedEvent =await this.managerOfferService.getSelectedOfferRepo(offerId,managerId);
     
             return savedEvent;
         } catch (error) {

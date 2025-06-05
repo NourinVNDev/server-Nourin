@@ -69,7 +69,18 @@ static async addNewMessage(newMessage: NewMessage) {
     conversation.messages.push(savedMessage._id);
     conversation.lastMessage = savedMessage._id;
     await conversation.save();
+    console.log("");
+    
 
+    const unreadCount=await MESSAGEDB.countDocuments({
+      chatId:conversation._id,
+      receiverId:receiver,
+      isRead:false
+    })
+
+
+    console.log("UUU",unreadCount);
+    
     const totalMessage = await MESSAGEDB.countDocuments({
       $or: [
         { senderId: sender, receiverId: receiver },
@@ -104,8 +115,9 @@ static async addNewMessage(newMessage: NewMessage) {
       createdAt: savedMessage.createdAt,
       totalMessage,
       chatId: conversation._id,
-      unreadMessage
-    };
+      unreadMessage,
+    unreadCount
+      };
 
   } catch (error) {
     console.error("Error adding new message:", error);

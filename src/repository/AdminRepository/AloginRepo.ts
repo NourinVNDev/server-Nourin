@@ -1,7 +1,7 @@
 import ADMINDB from '../../models/adminModels/adminSchema';
 import bcrypt  from 'bcrypt';
 import { IAloginRepo } from './IAloginRepo';
-import { FormData } from '../../config/enum/dto';
+import { FormData, OfferData } from '../../config/enum/dto';
 import USERDB from '../../models/userModels/userSchema';
 import MANAGERDB from '../../models/managerModels/managerSchema';
 import CATEGORYDB from '../../models/adminModels/adminCategorySchema';
@@ -11,14 +11,18 @@ import ADMINWALLETDB from '../../models/adminModels/adminWalletSchema';
 import SOCIALEVENTDB from '../../models/managerModels/socialEventSchema';
 import BOOKEDEVENTDB from '../../models/userModels/bookingSchema';
 import mongoose from 'mongoose';
-import adminWalletSchema from '../../models/adminModels/adminWalletSchema';
 const monthMap = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 import BOOKINGDB from '../../models/userModels/bookingSchema';
+import { adminOfferRepo } from './adminOfferRepo';
+import OFFERDB from '../../models/adminModels/offerSchema';
+import socialEventSchema from '../../models/managerModels/socialEventSchema';
 
 export class AdminLoginRepo  implements IAloginRepo{
     private adminCategoryRepo:adminCategoryRepository;
+  private adminOfferRepo:adminOfferRepo;
     constructor(){
         this.adminCategoryRepo=new adminCategoryRepository();
+        this.adminOfferRepo=new adminOfferRepo();
     }
     async postAdminData(formData:FormData,password:string){
         try{   
@@ -345,6 +349,45 @@ export class AdminLoginRepo  implements IAloginRepo{
           };
         }
       }
+
+
+  async fetchDashboardBarChartRepo(selectedCompany: string) {
+ try {
+    const manager = await MANAGERDB.findOne({ firmName: selectedCompany });
+    if (!manager) {
+      return { success: false, message: 'Company not found', data: [] };
+    }
+
+    const socialEvents = await SOCIALEVENTDB.find({ Manager: manager._id });
+
+    const result = await Promise.all(
+      socialEvents.map(async (event: any) => {
+        const bookingCount = await BOOKINGDB.countDocuments({ eventId: event._id });
+        return {
+          label: event.eventName,
+          value: bookingCount,
+        };
+      })
+    );
+
+   
+    
+
+    return {
+      success: true,
+      message: 'Chart data fetched',
+      data: result,
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      success: false,
+      message: 'Error fetching bar chart data',
+      data: [],
+    };
+}
+}
+
       
       
       
@@ -555,5 +598,51 @@ export class AdminLoginRepo  implements IAloginRepo{
             res.status(500).json({ message: "Internal server error", error });
             return {result:undefined}
         }
+      }
+    async postOfferDetails(formData: OfferData) {
+      try {
+        const result=await this.adminOfferRepo.addNewOfferRepository(formData);    // Extract fields from formData
+        return {
+          success: result.success,
+          message: result.message,
+          data: result.data,
+        };
+      } catch (error) {
+        console.error("Error in postOfferDetails:", error);
+        return { success: false, message: "Internal server error" };
+      }
     }
+      async getAllOfferDetails(): Promise<{ success: boolean; message: string; data?: any }> {
+        try {
+            const result = await OFFERDB.find(); 
+            console.log("DB data", result);
+            return { success: true, message: "Event data retrieved successfully", data: result };
+        } catch (error) {
+            console.error("Error in getEventTypeDataService:", error);
+            return { success: false, message: "Internal server error" };
+        }
+    }
+    async getSelectedOfferRepo(offerId:string): Promise<{ success: boolean; message: string; data?: any }> {
+      try {
+    
+        const savedEvent =await this.adminOfferRepo.getSelectedOfferRepository(offerId);
+    
+          return { success: true, message: "Event data retrieved successfully", data: savedEvent };
+      } catch (error) {
+          console.error("Error in getEventTypeDataService:", error);
+          return { success: false, message: "Internal server error" };
+      }
+    }
+    async updateOfferDetailsRepo(formData:OfferData): Promise<{ success: boolean; message: string; data?: any }> {
+      try {
+    
+        const savedEvent =await this.adminOfferRepo.updateOfferRepository(formData);
+    
+          return { success: true, message: "Event data retrieved successfully", data: savedEvent };
+      } catch (error) {
+          console.error("Error in getEventTypeDataService:", error);
+          return { success: false, message: "Internal server error" };
+      }
+    }
+
 }

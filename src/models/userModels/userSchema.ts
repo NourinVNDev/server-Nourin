@@ -25,7 +25,6 @@ const userSchema = new Schema({
   },
   phoneNo: {
     type: Number,
-
     match: [
       /^\d{10}$/, 
       "Please enter a valid 10-digit phone number",
