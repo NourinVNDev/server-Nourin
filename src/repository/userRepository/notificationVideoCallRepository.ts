@@ -20,19 +20,7 @@ async fetchUserNotificationRepository(userId: string): Promise<NotificationResul
 
 
       console.log("VirtualManager",virtualEventManagers);
-    // const notifications = await NOTIFICATIONDB.find({
-    //   to: { $in: virtualEventManagers },
-    //   toModal: 'Manager',
-    //   from:userId
-    // }).sort({ createdAt: -1 });
 
-    // const notificationIds = notifications.map((n: any) => n._id);
-    // if (notificationIds.length > 0) {
-    //   await NOTIFICATIONDB.updateMany(
-    //     { _id: { $in: notificationIds } },
-    //     { $set: { isRead: true } }
-    //   );
-    // }
 
     const messages = await NOTIFICATIONDB.find({
       to: userId,

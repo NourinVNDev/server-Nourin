@@ -11,14 +11,14 @@ export interface ILoginService{
     GoogleAuth(AuthData:string):Promise<{success:boolean,message:string,user:any}>;
     forgotEmailDetails(email: string): Promise<{ success: boolean; message: string; otpValue: string | null }>;
     verifyForgotOtpService(otp:string,globalOTP:string|number|null):Promise<{success:boolean,message:string}>;
-    resetPasswordDetails(formData:FormData,userId:string):Promise<{success:boolean,message:string,user:any}>;
+    resetPasswordDetails(formData:FormData,userId:string):Promise<{success:boolean,message:string,user:any}>;//5
     GoogleAuth(AuthData:string):Promise<{success:boolean,message:string,user:any}>;
-    changeUserProfileService(formData:FormData,email:string):Promise<{success:boolean,message:string,user:any}>;
-    getWholeCategoryDetails():Promise<{success:boolean,message:string,user:any}>;
-    getUserProfileDetailsService(userId:string):Promise<{success:boolean,message:string,user:any}>;
+    changeUserProfileService(formData:FormData,email:string):Promise<{success:boolean,message:string,user:any}>;//2
+    getWholeCategoryDetails():Promise<{success:boolean,message:string,user:any}>;//4
+    getUserProfileDetailsService(userId:string):Promise<{success:boolean,message:string,user:any}>;//3
     getCategoryBasedServiice(postId:string):Promise<{success:boolean,message:string,user:any}>;
     getAllEventServiice():Promise<{success:boolean,message:string,user:any}>;
-    getCategoryTypeServiice(categoryName:string):Promise<{success:boolean,message:string,user:any}>;
+    getCategoryTypeServiice(categoryName:string):Promise<{success:boolean,message:string,user:any}>;//1
     posthandleLikeForPost(index:string,userId:string,postId:string):Promise<{result:any}>
     handlePostDetailsService(postId:string):Promise<{result:any}>;
     getSelectedEventService(postId:string):Promise<{result:any}>;

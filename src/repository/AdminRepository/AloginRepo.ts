@@ -589,6 +589,7 @@ export class AdminLoginRepo  implements IAloginRepo{
             };
         }
     }
+    
     async addCategoryRepo(formData:{[key:string]:string},req:Request,res:Response){
         try {
             const result=await this.adminCategoryRepo.adminCategoryDetailsRepo(formData,req,res);

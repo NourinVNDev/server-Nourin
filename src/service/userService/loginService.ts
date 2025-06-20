@@ -888,9 +888,6 @@ async createChatSchemaService(formData:FormData){
     console.error("Error in getAllOfferServiceDetails:", error);
     throw new Error("Failed to create event in another service layer."); 
   }
-
-  
-
 }
 async uploadUserProfilePhoto(userId:string,profilePicture:Express.Multer.File){
   try {

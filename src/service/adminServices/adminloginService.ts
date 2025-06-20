@@ -154,9 +154,7 @@ export class  AdminLoginServices implements IadminloginService{
         throw new Error("Failed to create event in another service layer.");
       }
     }
-    async getAllOfferServiceDetails(
-    
-    ): Promise<{ success: boolean; message: string; data?: any }> {
+    async getAllOfferServiceDetails(): Promise<{ success: boolean; message: string; data?: any }> {
       try {
         const result = await this.adminOffer.getOfferService();
         console.log("from service", result);

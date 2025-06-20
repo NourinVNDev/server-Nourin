@@ -4,29 +4,29 @@ import SOCIALEVENTDB from "../../models/managerModels/socialEventSchema";
 import VERIFIERDB from "../../models/verifierModals/verifierSchema";
 export class managerVerifierRepository {
     async getAllVerifierRepository(managerName: string) {
-        try {
-            console.log("thank", managerName);
-            
-            const result = await VERIFIERDB.find({ companyName: managerName }); 
-            const manager = await MANAGERDB.findOne({ firmName: managerName });
-            const eventIDs = result.flatMap(verifier => verifier.Events);
-            const socialEvents=await SOCIALEVENTDB.find({ _id: { $in: eventIDs } }, { eventName: 1, _id: 0 });
-    
-            console.log("Verifier data from Repository", result);
-    
-            if (!manager) {
-                return { success: false, message: "Manager not found", data: { result, companyName: null } };
+            try {
+                console.log("thank", managerName);
+                
+                const result = await VERIFIERDB.find({ companyName: managerName }); 
+                const manager = await MANAGERDB.findOne({ firmName: managerName });
+                const eventIDs = result.flatMap(verifier => verifier.Events);
+                const socialEvents=await SOCIALEVENTDB.find({ _id: { $in: eventIDs } }, { eventName: 1, _id: 0 });
+        
+                console.log("Verifier data from Repository", result);
+        
+                if (!manager) {
+                    return { success: false, message: "Manager not found", data: { result, companyName: null } };
+                }
+        
+                return { 
+                    success: true, 
+                    message: "Verifier Data retrieved successfully", 
+                    data: { result, companyName: manager.firmName,socialEvents} 
+                };
+            } catch (error) {
+                console.error("Error in getAllVerifierRepository:", error);
+                return { success: false, message: `Internal server error: ${error}` };
             }
-    
-            return { 
-                success: true, 
-                message: "Verifier Data retrieved successfully", 
-                data: { result, companyName: manager.firmName,socialEvents} 
-            };
-        } catch (error) {
-            console.error("Error in getAllVerifierRepository:", error);
-            return { success: false, message: `Internal server error: ${error}` };
-        }
     }
     
     async updateVerifierStatusRepository(verifierId: string) {

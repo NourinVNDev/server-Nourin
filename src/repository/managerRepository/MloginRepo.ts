@@ -26,9 +26,6 @@ import bcrypt  from 'bcrypt';
 import SOCIALEVENTDB from '../../models/managerModels/socialEventSchema';
 import USERDB from '../../models/userModels/userSchema';
 import BOOKINGDB from '../../models/userModels/bookingSchema';
-import { log } from 'node:util';
-import managerOffer from '../../models/managerModels/managerOffer';
-import bookingSchema from '../../models/userModels/bookingSchema';
 
 const hashPassword = async (password:string): Promise<string> => {
   try {

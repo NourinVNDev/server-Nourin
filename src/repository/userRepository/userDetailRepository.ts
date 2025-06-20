@@ -394,7 +394,6 @@ async updateBookedPaymentStatusRepository(bookedId: string) {
     };
   }
 
-
   // await bookedEvent.deleteOne();
 
   return {

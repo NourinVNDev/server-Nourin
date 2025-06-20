@@ -455,6 +455,7 @@ async getUserDetailsRepository(userId:string){
   }
 }
 
+ 
   async getCategoryBasedRepo(postId: string) {
     try {
       console.log("Id of category:", postId);
@@ -510,8 +511,8 @@ async getAllEventBasedRepo(): Promise<any> {
     const eventData = await SOCIALEVENT.find();
     const updatedEvents: any[] = [];
 
-  const now = new Date();
-const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     for (const event of eventData) {
       const eventStartDate = new Date(event.startDate);
@@ -522,24 +523,26 @@ const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
         if (category && category.isListed) {
           console.log("Title",event.eventName,category.categoryName);
+          
+          // Fetch active manager offer for the event
+
           console.log("MaNaGeR",await MANAGEROFFER.find());
           
           const managerOffer = await MANAGEROFFER.findOne({
             discount_on: event.eventName,
-            startDate: { $lte: today},
-            endDate: { $gte: today },
-          });
-          console.log("ManagerOffer",managerOffer); 
-        
-
-          console.log("AdminOffer",await ADMINOFFER.find());
-          
-          const adminOffer = await ADMINOFFER.findOne({
-        discount_on: { $regex: new RegExp(`^${category.categoryName}$`, 'i') },
             startDate: { $lte: today },
             endDate: { $gte: today },
           });
-          console.log("Looking for admin offer on:", category.categoryName, "between", today);
+          console.log("ManagerOffer",managerOffer); 
+          // Fetch active admin offer for the category
+
+     
+          
+          const adminOffer = await ADMINOFFER.findOne({
+            discount_on: category.categoryName,
+            startDate: { $lte: today },
+            endDate: { $gte: today },
+          });
 
           console.log("AdminOffer",adminOffer);
           
@@ -775,180 +778,7 @@ console.log("Length:",product.bookedEmails.length,product.bookedMembers.length);
 
 
 
-// async savePaymentData(paymentData: PaymentData) {
-//   try {
-//     console.log("Normal");
-    
-//     console.log("Checking the bookedId", paymentData);
-//     if (!paymentData.bookedId || !paymentData.companyName) {
-//       throw new Error("Missing required payment data.");
-//     }
-//     const existingBooking = await BOOKEDUSERDB.findById(paymentData.bookingId);
-//     console.log("Existing booking found:", existingBooking);
 
-//     if (!existingBooking) {
-//       return { success: false, message: "Booking not found", data: null };
-//     }
-
-//     // Validate payment status
-//     // const validPaymentStatus = (status: string): "Pending" | "Cancelled" | "Completed" => {
-//     //   if (status === "Success") return "Pending";
-//     //   if (status === "Cancelled") return "Cancelled";
-//     //   if (status === "Completed") return "Completed";
-//     //   throw new Error("Invalid payment status received: " + status);
-//     // };
-//     console.log("NoOfPerson",paymentData.noOfPerson,paymentData.paymentStatus);
-    
-//     existingBooking.paymentStatus = 'Completed';
-//     existingBooking.bookingDate = new Date();
-//     existingBooking.totalAmount = paymentData.Amount||paymentData.amount;
-//     existingBooking.NoOfPerson = paymentData.noOfPerson;
-//     if (!existingBooking.ticketDetails) {
-//       existingBooking.ticketDetails = { Included: [], notIncluded: [], type: undefined };
-//     }
-    
-//     existingBooking.ticketDetails.type = paymentData.type || undefined;
-//     existingBooking.ticketDetails.Included = paymentData.Included || [];
-//     existingBooking.ticketDetails.notIncluded = paymentData.notIncluded || [];
-
-
-
-// console.log("Payment",paymentData.bookedEmails,paymentData.bookedMembers);
-// console.log("Length:",paymentData.bookedEmails.length,paymentData.bookedMembers.length);
-//     if (
-//       Array.isArray(paymentData.bookedMembers) &&
-//       Array.isArray(paymentData.bookedEmails) &&
-//       paymentData.bookedMembers.length === paymentData.bookedEmails.length
-//     ) {
-//       console.log("Black");
-//       for (let i = 0; i < paymentData.bookedMembers.length; i++) {
-//         console.log(paymentData.bookedMembers[i],paymentData.bookedEmails[i]);
-//         existingBooking.bookedUser.push({
-         
-//           user: paymentData.bookedMembers[i],
-//           email: paymentData.bookedEmails[i],
-//           isParticipated: false,
-//         });
-//       }
-//     }
-    
-
-
-    
-
-//     const uniqueIncluded = new Set(paymentData.Included || []);
-//     const uniqueNotIncluded = new Set(paymentData.notIncluded || []);
-    
-//     existingBooking.ticketDetails.Included = Array.from(uniqueIncluded);
-//     existingBooking.ticketDetails.notIncluded = Array.from(uniqueNotIncluded);
-    
-//     const updatedBooking = await existingBooking.save();
-
-//     const managerDetails = await MANAGERSCHEMA.findOne({ firmName: paymentData.companyName });
-//     console.log("Manager details found:", managerDetails);
-
-//     if (!managerDetails) {
-//       return { success: false, message: "Manager not found", data: null };
-//     }
-
-//     let adminAmount=0;
-//     let managerAmount=0;
-//     if (existingBooking.paymentStatus === "Completed") {
-//       const totalAmount = paymentData.Amount||paymentData.amount;
-//       managerAmount = Math.floor(totalAmount * 0.9);
-//       adminAmount = Math.floor(totalAmount * 0.1);
-//       console.log("Processing Stripe Transfer...");
-
-//       let managerWallet = await MANAGERWALLETDB.findOne({ managerId: managerDetails._id });
-//       if (!managerWallet) {
-//         managerWallet = new MANAGERWALLETDB({ managerId: managerDetails._id, balance: 0, currency: 'USD', transactions: [] });
-//       }
-      
-//       managerWallet.balance += Math.round(managerAmount);
-//       managerWallet.transactions.push({
-//         userId: existingBooking.userId,
-//         managerAmount,
-//         type: "credit",
-//         status: "completed",
-//         eventName:paymentData.eventName,
-//         bookedId:paymentData.bookedId,
-//         noOfPerson:paymentData.noOfPerson
-//       });
-//       await managerWallet.save();
-//     }
-//     let adminDetails = await ADMINDB.findOne(); // Fetch the single admin
-//     if (!adminDetails) {
-//         throw new Error("Admin not found");
-//     }
-    
-//     let adminWallet = await ADMINWALLETSCHEMA.findOne({ adminId: adminDetails._id });
-//     if(!adminWallet){
-//      adminWallet = await ADMINWALLETSCHEMA.create({
-//         adminId: adminDetails._id,
-//         balance: adminAmount, // Assign balance directly
-//         currency: 'USD',
-//         transactions: [
-//           {
-//             totalAmount: paymentData.Amount,
-//             userId: paymentData.userId,
-//             managerAmount: managerAmount,
-//             adminAmount:adminAmount,
-//             type: 'credit',
-//             status: 'completed',
-//             createdAt: new Date(),
-//             eventName:paymentData.eventName,
-//             bookedId:paymentData.bookedId,
-//             noOfperson:paymentData.noOfPerson,
-//             companyName:paymentData.companyName
-      
-//           }
-//         ]
-//       });
-      
-//     }else{
-//       adminWallet.balance += adminAmount;
-//   adminWallet.transactions.push({
-//     totalAmount: paymentData.Amount,
-//     userId: paymentData.userId,
-//     managerAmount: managerAmount,
-//     adminAmount:adminAmount,
-//     type: 'credit',
-//     status: 'completed',
-//     createdAt: new Date(),
-//     eventName:paymentData.eventName,
-//     bookedId:paymentData.bookedId
-//   });
-//   await adminWallet.save();
-//     }
-    
-//     console.log(adminWallet);
-
-//     const socialEvent = await SOCIALEVENT.findOne({ eventName: paymentData.eventName });
-
-//     if (socialEvent) {
-//       console.log("No of Person:",paymentData.noOfPerson);
-//       socialEvent.typesOfTickets.forEach((ticket: any) => {
-//         if (ticket.type.toLowerCase() === paymentData.type) {
-//           console.log("Hellom");
-          
-//           ticket.noOfSeats -= paymentData.noOfPerson;
-//         }
-//       });
-     
-    
-//       await socialEvent.save();
-//     }
-//     return {
-//       success: true,
-//       message: "Payment data saved successfully",
-//       data: updatedBooking,
-//     };
-
-//   } catch (error) {
-//     console.error("Error saving payment data:", error || error);
-//     return { success: false, message: "Database error while saving payment data.", data: null };
-//   }
-// }
 
 
 
