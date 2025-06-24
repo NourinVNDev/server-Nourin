@@ -153,10 +153,11 @@ class userlogin  {
     }
 }
     async generateOtpForPassword(req: Request, res: Response): Promise<void>{
-
+      console.log("hai");
       
       try {
           const userId = req.params.userId;
+          console.log('hello', userId);
 
           const otpNumber = await this.userController.generateOtpService(userId);
       

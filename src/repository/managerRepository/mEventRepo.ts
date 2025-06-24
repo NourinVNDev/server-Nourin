@@ -14,7 +14,7 @@ export class managerEventRepository {
                 throw new Error("Invalid location data: Missing address.");
             }
     
-
+            console.log("Processing event data in actual repository...", formData);
                const manager = await MANAGERDB.findOne({ firmName: formData.companyName });
             if (!manager) {
                 throw new Error(`Manager not found for company name: ${formData.companyName}`);

@@ -11,8 +11,6 @@ import { errorMiddleware } from "./middlewares/errorMiddleware";
 import cookieParser from 'cookie-parser';
 import path from "path";
 import stripeRoute from "./routes/stripe";
-import dotenv from 'dotenv';
-dotenv.config()
 
 const PORT=process.env.PORT||3001
 console.log("Socket",PORT);
@@ -22,7 +20,7 @@ console.log("Socket",PORT);
 const app=express();
 
 app.use(cors({
-  origin:[process.env.FRONTEND_BASE_URL1||'http://localhost:5175',process.env.FRONTEND_BASE_URL2||'http://localhost:5174'],
+  origin:['http://localhost:5175','http://localhost:5173'],
   credentials:true
 }));
 

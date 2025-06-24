@@ -6,14 +6,14 @@ export interface IloginRepo{
     checkLogin(formData:FormData):Promise<{success:boolean,message:string,user:any}>;
     googleAuthData(payload:Object):Promise<{success:boolean,message:string,user:any}>;
     isEmailValid(email:string):Promise<{success:boolean,message:string,user:any}>;
-    resetPasswordRepo(email:string,formData:FormData):Promise<{success:boolean,message:string,user:any}>;//4
+    resetPasswordRepo(email:string,formData:FormData):Promise<{success:boolean,message:string,user:any}>;
     fetchuserEmail(userId:string):Promise<{success:boolean,message:string,user:any}>
-    resetUserProfile(email:string,formData:FormData,location:eventLocation|null):Promise<{success:boolean,message:string,user:any}>//4
-    getAllCategoryRepository():Promise<{success:boolean,message:string,category:any}>//3
-    getUserDetailsRepository(userId:string):Promise<{success:boolean,message:string,user?:any,category?:any}>//2
+    resetUserProfile(email:string,formData:FormData,location:eventLocation|null):Promise<{success:boolean,message:string,user:any}>
+    getAllCategoryRepository():Promise<{success:boolean,message:string,category:any}>
+    getUserDetailsRepository(userId:string):Promise<{success:boolean,message:string,user?:any,category?:any}>
     getCategoryBasedRepo(postId:string):Promise<{success:boolean,message:string,category:any}>
     getAllEventBasedRepo():Promise<{success:boolean,message:string,category:any[]}>
-    getCategoryTypeRepo(categoryName:string):Promise<{success:boolean,message:string,category:any}>//1
+    getCategoryTypeRepo(categoryName:string):Promise<{success:boolean,message:string,category:any}>
     posthandleLikeForPost(index:string,userId:string,postId:string):Promise<{savedEvent:any}>
     getPostDetailsRepo(postId:string):Promise<{savedEvent:any}>
     getSelectedEventRepo(postId:string):Promise<{savedEvent:any}>

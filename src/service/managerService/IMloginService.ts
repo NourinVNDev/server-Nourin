@@ -20,10 +20,10 @@ export interface IMloginService{
    fetchAllEventService(companyName:string):Promise<{success:boolean,message:string,data:any}>
    getSelectedOfferService(offerId:string,managerId:string):Promise<{success:boolean,message:string,data?:any}>
    createEventPostService(formData:EventData,file:Express.Multer.File):Promise<{success:boolean,message:string,data?:any}>
-    createEventSeatService(formData:EventSeatDetails,eventId:string):Promise<{success:boolean,message:string,data?:any}>
+   createEventSeatService(formData:EventSeatDetails,eventId:string):Promise<{success:boolean,message:string,data?:any}>
    updateEventPostService(formData:EventData,fileNames:Express.Multer.File[],eventId:string):Promise<{success:boolean,message:string,data?:any}>
    getAllEventService(managerId:string):Promise<{success:boolean,message:string,data?:any}>
-    getSelectedEventService(id:string):Promise<{success:boolean,message:string,data?:any}>
+   getSelectedEventService(id:string):Promise<{success:boolean,message:string,data?:any}>
    getSelectedEventTicketService(id:string):Promise<{success:boolean,message:string,data?:any}>
    getTodaysBookingService(managerId:string):Promise<{success:boolean,message:string,data?:any}>
    getTotalBookingService(managerId:string):Promise<{success:boolean,message:string,data?:any}>

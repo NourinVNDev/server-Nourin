@@ -6,8 +6,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "experimentalDecorators": true,
-"emitDecoratorMetadata": true,
     "outDir": "./dist",
     "rootDir": "./src",
      "typeRoots": ["./node_modules/@types", "./types"]

@@ -218,22 +218,22 @@ export class managerOfferRepository{
   }
 
   async fetchManagerWalletRepository(managerId:string){
-            try{
-            const managerWallet=await MANAGERWALLETDB.findOne({managerId:managerId}).populate('managerId');
-            console.log(managerWallet)
-            return {
-            success: true,
-            message: "Retrive Manager Wallet successfully",
-            data: managerWallet,
-            };
-        } catch (error) {
-            console.error("Error canceling event:", error);
-            return {
-            success: false,
-            message: "Error occurred during canceling event",
-            data: null,
-            };
-        }
+        try{
+        const managerWallet=await MANAGERWALLETDB.findOne({managerId:managerId}).populate('managerId');
+        console.log(managerWallet)
+        return {
+          success: true,
+          message: "Retrive Manager Wallet successfully",
+          data: managerWallet,
+        };
+      } catch (error) {
+        console.error("Error canceling event:", error);
+        return {
+          success: false,
+          message: "Error occurred during canceling event",
+          data: null,
+        };
+      }
 
   }
 }
