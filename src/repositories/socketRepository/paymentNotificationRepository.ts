@@ -13,7 +13,7 @@ export class NotificationSocketRepository {
         isRead: false,
         from: senderId,
         fromModal: 'bookedUser',
-        to: receiverId,
+        to: receiverId, 
         toModal: 'Manager'
       })
       await notificationSchema.save();
