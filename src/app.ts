@@ -1,16 +1,16 @@
 import express from "express";
 import cors from "cors";
 import morgan from 'morgan';
-import verifierRoute from '../server/src/routes/verifierRoutes/verifierRoute'
-import userRoute from "../server/src/routes/userRoutes/userRoute";
-import managerRoute from '../server/src/routes/managerRoutes/managerRoute';
-import adminRoute from '../server/src/routes/adminRoutes/adminRoute';
+import verifierRoute from './routes/verifierRoutes/verifierRoute'
+import userRoute from "./routes/userRoutes/userRoute";
+import managerRoute from './routes/managerRoutes/managerRoute';
+import adminRoute from './routes/adminRoutes/adminRoute';
 import session  from 'express-session';
-import Database from "../server/src/config/db.config";
-import { errorMiddleware } from "../server/src/middlewares/errorMiddleware";
+import Database from "./config/db.config";
+import { errorMiddleware } from "./middlewares/errorMiddleware";
 import cookieParser from 'cookie-parser';
 import path from "path";
-import stripeRoute from "../server//src/routes/stripe";
+import stripeRoute from "./routes/stripe";
 
 const PORT=process.env.PORT||3001
 console.log("Socket",PORT);
