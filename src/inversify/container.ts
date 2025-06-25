@@ -77,8 +77,8 @@ import { IVerifierDetailsRepo } from "../interfaces/managerInterfaces/repository
 import { VerifierDetailsRepository } from "../repositories/managerRepository/verifierDetailsRepository";
 import { VerifierDetailsController } from "../controllers/managerControllers/verifierDetailsController";
 //user
-container.bind<IUserLoginService>(TYPES.IUserLoginService).to(UserLoginService);
-container.bind<IUserLoginRepo>(TYPES.IUserLoginRepo).to(UserLoginRepository);
+container.bind<IUserLoginService>(TYPES.IUserLoginService1).to(UserLoginService);
+container.bind<IUserLoginRepo>(TYPES.IUserLoginRepo1).to(UserLoginRepository);
 container.bind<UserLoginController>(Symbol.for("UserLoginController")).to(UserLoginController);
 
 container.bind<IEventBookingService>(TYPES.IEventBookingService).to(EventBookingService);

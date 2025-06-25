@@ -12,7 +12,7 @@ const refreshTokens: string[] = [];
 @injectable()
 export class UserLoginController{
     constructor(
-        @inject(TYPES.IUserLoginService) private _userLoginService:IUserLoginService
+        @inject(TYPES.IUserLoginService1) private _userLoginService:IUserLoginService
 ){
     console.log("_userLoginService injected:", !!_userLoginService); // should be true
   }

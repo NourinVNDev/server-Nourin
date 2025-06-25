@@ -1,7 +1,7 @@
 const TYPES = {
   //user
-  IUserLoginRepo: Symbol.for("IUserLoginRepo"),
-  IUserLoginService: Symbol.for("IUserLoginService"),
+  IUserLoginRepo1: Symbol.for("IUserLoginRepo"),
+  IUserLoginService1: Symbol.for("IUserLoginService"),
 
   IEventBookingService:Symbol.for('IEventBookingService'),
   IEventBookingRepo:Symbol.for('IEventBookingRepo'),
