@@ -17,7 +17,7 @@ const userProfileController=container.get<UserProfileController>(UserProfileCont
 const retryEventPaymentController=container.get<RetryEventPaymentController>(RetryEventPaymentController);
 const notificationVideoCallController=container.get<NotificationVideoCallController>(NotificationVideoCallController);
 
-router.get('/fetchEventData',userLoginController.getAllEventData);
+router.get('/fetchEventData',(req,res)=>userLoginController.getAllEventData(req,res));
 router.post('/login',userLoginController.loginDetails);
 router.post('/submit',userLoginController.postUserDetails);
 router.post('/verifyOtp',userLoginController.verifyOTP);
