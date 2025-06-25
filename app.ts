@@ -20,7 +20,7 @@ console.log("Socket",PORT);
 const app=express();
 
 app.use(cors({
-  origin:['http://localhost:5175','http://localhost:5173'],
+  origin:['https://client-nourin-9ey7.vercel.app','http://localhost:5173'],
   credentials:true
 }));
 
