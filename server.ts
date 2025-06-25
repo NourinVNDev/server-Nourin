@@ -1,6 +1,6 @@
-import app from "./app";
+import app from "./app.ts";
 import dotenv from 'dotenv';
-import initializeSocket from "./sockets/commentSocket";
+import initializeSocket from "../server/src/sockets/commentSocket.ts";
 
 
 dotenv.config();
