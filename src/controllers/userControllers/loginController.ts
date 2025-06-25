@@ -12,16 +12,16 @@ const refreshTokens: string[] = [];
 @injectable()
 export class UserLoginController{
     constructor(
-        @inject(TYPES.IUserLoginService1) private _userLoginService:IUserLoginService
+        @inject(TYPES.IUserLoginService) private _userLoginService:IUserLoginService
 ){
     console.log("_userLoginService injected:", !!_userLoginService); // should be true
   }
 
 
-
       async getAllEventData(req: Request, res: Response){
     try {
-        if (!this._userLoginService) {
+      
+  if (!this._userLoginService) {
   throw new Error('UserLoginService not initialized');
 }
       const result = await this._userLoginService.getAllEventService();

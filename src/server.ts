@@ -1,7 +1,7 @@
 import "reflect-metadata";
-import app from "./app.js";
+import app from "./app";
 import dotenv from 'dotenv';
-import initializeSocket from "./sockets/commentSocket.js";
+import initializeSocket from "./sockets/commentSocket";
 
 
 dotenv.config();

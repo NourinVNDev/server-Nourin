@@ -42,6 +42,7 @@
   "name": "server",
   "version": "1.0.0",
   "main": "index.js",
+  "module": "commonjs",
   "scripts": {
     "start": "node dist/server.js",
     "dev": "ts-node-dev src/server.ts",

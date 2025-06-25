@@ -14,7 +14,7 @@ function generateOTP(): string {
 @injectable()
 export class UserLoginService implements IUserLoginService{
     constructor(
-        @inject(TYPES.IUserLoginRepo1) private _userLoginRepo:IUserLoginRepo
+        @inject(TYPES.IUserLoginRepo) private _userLoginRepo:IUserLoginRepo
     ){}
 
       async getAllEventService() {
