@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import app from "./app.ts";
 import dotenv from 'dotenv';
 import initializeSocket from "../server/src/sockets/commentSocket.ts";

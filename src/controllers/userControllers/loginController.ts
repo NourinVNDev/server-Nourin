@@ -13,7 +13,9 @@ const refreshTokens: string[] = [];
 export class UserLoginController{
     constructor(
         @inject(TYPES.IUserLoginService) private _userLoginService:IUserLoginService
-){}
+){
+    console.log("_userLoginService injected:", !!_userLoginService); // should be true
+  }
 
       async getAllEventData(req: Request, res: Response){
     try {
