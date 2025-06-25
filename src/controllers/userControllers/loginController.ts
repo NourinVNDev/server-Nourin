@@ -17,8 +17,13 @@ export class UserLoginController{
     console.log("_userLoginService injected:", !!_userLoginService); // should be true
   }
 
+
+
       async getAllEventData(req: Request, res: Response){
     try {
+        if (!this._userLoginService) {
+  throw new Error('UserLoginService not initialized');
+}
       const result = await this._userLoginService.getAllEventService();
       res.status(HTTP_statusCode.OK).json({
         success: result.success,
