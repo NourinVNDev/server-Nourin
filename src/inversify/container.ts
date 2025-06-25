@@ -79,7 +79,7 @@ import { VerifierDetailsController } from "../controllers/managerControllers/ver
 //user
 container.bind<IUserLoginService>(TYPES.IUserLoginService).to(UserLoginService);
 container.bind<IUserLoginRepo>(TYPES.IUserLoginRepo).to(UserLoginRepository);
-container.bind<UserLoginController>(UserLoginController).toSelf();
+container.bind<UserLoginController>(Symbol.for("UserLoginController")).to(UserLoginController);
 
 container.bind<IEventBookingService>(TYPES.IEventBookingService).to(EventBookingService);
 container.bind<IEventBookingRepo>(TYPES.IEventBookingRepo).to(EventBookingRepository);

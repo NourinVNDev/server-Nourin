@@ -11,12 +11,11 @@ const router = express.Router();
 import verifyToken from "../../middlewares/verifyToken.middleware";
 import { checkIfUserBlocked } from "../../middlewares/userIsBlock.middleware";
 
-const userLoginController=container.get<UserLoginController>(UserLoginController);
+const userLoginController = container.get<UserLoginController>(Symbol.for("UserLoginController"));
 const eventBookingController=container.get<EventBookingController>(EventBookingController);
 const userProfileController=container.get<UserProfileController>(UserProfileController);
 const retryEventPaymentController=container.get<RetryEventPaymentController>(RetryEventPaymentController);
 const notificationVideoCallController=container.get<NotificationVideoCallController>(NotificationVideoCallController);
-
 
 router.get('/fetchEventData',userLoginController.getAllEventData);
 router.post('/login',userLoginController.loginDetails);
