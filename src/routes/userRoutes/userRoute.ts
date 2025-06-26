@@ -19,7 +19,7 @@ const retryEventPaymentController=container.get<RetryEventPaymentController>(Ret
 const notificationVideoCallController=container.get<NotificationVideoCallController>(NotificationVideoCallController);
 
 router.get('/fetchEventData',(req,res)=>userLoginController.getAllEventData(req,res));
-router.post('/login',userLoginController.loginDetails.bind(UserLoginController));
+router.post('/login', (req, res) => userLoginController.loginDetails(req, res));
 router.post('/submit',(req,res)=>userLoginController.postUserDetails(req,res));
 router.post('/verifyOtp',(req,res)=>userLoginController.verifyOTP(req,res));
 router.post('/resendOtp',(req,res)=>userLoginController.resendOtp(req,res));
