@@ -60,21 +60,21 @@ export class UserLoginController{
             refreshTokens.push(refreshToken);
 
             
-            res.cookie('accessToken', accessToken, {
-                httpOnly: false,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'none',
-                path: '/',
-                maxAge: 2 * 60 * 1000
-            });
+          res.cookie('accessToken', accessToken, {
+    httpOnly: true,  // Changed from false to true for security
+    secure: true,    // Force HTTPS in production
+    sameSite: 'none', // Keep this if you need cross-site cookies
+    path: '/',
+    maxAge: 2 * 60 * 1000, // 2 minutes
+});
 
-            res.cookie('refreshToken', refreshToken, {
-                httpOnly: false,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'none',
-                path: '/',
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            });
+res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,  // Must be true for refresh tokens
+    secure: true,
+    sameSite: 'none',
+    path: '/api/user/refresh-token', // Limit to refresh endpoint
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+});
 
 
             res.status(HTTP_statusCode.OK).json({
