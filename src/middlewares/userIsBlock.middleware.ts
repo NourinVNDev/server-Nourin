@@ -15,13 +15,16 @@ export const checkIfUserBlocked = async (
   next: NextFunction
 ): Promise<void> => {
   console.log("Maaaad");
-  
-  try {
-      if (req.path === '/api/user/refresh-token') {
+    if (req.path === '/api/user/refresh-token' || req.method === 'POST' && req.path.endsWith('/refresh-token')) {
     return next();
   }
+
+  
+  try {
+   
     // Extract the token from the Authorization header
-    const token = req.cookies.accessToken;
+    const token = req.cookies.accessToken || 
+                 req.headers.authorization?.split(' ')[1];
     console.log("testing the token", token);
     
     if (!token) {

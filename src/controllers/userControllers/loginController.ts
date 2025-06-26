@@ -327,7 +327,7 @@ res.cookie('refreshToken', refreshToken, {
         success: false,
         message: response_message.REGENERATEACCESSTOKEN_FAILED,
       });
-      return; // End the execution
+      return; // End the execution  
     }
   
     try {
@@ -372,7 +372,7 @@ res.cookie('refreshToken', refreshToken, {
       res.cookie('accessToken', accessToken, {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'none',
         path: '/',
         maxAge:2*60*1000
     });
