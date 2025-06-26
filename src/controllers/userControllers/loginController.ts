@@ -60,21 +60,21 @@ export class UserLoginController{
             refreshTokens.push(refreshToken);
 
             
-            res.cookie('accessToken', accessToken, {
-                httpOnly: false,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                path: '/',
-                maxAge: 2 * 60 * 1000
-            });
+         res.cookie('accessToken', accessToken, {
+  httpOnly: false,
+  secure: false, // Set to false for testing without HTTPS
+  sameSite: 'lax', // Relax sameSite for testing
+  path: '/',
+  maxAge: 2 * 60 * 1000
+});
 
-            res.cookie('refreshToken', refreshToken, {
-                httpOnly: false,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                path: '/',
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            });
+res.cookie('refreshToken', refreshToken, {
+  httpOnly: false,
+  secure: false, // Set to false for testing
+  sameSite: 'lax', // Relax sameSite
+  path: '/',
+  maxAge: 7 * 24 * 60 * 60 * 1000
+});
 
 
             res.status(HTTP_statusCode.OK).json({
