@@ -218,7 +218,7 @@ res.cookie('refreshToken', refreshToken, {
             res.cookie('accessToken', accessToken, {
               httpOnly: false,
               secure: process.env.NODE_ENV === 'production',
-              sameSite: 'strict',
+              sameSite: 'none',
               path: '/',
           });
 

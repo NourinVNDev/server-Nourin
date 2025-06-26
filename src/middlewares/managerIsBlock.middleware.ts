@@ -18,9 +18,8 @@ export const checkIfManagerBlocked = async (
   
   try {
     // Extract the token from the Authorization header
-    const authHeader = req.headers["authorization"];
-    const token = authHeader?.split(" ")[1];
-    console.log("testing the token",token);
+    const token = req.cookies.accessToken;
+    console.log("testing the token", token);
     
     if (!token) {
       res.status(401).json({ message: "Access Denied: No token provided" });
