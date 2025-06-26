@@ -385,7 +385,7 @@ res.cookie('refreshToken', refreshToken, {
       return; 
     } catch (error) {
       console.error("Error verifying refresh token:", error);
-      res.status(HTTP_statusCode.Unauthorized).json({
+      res.status(HTTP_statusCode.InternalServerError).json({
         success: false,
         message: "Invalid or expired refresh token",
       });
