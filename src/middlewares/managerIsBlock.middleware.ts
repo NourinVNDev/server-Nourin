@@ -18,6 +18,9 @@ export const checkIfManagerBlocked = async (
   
   try {
     // Extract the token from the Authorization header
+      if (req.path === '/api/manager/refresh-token') {
+    return next();
+  }
     const token = req.cookies.accessToken;
     console.log("testing the token", token);
     

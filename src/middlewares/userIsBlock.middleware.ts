@@ -17,6 +17,9 @@ export const checkIfUserBlocked = async (
   console.log("Maaaad");
   
   try {
+      if (req.path === '/api/user/refresh-token') {
+    return next();
+  }
     // Extract the token from the Authorization header
     const token = req.cookies.accessToken;
     console.log("testing the token", token);

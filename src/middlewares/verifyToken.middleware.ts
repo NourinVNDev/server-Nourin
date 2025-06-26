@@ -20,6 +20,10 @@ const getAccessTokenSecret = (): string => {
 
 export default function verifyToken(allowedRoles: string[] = []) {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+
+      if (req.path === '/api/user/refresh-token'|| req.path === '/api/manager/refresh-token' ) {
+    return next();
+  }
     const token = req.cookies.accessToken;
 
     if (!token) {
