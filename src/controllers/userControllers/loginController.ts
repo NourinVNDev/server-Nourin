@@ -371,7 +371,7 @@ res.cookie('refreshToken', refreshToken, {
       );
       res.cookie('accessToken', accessToken, {
         httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         sameSite: 'none',
         path: '/',
         maxAge:2*60*1000

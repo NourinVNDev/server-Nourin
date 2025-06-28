@@ -75,20 +75,20 @@ export class MultiVerifierController {
                 const verifierAccessToken = generateAccessToken(verifier);
                 const verifierRefreshToken = generateRefreshToken(verifier);
                 res.cookie('accessToken', verifierAccessToken, {
-                    httpOnly: false,
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'strict',
-                    path: '/',
-                    maxAge: 2 * 60 * 1000
-                });
+        httpOnly: true,  // Changed from false to true for security
+        secure: true,    // Force HTTPS in production
+        sameSite: 'none', // Keep this if you need cross-site cookies
+        path: '/',
+        maxAge: 2 * 60 * 1000, // 2 minutes
+      });
 
-                res.cookie('refreshToken', verifierRefreshToken, {
-                    httpOnly: false,
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'strict',
-                    path: '/',
-                    maxAge: 7 * 24 * 60 * 60 * 1000
-                });
+      res.cookie('refreshToken', verifierRefreshToken, {
+        httpOnly: true,  // Must be true for refresh tokens
+        secure: true,
+        sameSite: 'none',
+        path: '/api/verifier/refresh-token', // Limit to refresh endpoint
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
                 res.status(HTTP_statusCode.OK).json({ success: true, message: response_message.VERIFYOTP_SUCCESS });
             } else {
                 res.json({ success: false, message: response_message.VERIFYOTP_FAILED });
@@ -174,9 +174,9 @@ export class MultiVerifierController {
                 { expiresIn: "15m" }
             );
             res.cookie('accessToken', verifierAccessToken, {
-                httpOnly: false,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none',
                 path: '/',
                 maxAge: 2 * 60 * 1000
             });
