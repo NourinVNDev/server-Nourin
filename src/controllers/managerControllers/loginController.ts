@@ -100,7 +100,7 @@ export class ManagerLoginController {
         httpOnly: true,  // Must be true for refresh tokens
         secure: true,
         sameSite: 'none',
-        path: '/api/manager/refresh-token', // Limit to refresh endpoint
+        path: '/', // Limit to refresh endpoint
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
 
