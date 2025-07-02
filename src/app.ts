@@ -52,9 +52,9 @@ app.use(
 
 //for Socket io
 app.use('/api/user' ,userRoute);
-app.use('/api/manager/',managerRoute);
-app.use('/api/admin/',adminRoute);
-app.use('/api/verifier/',verifierRoute);
+app.use('/api/manager',managerRoute);
+app.use('/api/admin',adminRoute);
+app.use('/api/verifier',verifierRoute);
 app.use(errorMiddleware);
 
 
