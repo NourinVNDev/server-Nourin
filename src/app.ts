@@ -19,10 +19,15 @@ console.log("Socket",PORT);
 
 const app=express();
 
-app.use(cors({
-  origin:['https://client-nourin-9ey7.vercel.app','http://localhost:5173'],
-  credentials:true
-}));
+
+const corsOptions = {
+  origin: "https://client-nourin-9ey7.vercel.app", 
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
+
 
 app.use('/webhook',stripeRoute);
 app.use(express.json());

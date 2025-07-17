@@ -8,12 +8,14 @@ export const onlineUsers = new Map();
 const users: { [key: string]: string[] } = {}; // For video rooms
 
 const initializeSocket = (server: HttpServer) => {
-  const io = new Server(server, {
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"],
-    },
-  });
+const io = new Server(server, {
+  cors: {
+    origin: "https://client-nourin-9ey7.vercel.app", // ✅ your frontend domain
+    methods: ["GET", "POST"],
+    credentials: true, // ✅ allow cookies or headers if used
+  },
+});
+
 
   io.on("connection", (socket:any) => {
     console.log("New client connected:", socket.id);
